@@ -1,9 +1,9 @@
-import "./App.css";
+import { Title } from "@mantine/core";
 
 function App() {
   return (
     <div>
-      <h1 class="text-3xl font-bold underline">Hello World</h1>
+      <Title order={1}>Hello World</Title>
     </div>
   );
 }
