@@ -74,4 +74,20 @@ describe("plot user flows", () => {
 
     expect(await screen.findByText("Viewing plot: custom")).toBeTruthy();
   });
+
+  it("shows not found page for unknown preset route", async () => {
+    renderWithRouter(["/plot/not-a-real-plot"]);
+
+    expect(await screen.findByText("Page Not Found")).toBeTruthy();
+  });
+
+  it("shows invalid config page for malformed custom route", async () => {
+    renderWithRouter(["/plot/custom?points=abc"]);
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Invalid Plot Configuration",
+      }),
+    ).toBeTruthy();
+  });
 });
