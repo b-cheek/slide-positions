@@ -1,5 +1,5 @@
-import type { PlotFigure } from "./types/plotFigure";
-import type { PlotInputs } from "./types/plotInputs";
+import type { PlotFigure } from "../types/plotFigure";
+import type { PlotInputs } from "../types/plotInputs";
 
 export function buildPlotFigure(inputs: PlotInputs): PlotFigure {
   const x = Array.from({ length: inputs.points }, (_, i) => i + 1);

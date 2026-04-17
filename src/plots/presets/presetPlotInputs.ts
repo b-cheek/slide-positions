@@ -1,5 +1,5 @@
-import type { PlotInputs } from "./types/plotInputs";
-import { examplePlotInputs } from "./presets/examplePlotInputs";
+import type { PlotInputs } from "../types/plotInputs";
+import { examplePlotInputs } from "./examplePlotInputs";
 
 const presetPlotInputs: Record<string, PlotInputs> = {
   "example-plot": examplePlotInputs,
