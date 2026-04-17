@@ -2,6 +2,7 @@ import { Button, Stack, Text, Title } from "@mantine/core";
 import { Link } from "react-router";
 
 function InvalidPlotConfigPage({ message }) {
+  // TODO: message
   return (
     <Stack>
       <Title order={2}>Invalid Plot Configuration</Title>

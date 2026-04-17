@@ -16,6 +16,7 @@ function PlotViewErrorBoundary() {
     }
   }
 
+  // TODO: message
   return (
     <Stack>
       <Title order={2}>Something Went Wrong</Title>

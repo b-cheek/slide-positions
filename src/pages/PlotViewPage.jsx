@@ -12,12 +12,14 @@ export function plotViewLoader({ params, request }) {
   const plotId = params.plotId;
 
   if (!plotId) {
+    // TODO: message
     throw new Response("Plot route not found", { status: 404 });
   }
 
   if (plotId !== "custom") {
     const presetInputs = getPresetPlotInputs(plotId);
     if (!presetInputs) {
+      // TODO: message
       throw new Response("Plot preset not found", { status: 404 });
     }
 
@@ -31,9 +33,11 @@ export function plotViewLoader({ params, request }) {
 
   if (!parsedInputs.success) {
     throw new Response(
+      // TODO: message
       "The custom plot URL is missing or has invalid inputs.",
       {
         status: 400,
+        // TODO: message
         statusText: "Invalid Plot Configuration",
       },
     );
