@@ -1,7 +1,8 @@
 import { Container } from "@mantine/core";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { BrowserRouter, Route, Routes } from "react-router";
 import CreatePlotPage from "./pages/CreatePlotPage";
 import LandingPage from "./pages/LandingPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import PlotViewPage from "./pages/PlotViewPage";
 
 function App() {
@@ -12,7 +13,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/plot/:plotId" element={<PlotViewPage />} />
           <Route path="/create" element={<CreatePlotPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Container>
     </BrowserRouter>
