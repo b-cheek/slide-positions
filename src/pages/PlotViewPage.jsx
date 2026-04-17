@@ -1,50 +1,55 @@
 import { Button, Stack, Text, Title } from "@mantine/core";
 import { useEffect, useMemo, useRef } from "react";
-import { Link, useLocation, useParams } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import Plotly from "plotly.js-dist";
 import {
   buildPlotFigure,
   getPresetPlotInputs,
   plotInputsSchema,
 } from "../plots";
-import NotFoundPage from "./NotFoundPage";
+
+export function plotViewLoader({ params, request }) {
+  const plotId = params.plotId;
+
+  if (!plotId) {
+    throw new Response("Plot route not found", { status: 404 });
+  }
+
+  if (plotId !== "custom") {
+    const presetInputs = getPresetPlotInputs(plotId);
+    if (!presetInputs) {
+      throw new Response("Plot preset not found", { status: 404 });
+    }
+
+    return { plotId, plotInputs: presetInputs };
+  }
+
+  const url = new URL(request.url);
+  const parsedInputs = plotInputsSchema.safeParse({
+    points: Number(url.searchParams.get("points")),
+  });
+
+  if (!parsedInputs.success) {
+    throw new Response(
+      "The custom plot URL is missing or has invalid inputs.",
+      {
+        status: 400,
+        statusText: "Invalid Plot Configuration",
+      },
+    );
+  }
+
+  return { plotId, plotInputs: parsedInputs.data };
+}
 
 function PlotViewPage() {
-  const { plotId } = useParams();
-  const location = useLocation();
+  const { plotId, plotInputs } = useLoaderData();
   const plotContainerRef = useRef(null);
 
-  const plotInputs = useMemo(() => {
-    if (!plotId) {
-      return null;
-    }
-
-    if (plotId !== "custom") {
-      return getPresetPlotInputs(plotId) ?? null;
-    }
-
-    const queryParams = new URLSearchParams(location.search);
-    const parsedInputs = plotInputsSchema.safeParse({
-      points: Number(queryParams.get("points")),
-    });
-
-    if (!parsedInputs.success) {
-      return null;
-    }
-
-    return parsedInputs.data;
-  }, [location.search, plotId]);
-
-  const figure = useMemo(() => {
-    if (!plotInputs) {
-      return null;
-    }
-
-    return buildPlotFigure(plotInputs);
-  }, [plotInputs]);
+  const figure = useMemo(() => buildPlotFigure(plotInputs), [plotInputs]);
 
   useEffect(() => {
-    if (!plotContainerRef.current || !figure) {
+    if (!plotContainerRef.current) {
       return;
     }
 
@@ -56,10 +61,6 @@ function PlotViewPage() {
       }
     };
   }, [figure]);
-
-  if (!plotInputs) {
-    return <NotFoundPage />;
-  }
 
   return (
     <Stack>

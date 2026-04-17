@@ -1,23 +1,48 @@
-import { Container } from "@mantine/core";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { Container, Text } from "@mantine/core";
+import {
+  Outlet,
+  RouterProvider,
+  createBrowserRouter,
+  useNavigation,
+} from "react-router";
 import CreatePlotPage from "./pages/CreatePlotPage";
 import LandingPage from "./pages/LandingPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import PlotViewPage from "./pages/PlotViewPage";
+import PlotViewErrorBoundary from "./pages/PlotViewErrorBoundary";
+import PlotViewPage, { plotViewLoader } from "./pages/PlotViewPage";
+
+function AppLayout() {
+  const navigation = useNavigation();
+
+  return (
+    <Container py="xl">
+      {navigation.state === "loading" ? (
+        <Text size="sm">Loading...</Text>
+      ) : null}
+      <Outlet />
+    </Container>
+  );
+}
+
+const router = createBrowserRouter([
+  {
+    element: <AppLayout />,
+    children: [
+      { path: "/", element: <LandingPage /> },
+      {
+        path: "/plot/:plotId",
+        loader: plotViewLoader,
+        element: <PlotViewPage />,
+        errorElement: <PlotViewErrorBoundary />,
+      },
+      { path: "/create", element: <CreatePlotPage /> },
+      { path: "*", element: <NotFoundPage /> },
+    ],
+  },
+]);
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Container py="xl">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/plot/:plotId" element={<PlotViewPage />} />
-          <Route path="/create" element={<CreatePlotPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Container>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
