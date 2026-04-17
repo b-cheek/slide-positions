@@ -2,7 +2,12 @@ import { Button, Stack, Text, Title } from "@mantine/core";
 import { useEffect, useMemo, useRef } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import Plotly from "plotly.js-dist";
-import { buildPlotFigure, getPresetPlotInputs } from "../plots";
+import {
+  buildPlotFigure,
+  getPresetPlotInputs,
+  plotInputsSchema,
+} from "../plots";
+import NotFoundPage from "./NotFoundPage";
 
 function PlotViewPage() {
   const { plotId } = useParams();
@@ -10,25 +15,45 @@ function PlotViewPage() {
   const plotContainerRef = useRef(null);
 
   const plotInputs = useMemo(() => {
+    if (!plotId) {
+      return null;
+    }
+
     if (plotId !== "custom") {
-      return getPresetPlotInputs(plotId);
+      return getPresetPlotInputs(plotId) ?? null;
     }
 
     const queryParams = new URLSearchParams(location.search);
-    const pointsFromUrl = Number(queryParams.get("points"));
+    const parsedInputs = plotInputsSchema.safeParse({
+      points: Number(queryParams.get("points")),
+    });
 
-    return { points: Math.floor(pointsFromUrl) };
+    if (!parsedInputs.success) {
+      return null;
+    }
+
+    return parsedInputs.data;
   }, [location.search, plotId]);
 
-  const figure = useMemo(() => buildPlotFigure(plotInputs), [plotInputs]);
+  const figure = useMemo(() => {
+    if (!plotInputs) {
+      return null;
+    }
+
+    return buildPlotFigure(plotInputs);
+  }, [plotInputs]);
 
   useEffect(() => {
-    if (!plotContainerRef.current) {
+    if (!plotContainerRef.current || !figure) {
       return;
     }
 
     Plotly.newPlot(plotContainerRef.current, figure.data, figure.layout);
   }, [figure]);
+
+  if (!plotInputs) {
+    return <NotFoundPage />;
+  }
 
   return (
     <Stack>
