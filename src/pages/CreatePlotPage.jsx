@@ -7,10 +7,6 @@ function CreatePlotPage() {
   const [pointCount, setPointCount] = useState();
 
   const handleCreatePlot = () => {
-    if (!Number.isFinite(pointCount)) {
-      return;
-    }
-
     navigate(`/plot/custom?points=${Math.floor(pointCount)}`);
   };
 

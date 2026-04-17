@@ -10,34 +10,20 @@ function PlotViewPage() {
   const plotContainerRef = useRef(null);
 
   const plotInputs = useMemo(() => {
-    if (!plotId) {
-      return null;
-    }
-
     if (plotId !== "custom") {
-      return getPresetPlotInputs(plotId) ?? null;
+      return getPresetPlotInputs(plotId);
     }
 
     const queryParams = new URLSearchParams(location.search);
     const pointsFromUrl = Number(queryParams.get("points"));
 
-    if (Number.isFinite(pointsFromUrl) && pointsFromUrl > 0) {
-      return { points: Math.floor(pointsFromUrl) };
-    }
-
-    return null;
+    return { points: Math.floor(pointsFromUrl) };
   }, [location.search, plotId]);
 
-  const figure = useMemo(() => {
-    if (!plotInputs) {
-      return null;
-    }
-
-    return buildPlotFigure(plotInputs);
-  }, [plotInputs]);
+  const figure = useMemo(() => buildPlotFigure(plotInputs), [plotInputs]);
 
   useEffect(() => {
-    if (!plotContainerRef.current || !figure) {
+    if (!plotContainerRef.current) {
       return;
     }
 
@@ -48,11 +34,6 @@ function PlotViewPage() {
     <Stack>
       <Title order={2}>Plot View</Title>
       <Text>Viewing plot: {plotId}</Text>
-      {plotInputs ? (
-        <Text>Point count: {plotInputs.points}</Text>
-      ) : (
-        <Text>No plot inputs found for this route.</Text>
-      )}
       <div ref={plotContainerRef} />
       <Button component={Link} to="/">
         Back to Gallery
