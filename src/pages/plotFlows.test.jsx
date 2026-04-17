@@ -8,6 +8,8 @@ import LandingPage from "./LandingPage";
 import PlotViewErrorBoundary from "./PlotViewErrorBoundary";
 import PlotViewPage, { plotViewLoader } from "./PlotViewPage";
 
+// TODO: add tests for example paths, other happy paths?
+
 vi.mock("plotly.js-dist", () => ({
   default: {
     newPlot: vi.fn(),

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { plotInputsSchema } from "./plotInputsSchema";
 
+// TODO: Add tests for unit edge cases
+
 describe("plotInputsSchema", () => {
   it("accepts a valid positive integer", () => {
     const result = plotInputsSchema.safeParse({ points: 12 });

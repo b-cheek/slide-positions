@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildPlotFigure } from "./buildPlotFigure";
 
+// TODO: add random fuzzy tests and check that points, ticks are reasonable
+
 describe("buildPlotFigure", () => {
   it("generates x/y data with the requested number of points", () => {
     const figure = buildPlotFigure({ points: 4 });
