@@ -49,6 +49,12 @@ function PlotViewPage() {
     }
 
     Plotly.newPlot(plotContainerRef.current, figure.data, figure.layout);
+
+    return () => {
+      if (plotContainerRef.current) {
+        Plotly.purge(plotContainerRef.current);
+      }
+    };
   }, [figure]);
 
   if (!plotInputs) {
