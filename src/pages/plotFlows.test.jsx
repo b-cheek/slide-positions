@@ -37,11 +37,16 @@ beforeAll(() => {
 function renderWithRouter(initialEntries) {
   const router = createMemoryRouter(
     [
-      { path: "/", element: <LandingPage /> },
+      {
+        path: "/",
+        element: <LandingPage />,
+        hydrateFallbackElement: <div>Loading...</div>,
+      },
       { path: "/create", element: <CreatePlotPage /> },
       {
         path: "/plot/:plotId",
         loader: plotViewLoader,
+        hydrateFallbackElement: <div>Loading plot...</div>,
         element: <PlotViewPage />,
         errorElement: <PlotViewErrorBoundary />,
       },

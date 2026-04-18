@@ -28,11 +28,13 @@ function AppLayout() {
 const router = createBrowserRouter([
   {
     element: <AppLayout />,
+    hydrateFallbackElement: <Text size="sm">Loading...</Text>,
     children: [
       { path: "/", element: <LandingPage /> },
       {
         path: "/plot/:plotId",
         loader: plotViewLoader,
+        hydrateFallbackElement: <Text size="sm">Loading plot...</Text>,
         element: <PlotViewPage />,
         errorElement: <PlotViewErrorBoundary />,
       },
