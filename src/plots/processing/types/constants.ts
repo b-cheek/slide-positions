@@ -1,8 +1,16 @@
-// TODO: handle units with a library?
+export type Brand<TValue, TUnit extends string> = TValue & {
+  readonly __brand: TUnit;
+};
 
-export const SPEED_OF_SOUND = 343; // m/s at sea level and 20°C
+export type Hertz = Brand<number, "Hertz">;
+export type Meters = Brand<number, "Meters">;
+export type MetersPerSecond = Brand<number, "MetersPerSecond">;
+export type MidiNumber = Brand<number, "MidiNumber">;
+export type Semitones = Brand<number, "SemitoneOffset">;
 
-export const A4_FREQ = 440;
+export const SPEED_OF_SOUND = 343 as MetersPerSecond; // m/s at sea level and 20°C
+
+export const A4_FREQ = 440 as Hertz;
 
 export const NOTE_OFFSETS: Record<string, number> = {
   C: 0,
