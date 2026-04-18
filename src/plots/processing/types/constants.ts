@@ -1,3 +1,5 @@
+export const SPEED_OF_SOUND = 343; // m/s at sea level and 20°C
+
 export const A4_FREQ = 440;
 
 export const NOTE_OFFSETS: Record<string, number> = {

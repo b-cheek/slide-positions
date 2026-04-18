@@ -1,4 +1,4 @@
-import { A4_FREQ, MIDI_LIST, NOTE_OFFSETS } from "./noteConstants";
+import { A4_FREQ, MIDI_LIST, NOTE_OFFSETS } from "./constants";
 
 export class Note {
   public readonly pitchClass: string;
