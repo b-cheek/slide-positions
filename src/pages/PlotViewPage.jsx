@@ -2,49 +2,7 @@ import { Button, Stack, Text, Title } from "@mantine/core";
 import { useEffect, useMemo, useRef } from "react";
 import { Link, useLoaderData } from "react-router";
 import Plotly from "plotly.js-dist";
-import {
-  buildPlotFigure,
-  getPresetPlotInputs,
-  plotInputsSchema,
-} from "../plots";
-
-export function plotViewLoader({ params, request }) {
-  const plotId = params.plotId;
-
-  if (!plotId) {
-    // TODO: message
-    throw new Response("Plot route not found", { status: 404 });
-  }
-
-  if (plotId !== "custom") {
-    const presetInputs = getPresetPlotInputs(plotId);
-    if (!presetInputs) {
-      // TODO: message
-      throw new Response("Plot preset not found", { status: 404 });
-    }
-
-    return { plotId, plotInputs: presetInputs };
-  }
-
-  const url = new URL(request.url);
-  const parsedInputs = plotInputsSchema.safeParse({
-    points: Number(url.searchParams.get("points")),
-  });
-
-  if (!parsedInputs.success) {
-    throw new Response(
-      // TODO: message
-      "The custom plot URL is missing or has invalid inputs.",
-      {
-        status: 400,
-        // TODO: message
-        statusText: "Invalid Plot Configuration",
-      },
-    );
-  }
-
-  return { plotId, plotInputs: parsedInputs.data };
-}
+import { buildPlotFigure } from "../plots";
 
 function PlotViewPage() {
   const { plotId, plotInputs } = useLoaderData();
@@ -53,16 +11,16 @@ function PlotViewPage() {
   const figure = useMemo(() => buildPlotFigure(plotInputs), [plotInputs]);
 
   useEffect(() => {
-    if (!plotContainerRef.current) {
+    const plotContainer = plotContainerRef.current;
+
+    if (!plotContainer) {
       return;
     }
 
-    Plotly.newPlot(plotContainerRef.current, figure.data, figure.layout);
+    Plotly.newPlot(plotContainer, figure.data, figure.layout);
 
     return () => {
-      if (plotContainerRef.current) {
-        Plotly.purge(plotContainerRef.current);
-      }
+      Plotly.purge(plotContainer);
     };
   }, [figure]);
 

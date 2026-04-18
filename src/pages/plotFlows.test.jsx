@@ -6,7 +6,8 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import CreatePlotPage from "./CreatePlotPage";
 import LandingPage from "./LandingPage";
 import PlotViewErrorBoundary from "./PlotViewErrorBoundary";
-import PlotViewPage, { plotViewLoader } from "./PlotViewPage";
+import { plotViewLoader } from "./PlotViewLoader";
+import PlotViewPage from "./PlotViewPage";
 
 // TODO: add tests for example paths, other happy paths?
 

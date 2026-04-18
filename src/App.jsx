@@ -9,7 +9,8 @@ import CreatePlotPage from "./pages/CreatePlotPage";
 import LandingPage from "./pages/LandingPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import PlotViewErrorBoundary from "./pages/PlotViewErrorBoundary";
-import PlotViewPage, { plotViewLoader } from "./pages/PlotViewPage";
+import { plotViewLoader } from "./pages/PlotViewLoader";
+import PlotViewPage from "./pages/PlotViewPage";
 
 function AppLayout() {
   const navigation = useNavigation();
