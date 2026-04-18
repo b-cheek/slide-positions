@@ -7,6 +7,7 @@ export type Meters = Brand<number, "Meters">;
 export type MetersPerSecond = Brand<number, "MetersPerSecond">;
 export type MidiNumber = Brand<number, "MidiNumber">;
 export type Semitones = Brand<number, "SemitoneOffset">;
+export type RelativePosition = Brand<number, "RelativePosition">;
 
 export const SPEED_OF_SOUND = 343 as MetersPerSecond; // m/s at sea level and 20°C
 
