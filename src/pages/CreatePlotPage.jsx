@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { plotInputsSchema } from "../plots";
 
-function CreatePlotPage() {
+export function CreatePlotPage() {
   const navigate = useNavigate();
   const {
     control,
@@ -50,5 +50,3 @@ function CreatePlotPage() {
     </form>
   );
 }
-
-export default CreatePlotPage;

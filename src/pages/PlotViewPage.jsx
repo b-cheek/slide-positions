@@ -4,7 +4,7 @@ import { Link, useLoaderData } from "react-router";
 import Plotly from "plotly.js-dist";
 import { buildPlotFigure } from "../plots";
 
-function PlotViewPage() {
+export function PlotViewPage() {
   const { plotId, plotInputs } = useLoaderData();
   const plotContainerRef = useRef(null);
 
@@ -35,5 +35,3 @@ function PlotViewPage() {
     </Stack>
   );
 }
-
-export default PlotViewPage;

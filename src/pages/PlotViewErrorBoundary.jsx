@@ -1,9 +1,9 @@
 import { Button, Stack, Text, Title } from "@mantine/core";
 import { Link, isRouteErrorResponse, useRouteError } from "react-router";
-import InvalidPlotConfigPage from "./InvalidPlotConfigPage";
-import NotFoundPage from "./NotFoundPage";
+import { InvalidPlotConfigPage } from "./InvalidPlotConfigPage";
+import { NotFoundPage } from "./NotFoundPage";
 
-function PlotViewErrorBoundary() {
+export function PlotViewErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
@@ -27,5 +27,3 @@ function PlotViewErrorBoundary() {
     </Stack>
   );
 }
-
-export default PlotViewErrorBoundary;

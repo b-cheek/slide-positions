@@ -1,7 +1,7 @@
 import { Button, Stack, Text, Title } from "@mantine/core";
 import { Link } from "react-router";
 
-function InvalidPlotConfigPage({ message }) {
+export function InvalidPlotConfigPage({ message }) {
   // TODO: message
   return (
     <Stack>
@@ -15,5 +15,3 @@ function InvalidPlotConfigPage({ message }) {
     </Stack>
   );
 }
-
-export default InvalidPlotConfigPage;

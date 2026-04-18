@@ -1,7 +1,7 @@
 import { Button, Stack, Text, Title } from "@mantine/core";
 import { Link } from "react-router";
 
-function NotFoundPage() {
+export function NotFoundPage() {
   return (
     <Stack>
       <Title order={2}>Page Not Found</Title>
@@ -12,5 +12,3 @@ function NotFoundPage() {
     </Stack>
   );
 }
-
-export default NotFoundPage;

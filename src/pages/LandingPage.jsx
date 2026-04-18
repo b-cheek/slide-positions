@@ -1,7 +1,7 @@
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { Link } from "react-router";
 
-function LandingPage() {
+export function LandingPage() {
   return (
     <Stack>
       <Title order={1}>Plot Gallery</Title>
@@ -17,5 +17,3 @@ function LandingPage() {
     </Stack>
   );
 }
-
-export default LandingPage;

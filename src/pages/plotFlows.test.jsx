@@ -3,11 +3,11 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RouterProvider, createMemoryRouter } from "react-router";
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import CreatePlotPage from "./CreatePlotPage";
-import LandingPage from "./LandingPage";
-import PlotViewErrorBoundary from "./PlotViewErrorBoundary";
+import { CreatePlotPage } from "./CreatePlotPage";
+import { LandingPage } from "./LandingPage";
+import { PlotViewErrorBoundary } from "./PlotViewErrorBoundary";
 import { plotViewLoader } from "./PlotViewLoader";
-import PlotViewPage from "./PlotViewPage";
+import { PlotViewPage } from "./PlotViewPage";
 
 // TODO: add tests for example paths, other happy paths?
 
