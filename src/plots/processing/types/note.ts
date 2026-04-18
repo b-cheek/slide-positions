@@ -21,7 +21,7 @@ export class Note {
     const distFromA4 = this.midiNumValue - 69;
     this.freqValue = A4_FREQ * 2 ** (distFromA4 / 12);
 
-    Object.freeze(this);
+    Object.freeze(this); // TODO: remove?
   }
 
   public get name(): string {
