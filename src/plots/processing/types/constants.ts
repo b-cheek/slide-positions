@@ -32,6 +32,7 @@ export const NOTE_OFFSETS: Record<string, number> = {
   B: 11,
 };
 
+// These will be used as preferred repr of pitch classes
 export const MIDI_LIST = [
   "C",
   "Db",
@@ -46,3 +47,5 @@ export const MIDI_LIST = [
   "Bb",
   "B",
 ];
+
+// TODO: add pitch class enum?
