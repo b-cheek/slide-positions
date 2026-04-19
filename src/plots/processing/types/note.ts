@@ -14,9 +14,11 @@ export class Note {
 
   public readonly adjustment: Semitones;
 
-  private readonly midiNumValue: MidiNumber;
+  public readonly name: string;
 
-  private readonly freqValue: Hertz;
+  public readonly midiNum: MidiNumber;
+
+  public readonly freq: Hertz;
 
   public constructor(
     pitchClass: string,
@@ -27,25 +29,17 @@ export class Note {
     this.octave = octave;
     this.adjustment = adjustment;
 
-    this.midiNumValue = ((this.octave + 1) * 12 +
+    // Compute other properties
+    this.name = `${pitchClass}${octave}`;
+
+    this.midiNum = ((this.octave + 1) * 12 +
       NOTE_OFFSETS[this.pitchClass] +
       this.adjustment) as MidiNumber;
-    const distFromA4 = this.midiNumValue - 69;
-    this.freqValue = (A4_FREQ * 2 ** (distFromA4 / 12)) as Hertz;
+    const distFromA4 = this.midiNum - 69;
 
-    Object.freeze(this); // TODO: remove?
-  }
+    this.freq = (A4_FREQ * 2 ** (distFromA4 / 12)) as Hertz;
 
-  public get name(): string {
-    return `${this.pitchClass}${this.octave}`;
-  }
-
-  public get midi_num(): MidiNumber {
-    return this.midiNumValue;
-  }
-
-  public get freq(): Hertz {
-    return this.freqValue;
+    Object.freeze(this);
   }
 
   public static fromSciNotation(note: string): Note {
