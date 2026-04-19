@@ -1,5 +1,12 @@
-import { Hertz, Meters } from "./constants";
+import type {
+  AbsolutePosition,
+  Hertz,
+  Meters,
+  RelativePosition,
+} from "./constants";
 import { Tuning } from "./tuning";
+import { Player } from "./player";
+import { Trombone } from "./trombone";
 
 export class NoteConfiguration {
   public readonly tuning: Tuning;
@@ -17,5 +24,24 @@ export class NoteConfiguration {
     this.slideDistance = slideDistance;
     this.partial = partial;
     this.lip_bend_hz = lip_bend_hz;
+  }
+
+  public getSlidePosition(player: Player): RelativePosition {
+    // Not simplifying for readability
+    return (Math.log2(
+      (this.tuning.length + this.slideDistance) /
+        (this.tuning.length + player.first_pos_distance),
+    ) *
+      12 +
+      1) as RelativePosition;
+  }
+
+  public getOpenPosition(player: Player, trombone: Trombone): AbsolutePosition {
+    const openLen = trombone.tunings[0].length;
+    return (Math.log2(
+      (openLen + this.slideDistance) / (openLen + player.first_pos_distance),
+    ) *
+      12 +
+      1) as AbsolutePosition;
   }
 }
