@@ -30,7 +30,7 @@ export class NoteConfiguration {
     // Not simplifying for readability
     return (Math.log2(
       (this.tuning.length + this.slideDistance) /
-        (this.tuning.length + player.first_pos_distance),
+        (this.tuning.length + player.firstPosDistance),
     ) *
       12 +
       1) as RelativePosition;
@@ -39,7 +39,7 @@ export class NoteConfiguration {
   public getOpenPosition(player: Player, trombone: Trombone): AbsolutePosition {
     const openLen = trombone.tunings[0].length;
     return (Math.log2(
-      (openLen + this.slideDistance) / (openLen + player.first_pos_distance),
+      (openLen + this.slideDistance) / (openLen + player.firstPosDistance),
     ) *
       12 +
       1) as AbsolutePosition;
