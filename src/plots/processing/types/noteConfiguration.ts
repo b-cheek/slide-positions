@@ -5,7 +5,7 @@ export class NoteConfiguration {
   public readonly tuning: Tuning;
   public readonly slideDistance: Meters;
   public readonly partial: number;
-  public readonly lip_bend_hz: Hertz;
+  public readonly lip_bend_hz: Hertz; // Change to cents?
 
   public constructor(
     tuning: Tuning,
