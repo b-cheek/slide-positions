@@ -5,11 +5,18 @@ import { Note } from "./note";
 import { NoteConfiguration } from "./noteConfiguration";
 import { freqToLength, lengthToFreq } from "../utils";
 
+const DEFAULT_SLIDE_LENGTH = (freqToLength(Note.fromSciNotation("E1").freq) -
+  freqToLength(Note.fromSciNotation("Bb1").freq)) as Meters;
+const DEFAULT_TUNINGS = [Tuning.fromPitchClass("Bb")];
+
 export class Trombone {
   public readonly tunings: Tuning[];
   public readonly slideLength: Meters;
 
-  public constructor(tunings: Tuning[], slideLength: Meters) {
+  public constructor(
+    tunings: Tuning[] = DEFAULT_TUNINGS,
+    slideLength: Meters = DEFAULT_SLIDE_LENGTH,
+  ) {
     this.tunings = tunings;
     this.slideLength = slideLength;
   }
