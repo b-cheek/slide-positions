@@ -28,7 +28,7 @@ export class Trombone {
       );
       const maxFreq = lengthToFreq(tuning.length);
       const minPartial = Math.ceil(note.freq / maxFreq);
-      const maxPartial = Math.floor(note.freq / minFreq);
+      const maxPartial = Math.ceil((note.freq + player.lipBendRange) / minFreq);
 
       if (maxPartial < minPartial) {
         return [];
