@@ -15,16 +15,17 @@ export class Tuning {
   }
 
   public static fromPitchClass(pitchClass: string): Tuning {
-    const match = pitchClass.match(/(\d*)([+-]?\d+\.?\d*)$/);
+    const match = pitchClass.match(/(\d*)([+-]\d+\.?\d*)?$/);
 
     let octave = "1";
     let adjustment = 0 as Semitones;
     let basePitchClass = pitchClass;
 
-    if (match && match.index !== undefined) {
+    // Check that match exists and is not empty
+    if (match && match[0]) {
       basePitchClass = pitchClass.slice(0, match.index);
       octave = match[1] || "1";
-      adjustment = (Number(match[2]) / 100) as Semitones;
+      adjustment = (match[2] || 0 / 100) as Semitones;
     }
 
     const note = Note.fromSciNotation(`${basePitchClass}${octave}`);

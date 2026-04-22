@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Note } from "./note";
 import { Player } from "./player";
 import { Trombone } from "./trombone";
+import { Tuning } from "./tuning";
 
 describe("Trombone.getNoteConfigs", () => {
   // Test defaults (Bb trombone 7 slide pos, no lip bend or first pos distance)
@@ -81,5 +82,33 @@ describe("Trombone.getNoteConfigs", () => {
     expect(seventhPosConfig.partial).toBe(7);
     expect(fourthPosConfig.getSlidePosition(player)).toBeCloseTo(4.02, 2);
     expect(seventhPosConfig.getSlidePosition(player)).toBeCloseTo(6.69, 2);
+  });
+
+  // Test a different fundamental, Eb2 for alto trombone
+  // Basic fundamental test
+  it("Eb2 is in first position on an Eb alto trombone", () => {
+    const ebTrombone = new Trombone([Tuning.fromPitchClass("Eb2")]);
+    const player = new Player();
+    const note = Note.fromSciNotation("Eb2");
+
+    const configs = ebTrombone.getNoteConfigs(note, player);
+
+    expect(configs).toHaveLength(1);
+    expect(configs[0].slideDistance).toBe(0);
+    expect(configs[0].partial).toBe(1);
+    expect(configs[0].getSlidePosition(player)).toBe(1);
+  });
+
+  // Test a different (2nd) position
+  it("D2 can be played in 2nd position on an Eb alto trombone", () => {
+    const ebTrombone = new Trombone([Tuning.fromPitchClass("Eb2")]);
+    const player = new Player();
+    const note = Note.fromSciNotation("D2");
+
+    const configs = ebTrombone.getNoteConfigs(note, player);
+
+    expect(configs).toHaveLength(1);
+    expect(configs[0].partial).toBe(1);
+    expect(configs[0].getSlidePosition(player)).toBeCloseTo(2, 2);
   });
 });
