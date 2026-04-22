@@ -111,4 +111,7 @@ describe("Trombone.getNoteConfigs", () => {
     expect(configs[0].partial).toBe(1);
     expect(configs[0].getSlidePosition(player)).toBeCloseTo(2, 2);
   });
+
+  // TODO: test 2 and 3 tunings
+  // TODO: test lip bend and first pos distance
 });
