@@ -31,6 +31,6 @@ export class Tuning {
     const length = (freqToLength(note.freq) *
       2 ** (-adjustment / 12)) as Meters;
 
-    return new Tuning(length, `${basePitchClass} valve`);
+    return new Tuning(length, `${basePitchClass} tuning`);
   }
 }
