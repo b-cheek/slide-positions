@@ -4,7 +4,7 @@ import {
   NOTE_OFFSETS,
   type Hertz,
   type MidiNumber,
-  type Semitones,
+  type Cents,
 } from "./constants";
 
 export class Note {
@@ -12,7 +12,7 @@ export class Note {
 
   public readonly octave: number;
 
-  public readonly adjustment: Semitones;
+  public readonly adjustment: Cents;
 
   public readonly name: string;
 
@@ -23,7 +23,7 @@ export class Note {
   public constructor(
     pitchClass: string,
     octave: number,
-    adjustment = 0 as Semitones,
+    adjustment = 0 as Cents,
   ) {
     this.pitchClass = pitchClass;
     this.octave = octave;
@@ -34,7 +34,7 @@ export class Note {
 
     this.midiNum = ((this.octave + 1) * 12 +
       NOTE_OFFSETS[this.pitchClass] +
-      this.adjustment) as MidiNumber;
+      this.adjustment / 100) as MidiNumber;
     const distFromA4 = this.midiNum - 69;
 
     this.freq = (A4_FREQ * 2 ** (distFromA4 / 12)) as Hertz;
@@ -43,13 +43,13 @@ export class Note {
   }
 
   public static fromSciNotation(note: string): Note {
-    const match = note.match(/(\d+)([+-]?\d+\.?\d*)$/);
+    const match = note.match(/(\d+)([+-]\d+\.?\d*)?$/);
 
     if (match && match.index !== undefined) {
       return new Note(
         note.slice(0, match.index),
-        Number.parseInt(match[1], 10),
-        (Number(match[2]) / 100) as Semitones,
+        Number.parseInt(match[1]),
+        (match[2] ? Number(match[2]) : 0) as Cents,
       );
     }
 
@@ -58,7 +58,7 @@ export class Note {
 
   public static fromMidiNum(midiNum: MidiNumber): Note {
     const integerPart = Math.floor(midiNum);
-    const adjustment = (midiNum - integerPart) as Semitones;
+    const adjustment = ((midiNum - integerPart) * 100) as Cents;
 
     return new Note(
       MIDI_LIST[integerPart % 12],
