@@ -5,9 +5,10 @@ import { Note } from "./note";
 import { NoteConfiguration } from "./noteConfiguration";
 import { freqToLength, lengthToFreq } from "../utils";
 
+// TODO: vary default slide length depending on open freq
 const DEFAULT_SLIDE_LENGTH = (freqToLength(Note.fromSciNotation("E1").freq) -
   freqToLength(Note.fromSciNotation("Bb1").freq)) as Meters;
-const DEFAULT_TUNINGS = [Tuning.fromPitchClass("Bb")];
+const DEFAULT_TUNINGS = [Tuning.fromPitchClassOrPitch("Bb")];
 
 export class Trombone {
   public readonly tunings: Tuning[];

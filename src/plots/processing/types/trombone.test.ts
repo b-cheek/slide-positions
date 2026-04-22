@@ -87,7 +87,7 @@ describe("Trombone.getNoteConfigs", () => {
   // Test a different fundamental, Eb2 for alto trombone
   // Basic fundamental test
   it("Eb2 is in first position on an Eb alto trombone", () => {
-    const ebTrombone = new Trombone([Tuning.fromPitchClass("Eb2")]);
+    const ebTrombone = new Trombone([Tuning.fromPitchClassOrPitch("Eb2")]);
     const player = new Player();
     const note = Note.fromSciNotation("Eb2");
 
@@ -101,7 +101,7 @@ describe("Trombone.getNoteConfigs", () => {
 
   // Test a different (2nd) position
   it("D2 can be played in 2nd position on an Eb alto trombone", () => {
-    const ebTrombone = new Trombone([Tuning.fromPitchClass("Eb2")]);
+    const ebTrombone = new Trombone([Tuning.fromPitchClassOrPitch("Eb2")]);
     const player = new Player();
     const note = Note.fromSciNotation("D2");
 

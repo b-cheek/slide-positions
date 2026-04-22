@@ -15,7 +15,7 @@ export class Tuning {
   }
 
   // TODO: rename since can take true pitch
-  public static fromPitchClass(pitchClass: string): Tuning {
+  public static fromPitchClassOrPitch(pitchClass: string): Tuning {
     const match = pitchClass.match(/(\d*)([+-]\d+\.?\d*)?$/);
 
     let octave = "1";
