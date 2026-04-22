@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { MidiNumber } from "./constants";
+import { A4_FREQ } from "./constants";
 import { Note } from "./note";
 
 describe("Note factories", () => {
@@ -18,7 +19,7 @@ describe("Note factories", () => {
 
     expect(note.adjustment).toBe(0.5);
     expect(note.midiNum).toBe(69.5);
-    expect(note.freq).toBeCloseTo(440 * 2 ** (0.5 / 12), 8);
+    expect(note.freq).toBeCloseTo(A4_FREQ * 2 ** (0.5 / 12), 8);
   });
 
   it("fromMidiNum builds expected pitch for an integer midi value", () => {
@@ -27,7 +28,7 @@ describe("Note factories", () => {
     expect(note.pitchClass).toBe("A");
     expect(note.octave).toBe(4);
     expect(note.adjustment).toBe(0);
-    expect(note.freq).toBeCloseTo(440, 8);
+    expect(note.freq).toBeCloseTo(A4_FREQ, 8);
   });
 
   it("fromMidiNum preserves fractional midi adjustment", () => {
@@ -35,6 +36,6 @@ describe("Note factories", () => {
 
     expect(note.pitchClass).toBe("C");
     expect(note.octave).toBe(4);
-    expect(note.adjustment).toBeCloseTo(0.25, 8);
+    expect(note.adjustment).toBe(0.25);
   });
 });
