@@ -17,7 +17,7 @@ describe("Note factories", () => {
   it("fromSciNotation parses signed cent adjustment", () => {
     const note = Note.fromSciNotation("A4+50");
 
-    expect(note.adjustment).toBe(0.5);
+    expect(note.adjustment).toBe(50);
     expect(note.midiNum).toBe(69.5);
     expect(note.freq).toBeCloseTo(A4_FREQ * 2 ** (0.5 / 12), 8);
   });
@@ -36,6 +36,6 @@ describe("Note factories", () => {
 
     expect(note.pitchClass).toBe("C");
     expect(note.octave).toBe(4);
-    expect(note.adjustment).toBe(0.25);
+    expect(note.adjustment).toBe(25);
   });
 });
