@@ -49,4 +49,8 @@ export class NoteConfiguration {
       12 +
       1) as AbsolutePosition;
   }
+
+  public get graphPoint(): [Meters, MidiNumber] {
+    return [this.slideDistance, this.note.midiNum];
+  }
 }
