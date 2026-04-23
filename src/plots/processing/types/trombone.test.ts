@@ -112,6 +112,66 @@ describe("Trombone.getNoteConfigs", () => {
     expect(configs[0].getSlidePosition(player)).toBeCloseTo(2, 2);
   });
 
-  // TODO: test 2 and 3 tunings
+  // 2 tunings
+  // Basic note
+  it("C3 can be played in position 1.02 on a Bb/F trombone", () => {
+    const trombone = new Trombone([
+      Tuning.fromPitchClassOrPitch("Bb"),
+      Tuning.fromPitchClassOrPitch("F"),
+    ]);
+    const player = new Player();
+    const note = Note.fromSciNotation("C3");
+
+    const configs = trombone.getNoteConfigs(note, player);
+
+    expect(configs).toHaveLength(2);
+    const sixthPosConfig = configs[0];
+    const firstPosConfig = configs[1];
+
+    expect(sixthPosConfig.partial).toBe(3);
+    expect(firstPosConfig.partial).toBe(3);
+
+    const relativeFirstPos = firstPosConfig.getSlidePosition(player);
+
+    expect(sixthPosConfig.getSlidePosition(player)).toBeCloseTo(6.02, 2);
+    expect(relativeFirstPos).toBeCloseTo(1.02, 2);
+
+    // Check that open pos is slightly longer
+    expect(relativeFirstPos).toBeLessThan(
+      firstPosConfig.getOpenPosition(player, trombone),
+    );
+  });
+
+  // note that was previously inaccessible
+  it("B2 is accessible on a Bb/F trombone", () => {
+    const trombone = new Trombone([
+      Tuning.fromPitchClassOrPitch("Bb"),
+      Tuning.fromPitchClassOrPitch("F"),
+    ]);
+    const player = new Player();
+    const note = Note.fromSciNotation("B2");
+
+    const configs = trombone.getNoteConfigs(note, player);
+    expect(configs).toHaveLength(1);
+    const config = configs[0];
+    expect(config.partial).toBe(3);
+    expect(config.getSlidePosition(player)).toBeCloseTo(2.02, 2);
+  });
+
+  // note that is still inacessible
+  it("C2 is still inacessible on a Bb/F trombone", () => {
+    const trombone = new Trombone([
+      Tuning.fromPitchClassOrPitch("Bb"),
+      Tuning.fromPitchClassOrPitch("F"),
+    ]);
+    const player = new Player();
+    const note = Note.fromSciNotation("C2");
+
+    const configs = trombone.getNoteConfigs(note, player);
+    expect(configs).toHaveLength(0);
+  });
+
+  // TODO: test 3 tunings
+
   // TODO: test lip bend and first pos distance
 });
