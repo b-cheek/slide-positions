@@ -3,6 +3,7 @@ import { Note } from "./note";
 import { Player } from "./player";
 import { Trombone } from "./trombone";
 import { Tuning } from "./tuning";
+import { Hertz } from "../..";
 
 describe("Trombone.getNoteConfigs", () => {
   // Test defaults (Bb trombone 7 slide pos, no lip bend or first pos distance)
@@ -161,7 +162,31 @@ describe("Trombone.getNoteConfigs", () => {
     expect(configs).toHaveLength(0);
   });
 
-  // TODO: test 3 tunings
+  // Test lip bend
+  const playerWithLipBend = new Player(20 as Hertz);
+  // previously inaccessible note
+  it("B2 is accesible on a Bb/F trombone with lip bend", () => {
+    const note = Note.fromSciNotation("B1");
 
-  // TODO: test lip bend and first pos distance
+    const configs = tromboneBbF.getNoteConfigs(note, playerWithLipBend);
+    expect(configs).toHaveLength(1);
+    const config = configs[0];
+    expect(config.partial).toBe(2);
+    // Check that slide is maxed out
+    expect(config.slideDistance).toBe(tromboneBbF.slideLength);
+    expect(config.lipBendCents).toBeGreaterThan(0);
+  });
+
+  // Test that lip bend only applied when necessary
+  it("C3 does not require lip bend on a Bb trombone", () => {
+    const note = Note.fromSciNotation("C3");
+
+    const configs = defaultTrombone.getNoteConfigs(note, playerWithLipBend);
+    expect(configs).toHaveLength(1);
+    const config = configs[0];
+    expect(config.partial).toBe(3);
+    expect(config.slideDistance).toBeLessThan(defaultTrombone.slideLength);
+    expect(config.getSlidePosition(playerWithLipBend)).toBeCloseTo(6.02, 2);
+    expect(config.lipBendCents).toBe(0);
+  });
 });
