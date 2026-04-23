@@ -38,4 +38,12 @@ describe("Note factories", () => {
     expect(note.octave).toBe(4);
     expect(note.adjustment).toBe(25);
   });
+
+  it("handles adjustment of 0 correctly", () => {
+    const note = Note.fromSciNotation("A4+0");
+
+    expect(note.adjustment).toBe(0);
+    expect(note.midiNum).toBe(69);
+    expect(note.freq).toBeCloseTo(A4_FREQ, 8);
+  });
 });

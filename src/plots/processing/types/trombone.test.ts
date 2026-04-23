@@ -24,6 +24,25 @@ describe("Trombone.tuneFromTrombone", () => {
     // Check that slide length is unchanged
     expect(tunedTrombone.slideLength).toBe(originalTrombone.slideLength);
   });
+
+  // Test that a first pos distance of 0 does not change the tunings
+  it("does not change tunings if player has no first pos distance", () => {
+    const player = new Player(0 as Hertz, 0 as Meters);
+    const originalTrombone = new Trombone();
+
+    const tunedTrombone = Trombone.tuneFromTrombone(player, originalTrombone);
+
+    expect(tunedTrombone.tunings).toHaveLength(1);
+    expect(tunedTrombone.tunings[0].length).toBeCloseTo(
+      originalTrombone.tunings[0].length,
+      10,
+    );
+    expect(tunedTrombone.tunings[0].name).toBe(
+      originalTrombone.tunings[0].name,
+    );
+    // Check that slide length is unchanged
+    expect(tunedTrombone.slideLength).toBe(originalTrombone.slideLength);
+  });
 });
 
 describe("Trombone.getNoteConfigs", () => {

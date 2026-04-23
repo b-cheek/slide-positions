@@ -33,4 +33,11 @@ describe("Tuning.fromPitchClassOrPitch", () => {
 
     expect(tuning.length).toBe(expected);
   });
+
+  it("handles adjustment of 0 correctly", () => {
+    const tuning = Tuning.fromPitchClassOrPitch("F2+0");
+    const expected = freqToLength(new Note("F", 2, 0 as Cents).freq);
+
+    expect(tuning.length).toBe(expected);
+  });
 });
