@@ -22,6 +22,20 @@ export class Trombone {
     this.slideLength = slideLength;
   }
 
+  // Perhaps I could unfreeze the trombone class, but I think this is cleaner for now
+  public static tuneFromTrombone(player: Player, trombone: Trombone): Trombone {
+    return new Trombone(
+      trombone.tunings.map(
+        (tuning) =>
+          new Tuning(
+            (tuning.length - player.firstPosDistance) as Meters,
+            tuning.name,
+          ),
+      ),
+      trombone.slideLength,
+    );
+  }
+
   public getNoteConfigs(note: Note, player: Player): NoteConfiguration[] {
     return this.tunings.flatMap((tuning) => {
       const minFreq = lengthToFreq(
