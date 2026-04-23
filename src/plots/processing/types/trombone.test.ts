@@ -3,7 +3,28 @@ import { Note } from "./note";
 import { Player } from "./player";
 import { Trombone } from "./trombone";
 import { Tuning } from "./tuning";
-import { Hertz } from "../..";
+import { Hertz, Meters } from "../..";
+
+describe("Trombone.tuneFromTrombone", () => {
+  it("adjusts tunings based on player first pos distance", () => {
+    const firstPosDistance = 0.001 as Meters;
+    const player = new Player(0 as Hertz, firstPosDistance);
+    const originalTrombone = new Trombone();
+
+    const tunedTrombone = Trombone.tuneFromTrombone(player, originalTrombone);
+
+    expect(tunedTrombone.tunings).toHaveLength(1);
+    expect(tunedTrombone.tunings[0].length).toBeCloseTo(
+      (originalTrombone.tunings[0].length - firstPosDistance) as Meters,
+      10,
+    );
+    expect(tunedTrombone.tunings[0].name).toBe(
+      originalTrombone.tunings[0].name,
+    );
+    // Check that slide length is unchanged
+    expect(tunedTrombone.slideLength).toBe(originalTrombone.slideLength);
+  });
+});
 
 describe("Trombone.getNoteConfigs", () => {
   // Test defaults (Bb trombone 7 slide pos, no lip bend or first pos distance)
@@ -188,5 +209,59 @@ describe("Trombone.getNoteConfigs", () => {
     expect(config.slideDistance).toBeLessThan(defaultTrombone.slideLength);
     expect(config.getSlidePosition(playerWithLipBend)).toBeCloseTo(6.02, 2);
     expect(config.lipBendCents).toBe(0);
+  });
+
+  // Test first pos distance
+  const firstPosDistance = 0.001 as Meters;
+  const playerWithFirstPosDistance = new Player(0 as Hertz, firstPosDistance);
+  const tunedDefaultTrombone = Trombone.tuneFromTrombone(
+    playerWithFirstPosDistance,
+    defaultTrombone,
+  );
+
+  // Test basic note in first pos
+  it("Bb2 is in first position on a Bb trombone with first pos distance", () => {
+    const note = Note.fromSciNotation("Bb2");
+
+    const configs = tunedDefaultTrombone.getNoteConfigs(
+      note,
+      playerWithFirstPosDistance,
+    );
+
+    expect(configs).toHaveLength(1);
+    const config = configs[0];
+    expect(config.slideDistance).toBeCloseTo(firstPosDistance, 10);
+    expect(config.partial).toBe(2);
+    expect(config.getSlidePosition(playerWithFirstPosDistance)).toBe(1);
+  });
+
+  // Test that non first pos notes maintain position
+  it("C3 is still in 6th position on a Bb trombone with first pos distance", () => {
+    const note = Note.fromSciNotation("C3");
+
+    const configs = tunedDefaultTrombone.getNoteConfigs(
+      note,
+      playerWithFirstPosDistance,
+    );
+
+    expect(configs).toHaveLength(1);
+    const config = configs[0];
+    expect(config.partial).toBe(3);
+    expect(config.getSlidePosition(playerWithFirstPosDistance)).toBeCloseTo(
+      6.02,
+      2,
+    );
+  });
+
+  // Test that a previously accessible note could become inaccessible
+  it("E2 can not be played on a default trombone with first pos distance", () => {
+    const note = Note.fromSciNotation("E2");
+
+    const configs = tunedDefaultTrombone.getNoteConfigs(
+      note,
+      playerWithFirstPosDistance,
+    );
+
+    expect(configs).toHaveLength(0);
   });
 });
