@@ -2,24 +2,29 @@ import type {
   AbsolutePosition,
   Cents,
   Meters,
+  MidiNumber,
   RelativePosition,
 } from "./constants";
+import { Note } from "./note";
 import { Tuning } from "./tuning";
 import { Player } from "./player";
 import { Trombone } from "./trombone";
 
 export class NoteConfiguration {
+  public readonly note: Note;
   public readonly tuning: Tuning;
   public readonly slideDistance: Meters;
   public readonly partial: number;
   public readonly lipBendCents: Cents; // Change to cents?
 
   public constructor(
+    note: Note,
     tuning: Tuning,
     slideDistance: Meters,
     partial: number,
     lipBendCents: Cents,
   ) {
+    this.note = note;
     this.tuning = tuning;
     this.slideDistance = slideDistance;
     this.partial = partial;

@@ -62,6 +62,7 @@ export class Trombone {
         if (requiredSlideDistance <= this.slideLength) {
           return [
             new NoteConfiguration(
+              note,
               tuning,
               requiredSlideDistance,
               partial,
@@ -84,6 +85,7 @@ export class Trombone {
           Math.log2(maxSlideNoteFreq / note.freq)) as Cents;
         return [
           new NoteConfiguration(
+            note,
             tuning,
             this.slideLength,
             partial,
