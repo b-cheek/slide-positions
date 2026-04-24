@@ -1,7 +1,7 @@
 export type PlotFigure = {
   data: Array<{
+    mode: "markers";
     type: "scatter";
-    mode: "lines+markers";
     x: number[];
     y: number[];
     name: string;

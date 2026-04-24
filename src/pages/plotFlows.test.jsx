@@ -75,9 +75,24 @@ describe("plot user flows", () => {
     const user = userEvent.setup();
     renderWithRouter(["/create"]);
 
-    const input = screen.getByLabelText(/Point count/i);
-    await user.clear(input);
-    await user.type(input, "12");
+    const notesInput = screen.getByLabelText(/Notes/);
+    await user.clear(notesInput);
+    await user.type(notesInput, "Bb2 C3 D4");
+    const valvesInput = screen.getByLabelText(/Tunings/);
+    await user.clear(valvesInput);
+    await user.type(valvesInput, "Bb/F");
+    const topSlideNoteInput = screen.getByLabelText(/Top Slide Note/);
+    await user.clear(topSlideNoteInput);
+    await user.type(topSlideNoteInput, "Bb1");
+    const bottomSlideNoteInput = screen.getByLabelText(/Bottom Slide Note/);
+    await user.clear(bottomSlideNoteInput);
+    await user.type(bottomSlideNoteInput, "E1");
+    const lipBendStartNoteInput = screen.getByLabelText(/Lip Bend Start Note/);
+    await user.clear(lipBendStartNoteInput);
+    await user.type(lipBendStartNoteInput, "Bb1");
+    const lipBendStopNoteInput = screen.getByLabelText(/Lip Bend Stop Note/);
+    await user.clear(lipBendStopNoteInput);
+    await user.type(lipBendStopNoteInput, "F1");
     await user.click(screen.getByRole("button", { name: "Create Plot" }));
 
     expect(await screen.findByText("Viewing plot: custom")).toBeTruthy();

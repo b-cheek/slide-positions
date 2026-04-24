@@ -5,12 +5,12 @@ import {
   createBrowserRouter,
   useNavigation,
 } from "react-router";
-import CreatePlotPage from "./pages/CreatePlotPage";
-import LandingPage from "./pages/LandingPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import PlotViewErrorBoundary from "./pages/PlotViewErrorBoundary";
+import { CreatePlotPage } from "./pages/CreatePlotPage";
+import { LandingPage } from "./pages/LandingPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { PlotViewErrorBoundary } from "./pages/PlotViewErrorBoundary";
 import { plotViewLoader } from "./pages/PlotViewLoader";
-import PlotViewPage from "./pages/PlotViewPage";
+import { PlotViewPage } from "./pages/PlotViewPage";
 
 function AppLayout() {
   const navigation = useNavigation();

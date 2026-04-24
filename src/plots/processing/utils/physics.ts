@@ -1,5 +1,5 @@
-import { SPEED_OF_SOUND } from "./types/constants";
-import type { Hertz, Meters } from "./types/constants";
+import { SPEED_OF_SOUND } from "../types/constants";
+import type { Hertz, Meters } from "../types/constants";
 
 export function freqToLength(freq: Hertz): Meters {
   // in a tube open at both ends (trombone)

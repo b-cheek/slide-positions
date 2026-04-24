@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Hertz, Meters } from "./types/constants";
-import { lengthToFreq, freqToLength } from "./utils/physics";
+import type { Hertz, Meters } from "../types/constants";
+import { lengthToFreq, freqToLength } from "./physics";
 
 describe("processing utils", () => {
   it("computes expected tube length for 440 Hz", () => {

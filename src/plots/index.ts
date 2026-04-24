@@ -1,4 +1,4 @@
-export { buildPlotFigure } from "./processing/buildPlotFigure";
+export { buildPlotFigure } from "./processing/utils/buildPlotFigure";
 export { getPresetPlotInputs } from "./presets/presetPlotInputs";
 export { plotInputsSchema } from "./types/plotInputsSchema";
 export type { PlotFigure } from "./types/plotFigure";

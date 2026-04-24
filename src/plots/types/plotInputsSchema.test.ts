@@ -4,21 +4,20 @@ import { plotInputsSchema } from "./plotInputsSchema";
 // TODO: Add tests for unit edge cases
 
 describe("plotInputsSchema", () => {
-  it("accepts a valid positive integer", () => {
-    const result = plotInputsSchema.safeParse({ points: 12 });
+  it("parses valid input", () => {
+    const input = {
+      notesString: "Bb1, C2, D2",
+      valvesString: "Bb, C, D",
+      topSlideNote: "Bb1",
+      bottomSlideNote: "E1",
+      lipBendStartNote: "Bb1",
+      lipBendStopNote: "A1",
+    };
+
+    const result = plotInputsSchema.safeParse(input);
     expect(result.success).toBe(true);
   });
 
-  it("rejects zero and negatives", () => {
-    const zero = plotInputsSchema.safeParse({ points: 0 });
-    const negative = plotInputsSchema.safeParse({ points: -2 });
-
-    expect(zero.success).toBe(false);
-    expect(negative.success).toBe(false);
-  });
-
-  it("rejects non-integers", () => {
-    const result = plotInputsSchema.safeParse({ points: 1.5 });
-    expect(result.success).toBe(false);
-  });
+  // TODO (and many more)
+  // it("rejects invalid input", () => {});
 });

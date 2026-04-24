@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Note } from "./note";
 import { Tuning } from "./tuning";
-import { freqToLength } from "../utils";
+import { freqToLength } from "../utils/physics";
 import { Cents } from "./constants";
 
 describe("Tuning.fromPitchClassOrPitch", () => {

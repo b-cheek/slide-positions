@@ -1,7 +1,7 @@
 import { Note } from "./note";
 import type { Meters, Semitones, Cents } from "./constants";
 
-import { freqToLength } from "../utils";
+import { freqToLength } from "../utils/physics";
 
 export class Tuning {
   public readonly length: Meters;

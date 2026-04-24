@@ -3,7 +3,7 @@ import type { Cents, Hertz, Meters } from "./constants";
 import { Player } from "./player";
 import { Note } from "./note";
 import { NoteConfiguration } from "./noteConfiguration";
-import { freqToLength, lengthToFreq } from "../utils";
+import { freqToLength, lengthToFreq } from "../utils/physics";
 
 // TODO: vary default slide length depending on open freq
 const DEFAULT_SLIDE_LENGTH = (freqToLength(Note.fromSciNotation("E1").freq) -

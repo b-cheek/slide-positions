@@ -20,7 +20,12 @@ export function plotViewLoader({ params, request }) {
 
   const url = new URL(request.url);
   const parsedInputs = plotInputsSchema.safeParse({
-    points: Number(url.searchParams.get("points")),
+    notesString: url.searchParams.get("notesString") ?? undefined,
+    valvesString: url.searchParams.get("valvesString") ?? undefined,
+    topSlideNote: url.searchParams.get("topSlideNote") ?? undefined,
+    bottomSlideNote: url.searchParams.get("bottomSlideNote") ?? undefined,
+    lipBendStartNote: url.searchParams.get("lipBendStartNote") ?? undefined,
+    lipBendStopNote: url.searchParams.get("lipBendStopNote") ?? undefined,
   });
 
   if (!parsedInputs.success) {
