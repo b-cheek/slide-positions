@@ -2,7 +2,7 @@ import { Button, Stack, Text, TextInput, Title } from "@mantine/core";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { plotInputsSchema } from "../plots";
+import { plotInputsRawSchema } from "../plots/types/plotInputsSchema";
 
 export function CreatePlotPage() {
   const navigate = useNavigate();
@@ -13,15 +13,15 @@ export function CreatePlotPage() {
   } = useForm({
     defaultValues: {
       notesString: "Bb2 C3 D4",
-      valvesString: "Bb/F",
-      topSlideNote: "Bb1",
-      bottomSlideNote: "E1",
-      lipBendStartNote: "Bb1",
-      lipBendStopNote: "F1",
+      valvesString: "",
+      topSlideNote: "",
+      bottomSlideNote: "",
+      lipBendStartNote: "",
+      lipBendStopNote: "",
     },
     mode: "onChange",
     reValidateMode: "onChange",
-    resolver: zodResolver(plotInputsSchema),
+    resolver: zodResolver(plotInputsRawSchema),
   });
 
   const handleCreatePlot = (values) => {
@@ -33,7 +33,9 @@ export function CreatePlotPage() {
     <form onSubmit={handleSubmit(handleCreatePlot)}>
       <Stack>
         <Title order={2}>Create Plot</Title>
-        <Text>Configure notes, trombone tuning, and player limits.</Text>
+        <Text>
+          Enter notes. Trombone and player defaults are applied automatically.
+        </Text>
         <TextInput
           label="Notes"
           withAsterisk
@@ -41,32 +43,32 @@ export function CreatePlotPage() {
           {...register("notesString")}
         />
         <TextInput
-          label="Tunings"
-          withAsterisk
+          label="Tunings (optional)"
+          placeholder="Bb/F"
           error={errors.valvesString?.message}
           {...register("valvesString")}
         />
         <TextInput
-          label="Top Slide Note"
-          withAsterisk
+          label="Top Slide Note (optional)"
+          placeholder="Bb1"
           error={errors.topSlideNote?.message}
           {...register("topSlideNote")}
         />
         <TextInput
-          label="Bottom Slide Note"
-          withAsterisk
+          label="Bottom Slide Note (optional)"
+          placeholder="E1"
           error={errors.bottomSlideNote?.message}
           {...register("bottomSlideNote")}
         />
         <TextInput
-          label="Lip Bend Start Note"
-          withAsterisk
+          label="Lip Bend Start Note (optional)"
+          placeholder="Bb1"
           error={errors.lipBendStartNote?.message}
           {...register("lipBendStartNote")}
         />
         <TextInput
-          label="Lip Bend Stop Note"
-          withAsterisk
+          label="Lip Bend Stop Note (optional)"
+          placeholder="F1"
           error={errors.lipBendStopNote?.message}
           {...register("lipBendStopNote")}
         />

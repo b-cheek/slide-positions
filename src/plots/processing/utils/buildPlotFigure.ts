@@ -1,6 +1,6 @@
 import { Hertz, Meters, MidiNumber } from "../..";
 import type { PlotFigure } from "../../types/plotFigure";
-import type { PlotInputs } from "../../types/plotInputs";
+import type { ParsedPlotInputs } from "../../types/plotInputs";
 import { Note } from "../types/note";
 import { Player } from "../types/player";
 import { Trombone } from "../types/trombone";
@@ -50,20 +50,20 @@ export function getLipBendRange(
   return (lipBendStopFreq - lipBendStartFreq) as Hertz;
 }
 
-export function parsePlotInputs(inputs: PlotInputs): {
+export function parsePlotInputs(inputs: ParsedPlotInputs): {
   notes: Note[];
   trombone: Trombone;
   player: Player;
 } {
-  const notes = parseNotes(inputs.notesString);
-  const tunings = parseValves(inputs.valvesString);
+  const notes = inputs.notes;
+  const tunings = inputs.tunings;
   const { firstPosDistance, slideLength } = getSlideInfo(
-    inputs.topSlideNote,
-    inputs.bottomSlideNote,
+    inputs.topSlideNote.name,
+    inputs.bottomSlideNote.name,
   );
   const lipBendRange = getLipBendRange(
-    inputs.lipBendStartNote,
-    inputs.lipBendStopNote,
+    inputs.lipBendStartNote.name,
+    inputs.lipBendStopNote.name,
   );
 
   const trombone = new Trombone(tunings, slideLength);
@@ -72,7 +72,7 @@ export function parsePlotInputs(inputs: PlotInputs): {
   return { notes, trombone, player };
 }
 
-export function buildPlotFigure(inputs: PlotInputs): PlotFigure {
+export function buildPlotFigure(inputs: ParsedPlotInputs): PlotFigure {
   const { notes, trombone, player } = parsePlotInputs(inputs);
 
   const noteConfigs = notes.flatMap((note) =>

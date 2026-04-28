@@ -18,6 +18,7 @@ export class Tuning {
   public static fromPitchClassOrPitch(pitchClass: string): Tuning {
     const match = pitchClass.match(/(\d*)([+-]\d+\.?\d*)?$/);
 
+    // TODO: this could be done better
     let octave = "1";
     let adjustment = "+0";
     let basePitchClass = pitchClass;

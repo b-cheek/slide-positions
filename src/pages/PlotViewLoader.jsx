@@ -15,7 +15,9 @@ export function plotViewLoader({ params, request }) {
       throw new Response("Plot preset not found", { status: 404 });
     }
 
-    return { plotId, plotInputs: presetInputs };
+    // Ensure presets are parsed the same as custom inputs
+    const parsedPreset = plotInputsSchema.parse(presetInputs);
+    return { plotId, plotInputs: parsedPreset };
   }
 
   const url = new URL(request.url);

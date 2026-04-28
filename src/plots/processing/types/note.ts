@@ -7,6 +7,16 @@ import {
   type Cents,
 } from "./constants";
 
+export const PITCH_CLASS_REGEX = /^(?:[A-G][b#]?)/;
+export const OCTAVE_REGEX = /(?:\d+)/;
+export const NOTE_NAME_REGEX = new RegExp(
+  "(?:" + PITCH_CLASS_REGEX.source + OCTAVE_REGEX.source + ")",
+);
+export const NOTE_ADJUSTMENT_REGEX = /(?:[+-]\d+\.?\d*)?$/;
+export const SCI_NOTATION_REGEX = new RegExp(
+  "(?:" + NOTE_NAME_REGEX.source + NOTE_ADJUSTMENT_REGEX.source + ")",
+);
+
 export class Note {
   public readonly pitchClass: string;
 
@@ -43,17 +53,26 @@ export class Note {
   }
 
   public static fromSciNotation(note: string): Note {
-    const match = note.match(/(\d+)([+-]\d+\.?\d*)?$/);
+    const parseRegex = new RegExp(
+      "(" +
+        PITCH_CLASS_REGEX.source +
+        ")(" +
+        OCTAVE_REGEX.source +
+        ")(" +
+        NOTE_ADJUSTMENT_REGEX.source +
+        ")",
+    );
+    const match = note.match(parseRegex);
 
-    if (match && match.index !== undefined) {
-      return new Note(
-        note.slice(0, match.index),
-        Number.parseInt(match[1]),
-        (match[2] ? Number(match[2]) : 0) as Cents,
-      );
+    if (!match) {
+      throw new Error(`Invalid scientific notation note: ${note}`);
     }
 
-    return new Note(note.slice(0, -1), Number.parseInt(note.slice(-1), 10));
+    const pitchClass = match[1];
+    const octave = Number.parseInt(match[2], 10);
+    const adjustment = (match[3] ? Number(match[3]) : 0) as Cents;
+
+    return new Note(pitchClass, octave, adjustment);
   }
 
   public static fromMidiNum(midiNum: MidiNumber): Note {
