@@ -2,26 +2,38 @@ import { z } from "zod";
 import type { RawPlotInputs, ParsedPlotInputs } from "./plotInputs";
 import { Note } from "../processing/types/note";
 import { Tuning } from "../processing/types/tuning";
-import { freqToLength } from "../processing/utils/physics";
+import { examplePlotInputDefaults } from "../presets/examplePlotInputs";
 
 export const plotInputsRawSchema = z.object({
   notesString: z.string().nonempty("Notes are required."),
-  valvesString: z.string().default("Bb/F"),
-  topSlideNote: z.string().default("Bb1"),
-  bottomSlideNote: z.string().default("E1"),
-  lipBendStartNote: z.string().default("Bb1"),
-  lipBendStopNote: z.string().default("F1"),
+  valvesString: z.string().default(examplePlotInputDefaults.valvesString),
+  topSlideNote: z.string().default(examplePlotInputDefaults.topSlideNote),
+  bottomSlideNote: z.string().default(examplePlotInputDefaults.bottomSlideNote),
+  lipBendStartNote: z
+    .string()
+    .default(examplePlotInputDefaults.lipBendStartNote),
+  lipBendStopNote: z.string().default(examplePlotInputDefaults.lipBendStopNote),
 });
 
 export const plotInputsSchema = plotInputsRawSchema.transform(
   (raw: RawPlotInputs): ParsedPlotInputs => {
     // Apply sensible defaults for optional fields before parsing
-    const notesString = (raw.notesString || "").trim();
-    const valvesString = (raw.valvesString || "").trim() || "Bb/F";
-    const topSlide = (raw.topSlideNote || "Bb1").trim();
-    const bottomSlide = (raw.bottomSlideNote || "E1").trim();
-    const lipStartStr = (raw.lipBendStartNote || "Bb1").trim();
-    const lipStopStr = (raw.lipBendStopNote || "F1").trim();
+    const notesString = raw.notesString.trim();
+    const valvesString = (
+      raw.valvesString ?? examplePlotInputDefaults.valvesString
+    ).trim();
+    const topSlide = (
+      raw.topSlideNote ?? examplePlotInputDefaults.topSlideNote
+    ).trim();
+    const bottomSlide = (
+      raw.bottomSlideNote ?? examplePlotInputDefaults.bottomSlideNote
+    ).trim();
+    const lipStartStr = (
+      raw.lipBendStartNote ?? examplePlotInputDefaults.lipBendStartNote
+    ).trim();
+    const lipStopStr = (
+      raw.lipBendStopNote ?? examplePlotInputDefaults.lipBendStopNote
+    ).trim();
 
     const noteTokens = notesString
       .replace(/,/g, " ")

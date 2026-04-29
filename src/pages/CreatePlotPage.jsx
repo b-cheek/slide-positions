@@ -2,6 +2,7 @@ import { Button, Stack, Text, TextInput, Title } from "@mantine/core";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
+import { examplePlotInputs } from "../plots/presets/examplePlotInputs";
 import { plotInputsRawSchema } from "../plots/types/plotInputsSchema";
 
 export function CreatePlotPage() {
@@ -13,11 +14,7 @@ export function CreatePlotPage() {
   } = useForm({
     defaultValues: {
       notesString: "Bb2 C3 D4",
-      valvesString: "",
-      topSlideNote: "",
-      bottomSlideNote: "",
-      lipBendStartNote: "",
-      lipBendStopNote: "",
+      ...examplePlotInputs,
     },
     mode: "onChange",
     reValidateMode: "onChange",
