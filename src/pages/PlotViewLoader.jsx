@@ -1,4 +1,4 @@
-import { getPresetPlotInputs, plotInputsSchema } from "../plots";
+import { getPresetPlotInputs, plotInputsSchema } from "../plotting";
 
 export function plotViewLoader({ params, request }) {
   const plotId = params.plotId;

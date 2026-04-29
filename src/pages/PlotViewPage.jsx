@@ -2,7 +2,7 @@ import { Button, Stack, Text, Title } from "@mantine/core";
 import { useEffect, useMemo, useRef } from "react";
 import { Link, useLoaderData } from "react-router";
 import Plotly from "plotly.js-dist";
-import { buildPlotFigure } from "../plots";
+import { buildPlotFigure } from "../plotting";
 
 export function PlotViewPage() {
   const { plotId, plotInputs } = useLoaderData();

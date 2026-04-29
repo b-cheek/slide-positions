@@ -2,8 +2,8 @@ import { Button, Stack, Text, TextInput, Title } from "@mantine/core";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { placeholderInputs } from "../plots/presets/examplePlotInputs";
-import { plotInputsRawSchema } from "../plots/types/plotInputsSchema";
+import { placeholderInputs } from "../plotting/presets/examplePlotInputs";
+import { plotInputsRawSchema } from "../plotting/types/plotInputsSchema";
 
 export function CreatePlotPage() {
   const navigate = useNavigate();
