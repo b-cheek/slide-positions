@@ -9,6 +9,6 @@ export const examplePlotInputDefaults = {
 } as const;
 
 export const examplePlotInputs: PlotInputs = {
-  notesString: "Bb1, C2, D2, Eb2, E2, F2, Gb2, G2, Ab2, A2",
+  notesString: "Bb1 C2 D2 Eb2 E2 F2 Gb2 G2 Ab2 A2",
   ...examplePlotInputDefaults,
 };
