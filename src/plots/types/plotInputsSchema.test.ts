@@ -31,6 +31,26 @@ describe("plotInputsSchema", () => {
     }
   });
 
+  it("treats blank optional inputs as missing", () => {
+    const result = plotInputsSchema.safeParse({
+      notesString: "Bb1, C2, D2",
+      valvesString: "",
+      topSlideNote: "",
+      bottomSlideNote: "",
+      lipBendStartNote: "",
+      lipBendStopNote: "",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.tunings).toHaveLength(2);
+      expect(result.data.topSlideNote.name).toBe("Bb1");
+      expect(result.data.bottomSlideNote.name).toBe("E1");
+      expect(result.data.lipBendStartNote.name).toBe("Bb1");
+      expect(result.data.lipBendStopNote.name).toBe("A1");
+    }
+  });
+
   it("rejects invalid input", () => {
     const result = plotInputsSchema.safeParse({
       notesString: "InvalidNote",

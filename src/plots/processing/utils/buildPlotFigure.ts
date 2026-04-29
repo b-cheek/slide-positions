@@ -4,29 +4,15 @@ import type { ParsedPlotInputs } from "../../types/plotInputs";
 import { Note } from "../types/note";
 import { Player } from "../types/player";
 import { Trombone } from "../types/trombone";
-import { Tuning } from "../types/tuning";
 import { freqToLength } from "./physics";
 
-export function parseNotes(notesString: string): Note[] {
-  return notesString
-    .split(" ")
-    .map((noteStr) => Note.fromSciNotation(noteStr.trim()));
-}
-
-export function parseValves(valvesString: string): Tuning[] {
-  return valvesString
-    .split("/")
-    .map((valveStr) => Tuning.fromPitchClassOrPitch(valveStr.trim()));
-}
-
 export function getSlideInfo(
-  topSlideNoteStr: string,
-  bottomSlideNoteStr: string,
+  topSlideNote: Note,
+  bottomSlideNote: Note,
 ): { firstPosDistance: Meters; slideLength: Meters } {
   // TODO: figure out a way to account for any partial based on tunings?
-  const topSlideNote = Note.fromSciNotation(topSlideNoteStr);
   const topSlideFreq = topSlideNote.freq;
-  const bottomSlideFreq = Note.fromSciNotation(bottomSlideNoteStr).freq;
+  const bottomSlideFreq = bottomSlideNote.freq;
 
   const slideLength = (freqToLength(bottomSlideFreq) -
     freqToLength(topSlideFreq)) as Meters;
@@ -42,12 +28,10 @@ export function getSlideInfo(
 }
 
 export function getLipBendRange(
-  lipBendStartNoteStr: string,
-  lipBendStopNoteStr: string,
+  lipBendStartNote: Note,
+  lipBendStopNote: Note,
 ): Hertz {
-  const lipBendStartFreq = Note.fromSciNotation(lipBendStartNoteStr).freq;
-  const lipBendStopFreq = Note.fromSciNotation(lipBendStopNoteStr).freq;
-  return (lipBendStopFreq - lipBendStartFreq) as Hertz;
+  return (lipBendStopNote.freq - lipBendStartNote.freq) as Hertz;
 }
 
 export function parsePlotInputs(inputs: ParsedPlotInputs): {
@@ -55,21 +39,19 @@ export function parsePlotInputs(inputs: ParsedPlotInputs): {
   trombone: Trombone;
   player: Player;
 } {
-  const notes = inputs.notes;
-  const tunings = inputs.tunings;
   const { firstPosDistance, slideLength } = getSlideInfo(
-    inputs.topSlideNote.name,
-    inputs.bottomSlideNote.name,
+    inputs.topSlideNote,
+    inputs.bottomSlideNote,
   );
   const lipBendRange = getLipBendRange(
-    inputs.lipBendStartNote.name,
-    inputs.lipBendStopNote.name,
+    inputs.lipBendStartNote,
+    inputs.lipBendStopNote,
   );
 
-  const trombone = new Trombone(tunings, slideLength);
+  const trombone = new Trombone(inputs.tunings, slideLength);
   const player = new Player(lipBendRange, firstPosDistance);
 
-  return { notes, trombone, player };
+  return { notes: inputs.notes, trombone, player };
 }
 
 export function buildPlotFigure(inputs: ParsedPlotInputs): PlotFigure {

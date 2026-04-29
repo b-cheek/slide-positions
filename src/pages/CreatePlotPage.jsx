@@ -2,7 +2,7 @@ import { Button, Stack, Text, TextInput, Title } from "@mantine/core";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { examplePlotInputs } from "../plots/presets/examplePlotInputs";
+import { placeholderInputs } from "../plots/presets/examplePlotInputs";
 import { plotInputsRawSchema } from "../plots/types/plotInputsSchema";
 
 export function CreatePlotPage() {
@@ -13,9 +13,7 @@ export function CreatePlotPage() {
     formState: { errors, isSubmitting, isValid },
   } = useForm({
     defaultValues: {
-      // TODO: is this being used?
-      notesString: "Bb2 C3 D4",
-      ...examplePlotInputs,
+      notesString: placeholderInputs.notesString,
     },
     mode: "onChange",
     reValidateMode: "onChange",
@@ -39,36 +37,37 @@ export function CreatePlotPage() {
         <TextInput
           label="Notes"
           withAsterisk
+          placeholder={placeholderInputs.notesString}
           error={errors.notesString?.message}
           {...register("notesString")}
         />
         <TextInput
           label="Tunings (optional)"
-          placeholder="Bb/F"
+          placeholder={placeholderInputs.valvesString}
           error={errors.valvesString?.message}
           {...register("valvesString")}
         />
         <TextInput
           label="Top Slide Note (optional)"
-          placeholder="Bb1"
+          placeholder={placeholderInputs.topSlideNote}
           error={errors.topSlideNote?.message}
           {...register("topSlideNote")}
         />
         <TextInput
           label="Bottom Slide Note (optional)"
-          placeholder="E1"
+          placeholder={placeholderInputs.bottomSlideNote}
           error={errors.bottomSlideNote?.message}
           {...register("bottomSlideNote")}
         />
         <TextInput
           label="Lip Bend Start Note (optional)"
-          placeholder="Bb1"
+          placeholder={placeholderInputs.lipBendStartNote}
           error={errors.lipBendStartNote?.message}
           {...register("lipBendStartNote")}
         />
         <TextInput
           label="Lip Bend Stop Note (optional)"
-          placeholder="F1"
+          placeholder={placeholderInputs.lipBendStopNote}
           error={errors.lipBendStopNote?.message}
           {...register("lipBendStopNote")}
         />
