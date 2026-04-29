@@ -58,11 +58,13 @@ export class Note {
         `(?<octave>${OCTAVE_REGEX.source})` +
         `(?<adjustment>${NOTE_ADJUSTMENT_REGEX.source})`,
     );
-    const match = note.match(parseRegex);
-
-    if (!match || !match.groups) {
-      throw new Error(`Invalid scientific notation note: ${note}`);
-    }
+    const match = note.match(parseRegex) as RegExpMatchArray & {
+      groups: {
+        pitch: string;
+        octave: string;
+        adjustment?: string;
+      };
+    };
 
     const pitchClass = match.groups.pitch;
     const octave = Number.parseInt(match.groups.octave, 10);

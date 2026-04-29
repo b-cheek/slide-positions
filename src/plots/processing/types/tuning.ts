@@ -26,11 +26,13 @@ export class Tuning {
         `(?<octave>${OCTAVE_REGEX.source})?` +
         `(?<adjustment>${NOTE_ADJUSTMENT_REGEX.source})`,
     );
-    const match = pitchClass.match(parseRegex);
-
-    if (!match?.groups?.pitch) {
-      throw new Error(`Invalid tuning input: ${pitchClass}`);
-    }
+    const match = pitchClass.match(parseRegex) as RegExpMatchArray & {
+      groups: {
+        pitch: string;
+        octave?: string;
+        adjustment?: string;
+      };
+    };
 
     const basePitchClass = match.groups.pitch;
     // Defaults to match majority tenor and bass tunings
