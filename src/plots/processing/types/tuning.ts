@@ -4,6 +4,10 @@ import { PITCH_CLASS_REGEX, OCTAVE_REGEX, NOTE_ADJUSTMENT_REGEX } from "./note";
 
 import { freqToLength } from "../utils/physics";
 
+export const TUNING_REGEX = new RegExp(
+  `(?:${PITCH_CLASS_REGEX.source}${OCTAVE_REGEX.source}?${NOTE_ADJUSTMENT_REGEX.source})`,
+);
+
 export class Tuning {
   public readonly length: Meters;
 

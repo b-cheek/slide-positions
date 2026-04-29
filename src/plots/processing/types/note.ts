@@ -10,11 +10,11 @@ import {
 export const PITCH_CLASS_REGEX = /^(?:[A-G][b#]?)/;
 export const OCTAVE_REGEX = /(?:\d+)/;
 export const NOTE_NAME_REGEX = new RegExp(
-  "(?:" + PITCH_CLASS_REGEX.source + OCTAVE_REGEX.source + ")",
+  `(?:${PITCH_CLASS_REGEX.source}${OCTAVE_REGEX.source})`,
 );
 export const NOTE_ADJUSTMENT_REGEX = /(?:[+-]\d+\.?\d*)?$/;
 export const SCI_NOTATION_REGEX = new RegExp(
-  "(?:" + NOTE_NAME_REGEX.source + NOTE_ADJUSTMENT_REGEX.source + ")",
+  `(?:${NOTE_NAME_REGEX.source}${NOTE_ADJUSTMENT_REGEX.source})`,
 );
 
 export class Note {
