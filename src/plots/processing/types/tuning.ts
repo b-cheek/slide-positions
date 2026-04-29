@@ -1,5 +1,6 @@
 import { Note } from "./note";
-import type { Meters, Semitones, Cents } from "./constants";
+import type { Meters } from "./constants";
+import { PITCH_CLASS_REGEX, OCTAVE_REGEX, NOTE_ADJUSTMENT_REGEX } from "./note";
 
 import { freqToLength } from "../utils/physics";
 
@@ -16,23 +17,21 @@ export class Tuning {
 
   // TODO: rename since can take true pitch
   public static fromPitchClassOrPitch(pitchClass: string): Tuning {
-    const match = pitchClass.match(/(\d*)([+-]\d+\.?\d*)?$/);
+    const parseRegex = new RegExp(
+      `(?<pitch>${PITCH_CLASS_REGEX.source})` +
+        `(?<octave>${OCTAVE_REGEX.source})?` +
+        `(?<adjustment>${NOTE_ADJUSTMENT_REGEX.source})`,
+    );
+    const match = pitchClass.match(parseRegex);
 
-    // TODO: this could be done better
-    let octave = "1";
-    let adjustment = "+0";
-    let basePitchClass = pitchClass;
-
-    // Check that match exists and is not empty
-    if (match && match[0]) {
-      basePitchClass = pitchClass.slice(0, match.index);
-      if (match[1]) {
-        octave = match[1];
-      }
-      if (match[2]) {
-        adjustment = match[2];
-      }
+    if (!match?.groups?.pitch) {
+      throw new Error(`Invalid tuning input: ${pitchClass}`);
     }
+
+    const basePitchClass = match.groups.pitch;
+    // Defaults to match majority tenor and bass tunings
+    const octave = match.groups.octave || "1";
+    const adjustment = match.groups.adjustment || "+0";
 
     const length = freqToLength(
       Note.fromSciNotation(`${basePitchClass}${octave}${adjustment}`).freq,
