@@ -54,23 +54,21 @@ export class Note {
 
   public static fromSciNotation(note: string): Note {
     const parseRegex = new RegExp(
-      "(" +
-        PITCH_CLASS_REGEX.source +
-        ")(" +
-        OCTAVE_REGEX.source +
-        ")(" +
-        NOTE_ADJUSTMENT_REGEX.source +
-        ")",
+      `(?<pitch>${PITCH_CLASS_REGEX.source})` +
+        `(?<octave>${OCTAVE_REGEX.source})` +
+        `(?<adjustment>${NOTE_ADJUSTMENT_REGEX.source})`,
     );
     const match = note.match(parseRegex);
 
-    if (!match) {
+    if (!match || !match.groups) {
       throw new Error(`Invalid scientific notation note: ${note}`);
     }
 
-    const pitchClass = match[1];
-    const octave = Number.parseInt(match[2], 10);
-    const adjustment = (match[3] ? Number(match[3]) : 0) as Cents;
+    const pitchClass = match.groups.pitch;
+    const octave = Number.parseInt(match.groups.octave, 10);
+    const adjustment = (
+      match.groups.adjustment ? Number(match.groups.adjustment) : 0
+    ) as Cents;
 
     return new Note(pitchClass, octave, adjustment);
   }
