@@ -1,18 +1,56 @@
 import { z } from "zod";
 import type { RawPlotInputs, ParsedPlotInputs } from "./plotInputs";
 import { Note } from "../processing/types/note";
-import { Tuning } from "../processing/types/tuning";
+import { Tuning, TUNING_REGEX } from "../processing/types/tuning";
 import { examplePlotInputDefaults } from "../presets/examplePlotInputs";
+import { SCI_NOTATION_REGEX } from "../processing/types/note";
 
+const SCI_NOTATION_LIST_REGEX = new RegExp(
+  // Allowing any number of spaces or commas in delimiter to be safe
+  String.raw`^(?:${SCI_NOTATION_REGEX.source})(?:[\s,]+${SCI_NOTATION_REGEX.source})*$`,
+);
+
+const TUNING_LIST_REGEX = new RegExp(
+  String.raw`^(?:${TUNING_REGEX.source})(?:/+(?:${TUNING_REGEX.source}))*$`,
+);
+
+const SINGLE_NOTE_REGEX = new RegExp(`^${SCI_NOTATION_REGEX.source}$`);
+
+// TODO different error messages with examples and an overall refactor for cleanliness
 export const plotInputsRawSchema = z.object({
-  notesString: z.string().nonempty("Notes are required."),
-  valvesString: z.string().default(examplePlotInputDefaults.valvesString),
-  topSlideNote: z.string().default(examplePlotInputDefaults.topSlideNote),
-  bottomSlideNote: z.string().default(examplePlotInputDefaults.bottomSlideNote),
+  notesString: z.string().regex(SCI_NOTATION_LIST_REGEX, {
+    message: "Invalid note string format",
+  }),
+  valvesString: z
+    .string()
+    .regex(TUNING_LIST_REGEX, {
+      message: "Invalid valves string format",
+    })
+    .default(examplePlotInputDefaults.valvesString),
+  topSlideNote: z
+    .string()
+    .regex(SINGLE_NOTE_REGEX, {
+      message: "Invalid top slide note format",
+    })
+    .default(examplePlotInputDefaults.topSlideNote),
+  bottomSlideNote: z
+    .string()
+    .regex(SINGLE_NOTE_REGEX, {
+      message: "Invalid bottom slide note format",
+    })
+    .default(examplePlotInputDefaults.bottomSlideNote),
   lipBendStartNote: z
     .string()
+    .regex(SINGLE_NOTE_REGEX, {
+      message: "Invalid lip bend start note format",
+    })
     .default(examplePlotInputDefaults.lipBendStartNote),
-  lipBendStopNote: z.string().default(examplePlotInputDefaults.lipBendStopNote),
+  lipBendStopNote: z
+    .string()
+    .regex(SINGLE_NOTE_REGEX, {
+      message: "Invalid lip bend stop note format",
+    })
+    .default(examplePlotInputDefaults.lipBendStopNote),
 });
 
 export const plotInputsSchema = plotInputsRawSchema.transform(

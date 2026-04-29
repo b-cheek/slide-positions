@@ -7,7 +7,7 @@ describe("plotInputsSchema", () => {
   it("parses valid input", () => {
     const input = {
       notesString: "Bb1, C2, D2",
-      valvesString: "Bb, C, D",
+      valvesString: "Bb/F",
       topSlideNote: "Bb1",
       bottomSlideNote: "E1",
       lipBendStartNote: "Bb1",
@@ -31,6 +31,11 @@ describe("plotInputsSchema", () => {
     }
   });
 
-  // TODO (and many more)
-  // it("rejects invalid input", () => {});
+  it("rejects invalid input", () => {
+    const result = plotInputsSchema.safeParse({
+      notesString: "InvalidNote",
+    });
+
+    expect(result.success).toBe(false);
+  });
 });

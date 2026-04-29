@@ -13,6 +13,7 @@ export function CreatePlotPage() {
     formState: { errors, isSubmitting, isValid },
   } = useForm({
     defaultValues: {
+      // TODO: is this being used?
       notesString: "Bb2 C3 D4",
       ...examplePlotInputs,
     },
@@ -27,6 +28,8 @@ export function CreatePlotPage() {
   };
 
   return (
+    // TODO refactor single note inputs as "advanced" options
+    // TODO allow no input for options?
     <form onSubmit={handleSubmit(handleCreatePlot)}>
       <Stack>
         <Title order={2}>Create Plot</Title>
