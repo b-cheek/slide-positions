@@ -40,7 +40,7 @@ const optionalStringWithDefault = (
     z.string().regex(regex, { message }).default(defaultValue),
   );
 
-// TODO different error messages with examples and an overall refactor for cleanliness
+// TODO different error messages with examples
 export const plotInputsRawSchema = z.object({
   notesString: z.string().regex(SCI_NOTATION_LIST_REGEX, {
     message: "Invalid note string format",

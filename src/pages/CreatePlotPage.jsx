@@ -27,7 +27,6 @@ export function CreatePlotPage() {
 
   return (
     // TODO refactor single note inputs as "advanced" options
-    // TODO allow no input for options?
     <form onSubmit={handleSubmit(handleCreatePlot)}>
       <Stack>
         <Title order={2}>Create Plot</Title>
