@@ -205,7 +205,7 @@ describe("Trombone.getNoteConfigs", () => {
   // Test lip bend
   const playerWithLipBend = new Player(20 as Hertz);
   // previously inaccessible note
-  it("B2 is accesible on a Bb/F trombone with lip bend", () => {
+  it("B1 is accesible on a Bb/F trombone with lip bend", () => {
     const note = Note.fromSciNotation("B1");
 
     const configs = tromboneBbF.getNoteConfigs(note, playerWithLipBend);
@@ -215,6 +215,37 @@ describe("Trombone.getNoteConfigs", () => {
     // Check that slide is maxed out
     expect(config.slideDistance).toBe(tromboneBbF.slideLength);
     expect(config.lipBendCents).toBeGreaterThan(0);
+  });
+
+  // previously inaccessible position
+  it("B2 is accessible in 7th position on a Bb/F trombone with lip bend", () => {
+    const note = Note.fromSciNotation("B2");
+
+    const configs = tromboneBbF.getNoteConfigs(note, playerWithLipBend);
+    expect(configs).toHaveLength(3); // Don't forget about trigger!
+    const seventhPosConfig = configs[0];
+    const secondPosConfig = configs[1];
+    const fValveSeventhPosConfig = configs[2];
+    expect(seventhPosConfig.partial).toBe(3);
+    expect(secondPosConfig.partial).toBe(3);
+    expect(fValveSeventhPosConfig.partial).toBe(4);
+    // Check that 7th pos is now accessible with lip bend
+    expect(seventhPosConfig.getSlidePosition(playerWithLipBend)).toBeCloseTo(
+      7,
+      2,
+    );
+    expect(seventhPosConfig.lipBendCents).toBeGreaterThan(0);
+    // Check that 2nd pos is still accessible but not lip bent
+    expect(secondPosConfig.getSlidePosition(playerWithLipBend)).toBeCloseTo(
+      2.02,
+      2,
+    );
+    expect(secondPosConfig.lipBendCents).toBe(0);
+    // Check that F valve 7th pos is accessible with lip bend
+    expect(
+      fValveSeventhPosConfig.getOpenPosition(playerWithLipBend, tromboneBbF),
+    ).toBeCloseTo(7, 2);
+    expect(fValveSeventhPosConfig.lipBendCents).toBeGreaterThan(0);
   });
 
   // Test that lip bend only applied when necessary

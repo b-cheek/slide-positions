@@ -31,7 +31,7 @@ export function getLipBendRange(
   lipBendStartNote: Note,
   lipBendStopNote: Note,
 ): Hertz {
-  return (lipBendStopNote.freq - lipBendStartNote.freq) as Hertz;
+  return (lipBendStartNote.freq - lipBendStopNote.freq) as Hertz;
 }
 
 export function parsePlotInputs(inputs: ParsedPlotInputs): {
