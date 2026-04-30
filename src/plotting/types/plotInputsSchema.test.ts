@@ -47,7 +47,7 @@ describe("plotInputsSchema", () => {
       expect(result.data.topSlideNote.name).toBe("Bb1");
       expect(result.data.bottomSlideNote.name).toBe("E1");
       expect(result.data.lipBendStartNote.name).toBe("Bb1");
-      expect(result.data.lipBendStopNote.name).toBe("A1");
+      expect(result.data.lipBendStopNote.name).toBe("G1");
     }
   });
 

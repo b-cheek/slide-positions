@@ -68,7 +68,9 @@ describe("plot user flows", () => {
 
     await user.click(screen.getByRole("link", { name: "Open Example Plot" }));
 
-    expect(await screen.findByText("Viewing plot: example-plot")).toBeTruthy();
+    expect(
+      await screen.findByText("Viewing plot: Bb-scale-default"),
+    ).toBeTruthy();
   });
 
   it("creates a custom plot from create page input", async () => {

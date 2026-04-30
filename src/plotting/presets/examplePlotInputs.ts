@@ -1,15 +1,8 @@
 import type { PlotInputs } from "../types/plotInputs";
-
-export const defaultOptions = {
-  valvesString: "Bb/F",
-  topSlideNote: "Bb1",
-  bottomSlideNote: "E1",
-  lipBendStartNote: "Bb1",
-  lipBendStopNote: "A1",
-} as const;
+import { defaultOptions } from "./defaults";
 
 export const exampleInputs: PlotInputs = {
-  notesString: "Bb1 C2 D2 Eb2 E2 F2 Gb2 G2 Ab2 A2",
+  notesString: "Bb2 C3 D3 Eb3 F3 G3 A3 Bb3",
   ...defaultOptions,
 };
 
