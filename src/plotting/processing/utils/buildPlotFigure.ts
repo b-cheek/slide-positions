@@ -1,5 +1,5 @@
 import { Hertz, Meters, MidiNumber } from "../..";
-import type { PlotFigure } from "../../types/plotFigure";
+import type { PlotModel } from "../../types/plotModel";
 import type { ParsedPlotInputs } from "../../types/plotInputs";
 import { Note } from "../types/note";
 import { Player } from "../types/player";
@@ -34,7 +34,7 @@ export function getLipBendRange(
   return (lipBendStartNote.freq - lipBendStopNote.freq) as Hertz;
 }
 
-export function parsePlotInputs(inputs: ParsedPlotInputs): {
+export function buildPlotModel(inputs: ParsedPlotInputs): {
   notes: Note[];
   trombone: Trombone;
   player: Player;
@@ -54,30 +54,31 @@ export function parsePlotInputs(inputs: ParsedPlotInputs): {
   return { notes: inputs.notes, trombone, player };
 }
 
-export function buildPlotFigure(inputs: ParsedPlotInputs): PlotFigure {
-  const { notes, trombone, player } = parsePlotInputs(inputs);
+export function buildPlotFigure(inputs: ParsedPlotInputs): PlotModel {
+  const { notes, trombone, player } = buildPlotModel(inputs);
 
   const noteConfigs = notes.flatMap((note) =>
     trombone.getNoteConfigs(note, player),
   );
 
-  const x = noteConfigs.map((config) => config.slideDistance);
-  const y = noteConfigs.map((config) => config.note.midiNum);
+  const points = noteConfigs.map((config) => ({
+    x: config.slideDistance,
+    y: config.note.midiNum,
+  }));
 
   return {
-    data: [
-      {
-        mode: "markers",
-        type: "scatter",
-        x,
-        y,
-        name: "test",
-      },
-    ],
-    layout: {
-      title: `test`,
-      xaxis: { title: "x" },
-      yaxis: { title: "y" },
-    },
+    notes,
+    trombone,
+    player,
+    noteConfigs: noteConfigs.map((c) => ({
+      noteName: c.note.name,
+      midiNum: c.note.midiNum,
+      slideDistance: c.slideDistance,
+      tuningIndex: trombone.tunings.indexOf(c.tuning),
+      meta: { partial: c.partial, lipBendCents: c.lipBendCents },
+    })),
+    rawNoteConfigs: noteConfigs,
+    points,
+    title: "Trombone Slide Positions",
   };
 }

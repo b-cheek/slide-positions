@@ -1,7 +1,7 @@
 export { buildPlotFigure } from "./processing/utils/buildPlotFigure";
 export { getPresetPlotInputs } from "./presets/presetPlotInputs";
 export { plotInputsSchema } from "./types/plotInputsSchema";
-export type { PlotFigure } from "./types/plotFigure";
+export type { PlotModel } from "./types/plotModel";
 export type { PlotInputs } from "./types/plotInputs";
 export type {
   Brand,

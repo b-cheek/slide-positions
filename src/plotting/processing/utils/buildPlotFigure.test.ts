@@ -4,7 +4,7 @@ import { Note } from "../types/note";
 import {
   getSlideInfo,
   getLipBendRange,
-  parsePlotInputs,
+  buildPlotModel,
   buildPlotFigure,
 } from "./buildPlotFigure";
 import { Tuning } from "../types/tuning";
@@ -80,12 +80,11 @@ describe("buildPlotFigure", () => {
     const figure = buildPlotFigure(inputs);
 
     expect(figure).toBeDefined();
-    const x = figure.data[0].x;
-    const y = figure.data[0].y;
-    expect(x).toHaveLength(1);
-    expect(y).toHaveLength(1);
-    expect(y[0]).toBe(Note.fromSciNotation("B2").midiNum);
-    expect(x[0]).toBe(new Trombone().slideLength);
+    const points = figure.points;
+    expect(points).toHaveLength(1);
+    const { x, y } = points[0];
+    expect(y).toBe(Note.fromSciNotation("B2").midiNum);
+    expect(x).toBe(new Trombone().slideLength);
   });
 
   // TODO: more tests for common use cases
