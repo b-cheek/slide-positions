@@ -48,6 +48,18 @@ export function D3ScatterPlot({
 
     const yScale = d3.scaleLinear().domain(yDomain).range([innerHeight, 0]);
 
+    // Title
+    d3.select(svgRef.current)
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", 15)
+      .style("text-anchor", "middle")
+      .style("fill", "var(--mantine-color-text)")
+      .style("font-size", "16px")
+      .style("font-weight", "bold")
+      .text(model.title);
+
+    // Plot
     const svg = d3
       .select(svgRef.current)
       .attr("width", width)
@@ -55,6 +67,7 @@ export function D3ScatterPlot({
       .append("g")
       .attr("transform", `translate(${margin},${margin})`);
 
+    // Axes
     svg
       .append("g")
       .attr("transform", `translate(0,${innerHeight})`)
@@ -62,7 +75,6 @@ export function D3ScatterPlot({
       .append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 40)
-      .attr("fill", "black")
       .style("text-anchor", "middle")
       .text(X_AXIS_LABEL);
 
@@ -74,19 +86,10 @@ export function D3ScatterPlot({
       .attr("y", -margin)
       .attr("x", 0 - innerHeight / 2)
       .attr("dy", "1em")
-      .attr("fill", "black")
       .style("text-anchor", "middle")
       .text(Y_AXIS_LABEL);
 
-    d3.select(svgRef.current)
-      .append("text")
-      .attr("x", width / 2)
-      .attr("y", 15)
-      .attr("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "bold")
-      .text(model.title);
-
+    // Points
     svg
       .selectAll("circle")
       .data(noteConfigs)
@@ -95,7 +98,20 @@ export function D3ScatterPlot({
       .attr("cx", (d) => xScale(d.slideDistance))
       .attr("cy", (d) => yScale(d.note.midiNum))
       .attr("r", 3)
-      .attr("fill", "steelblue");
+      .style("fill", "var(--mantine-color-blue-6)");
+
+    // Axis styling
+    svg
+      .selectAll(".domain, .tick line")
+      .style("stroke", "var(--mantine-color-default-border)");
+    svg
+      .selectAll(".tick text")
+      .style("font-family", "var(--mantine-font-family)")
+      .style("fill", "var(--mantine-color-text)");
+    svg
+      .selectAll("text")
+      .style("font-family", "var(--mantine-font-family)")
+      .style("fill", "var(--mantine-color-text)");
   }, [model, width, height]);
 
   return <svg ref={svgRef} style={{ display: "block", margin: "0 auto" }} />;
