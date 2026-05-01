@@ -34,11 +34,7 @@ export function getLipBendRange(
   return (lipBendStartNote.freq - lipBendStopNote.freq) as Hertz;
 }
 
-export function buildPlotModel(inputs: ParsedPlotInputs): {
-  notes: Note[];
-  trombone: Trombone;
-  player: Player;
-} {
+export function buildPlotModel(inputs: ParsedPlotInputs): PlotModel {
   const { firstPosDistance, slideLength } = getSlideInfo(
     inputs.topSlideNote,
     inputs.bottomSlideNote,
@@ -51,34 +47,11 @@ export function buildPlotModel(inputs: ParsedPlotInputs): {
   const trombone = new Trombone(inputs.tunings, slideLength);
   const player = new Player(lipBendRange, firstPosDistance);
 
-  return { notes: inputs.notes, trombone, player };
-}
-
-export function buildPlotFigure(inputs: ParsedPlotInputs): PlotModel {
-  const { notes, trombone, player } = buildPlotModel(inputs);
-
-  const noteConfigs = notes.flatMap((note) =>
-    trombone.getNoteConfigs(note, player),
-  );
-
-  const points = noteConfigs.map((config) => ({
-    x: config.slideDistance,
-    y: config.note.midiNum,
-  }));
-
   return {
-    notes,
+    // TODO: dynamic title
+    title: "Trombone Slide Positions",
+    notes: inputs.notes,
     trombone,
     player,
-    noteConfigs: noteConfigs.map((c) => ({
-      noteName: c.note.name,
-      midiNum: c.note.midiNum,
-      slideDistance: c.slideDistance,
-      tuningIndex: trombone.tunings.indexOf(c.tuning),
-      meta: { partial: c.partial, lipBendCents: c.lipBendCents },
-    })),
-    rawNoteConfigs: noteConfigs,
-    points,
-    title: "Trombone Slide Positions",
   };
 }

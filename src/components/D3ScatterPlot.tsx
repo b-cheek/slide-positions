@@ -6,27 +6,24 @@ const X_AXIS_LABEL = "Slide Distance (m)";
 const Y_AXIS_LABEL = "MIDI Number";
 
 interface D3ScatterPlotProps {
-  figure: PlotModel;
+  model: PlotModel;
   width?: number;
   height?: number;
 }
 
 export function D3ScatterPlot({
-  figure,
+  model,
   width = 800,
   height = 600,
 }: D3ScatterPlotProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    // Build note configurations here so the plotting component owns plotting logic.
-    const rawConfigs: any[] = figure.rawNoteConfigs
-      ? figure.rawNoteConfigs
-      : figure.notes.flatMap((note) =>
-          figure.trombone.getNoteConfigs(note, figure.player),
-        );
+    const noteConfigs = model.notes.flatMap((note) =>
+      model.trombone.getNoteConfigs(note, model.player),
+    );
 
-    if (!svgRef.current || rawConfigs.length === 0) return;
+    if (!svgRef.current || noteConfigs.length === 0) return;
 
     const margin = 40;
     const innerWidth = width - margin * 2;
@@ -34,8 +31,8 @@ export function D3ScatterPlot({
 
     d3.select(svgRef.current).selectAll("*").remove();
 
-    const xExtent = d3.extent(rawConfigs, (d: any) => d.slideDistance);
-    const yExtent = d3.extent(rawConfigs, (d: any) => d.note && d.note.midiNum);
+    const xExtent = d3.extent(noteConfigs, (d) => d.slideDistance);
+    const yExtent = d3.extent(noteConfigs, (d) => d.note.midiNum);
     if (!xExtent || xExtent[0] == null || xExtent[1] == null) return;
     if (!yExtent || yExtent[0] == null || yExtent[1] == null) return;
     const xDomain: [number, number] = [
@@ -88,18 +85,18 @@ export function D3ScatterPlot({
       .attr("text-anchor", "middle")
       .style("font-size", "16px")
       .style("font-weight", "bold")
-      .text(figure.title);
+      .text(model.title);
 
     svg
       .selectAll("circle")
-      .data(rawConfigs)
+      .data(noteConfigs)
       .enter()
       .append("circle")
-      .attr("cx", (d: any) => xScale(d.slideDistance))
-      .attr("cy", (d: any) => yScale(d.note.midiNum))
+      .attr("cx", (d) => xScale(d.slideDistance))
+      .attr("cy", (d) => yScale(d.note.midiNum))
       .attr("r", 3)
       .attr("fill", "steelblue");
-  }, [figure, width, height]);
+  }, [model, width, height]);
 
   return <svg ref={svgRef} style={{ display: "block", margin: "0 auto" }} />;
 }
