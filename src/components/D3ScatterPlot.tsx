@@ -96,10 +96,7 @@ export function D3ScatterPlot({
     const tuningNames = Array.from(
       new Set(noteConfigs.map((d) => d.tuning.name)),
     );
-    const colorScheme =
-      (d3 as any).schemeTableau10 ||
-      (d3 as any).schemeCategory10 ||
-      d3.schemeCategory10;
+    const colorScheme = d3.schemeCategory10;
     const color = d3
       .scaleOrdinal<string, string>()
       .domain(tuningNames)
