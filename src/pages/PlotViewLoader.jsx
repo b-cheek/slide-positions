@@ -17,18 +17,21 @@ export function plotViewLoader({ params, request }) {
 
     // Ensure presets are parsed the same as custom inputs
     const parsedPreset = plotInputsSchema.parse(presetInputs);
-    return { plotId, plotInputs: parsedPreset };
+    return { plotId, plotInputs: parsedPreset, rawPlotInputs: presetInputs };
   }
 
+  // Pass raw input for reuse in modal
   const url = new URL(request.url);
-  const parsedInputs = plotInputsSchema.safeParse({
+  const raw = {
     notesString: url.searchParams.get("notesString") ?? undefined,
     valvesString: url.searchParams.get("valvesString") ?? undefined,
     topSlideNote: url.searchParams.get("topSlideNote") ?? undefined,
     bottomSlideNote: url.searchParams.get("bottomSlideNote") ?? undefined,
     lipBendStartNote: url.searchParams.get("lipBendStartNote") ?? undefined,
     lipBendStopNote: url.searchParams.get("lipBendStopNote") ?? undefined,
-  });
+  };
+
+  const parsedInputs = plotInputsSchema.safeParse(raw);
 
   if (!parsedInputs.success) {
     throw new Response(
@@ -42,5 +45,5 @@ export function plotViewLoader({ params, request }) {
     );
   }
 
-  return { plotId, plotInputs: parsedInputs.data };
+  return { plotId, rawPlotInputs: raw, plotInputs: parsedInputs.data };
 }
