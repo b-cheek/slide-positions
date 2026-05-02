@@ -25,9 +25,12 @@ export function D3ScatterPlot({
 
     if (!svgRef.current || noteConfigs.length === 0) return;
 
-    const margin = 40;
-    const innerWidth = width - margin * 2;
-    const innerHeight = height - margin * 2;
+    // TODO: perhaps a major rework for complete dimensional consistency of labels, but for now just
+    // hardcoding margins that look good with the current labels and font sizes
+    const xMargin = 90;
+    const yMargin = 40;
+    const innerWidth = width - xMargin * 2;
+    const innerHeight = height - yMargin * 2;
 
     d3.select(svgRef.current).selectAll("*").remove();
 
@@ -45,7 +48,6 @@ export function D3ScatterPlot({
     ];
 
     const xScale = d3.scaleLinear().domain(xDomain).range([0, innerWidth]);
-
     const yScale = d3.scaleLinear().domain(yDomain).range([innerHeight, 0]);
 
     // Title
@@ -65,7 +67,7 @@ export function D3ScatterPlot({
       .attr("width", width)
       .attr("height", height)
       .append("g")
-      .attr("transform", `translate(${margin},${margin})`);
+      .attr("transform", `translate(${xMargin},${yMargin})`);
 
     // Axes
     svg
@@ -83,13 +85,26 @@ export function D3ScatterPlot({
       .call(d3.axisLeft(yScale))
       .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -margin)
+      .attr("y", -45) // Slightly farther to look even with length of numbers vs height of numbers for x-axis label
       .attr("x", 0 - innerHeight / 2)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .text(Y_AXIS_LABEL);
 
     // Points
+    // Color scale per tuning
+    const tuningNames = Array.from(
+      new Set(noteConfigs.map((d) => d.tuning.name)),
+    );
+    const colorScheme =
+      (d3 as any).schemeTableau10 ||
+      (d3 as any).schemeCategory10 ||
+      d3.schemeCategory10;
+    const color = d3
+      .scaleOrdinal<string, string>()
+      .domain(tuningNames)
+      .range(colorScheme);
+
     svg
       .selectAll("circle")
       .data(noteConfigs)
@@ -98,7 +113,43 @@ export function D3ScatterPlot({
       .attr("cx", (d) => xScale(d.slideDistance))
       .attr("cy", (d) => yScale(d.note.midiNum))
       .attr("r", 3)
-      .style("fill", "var(--mantine-color-blue-6)");
+      .style("fill", (d) => color(d.tuning.name));
+
+    // Legend: render in the right margin area so it doesn't overlap plot points
+    const legendX = width - xMargin + 20;
+    const legendY = yMargin + 5; // Better alignment
+    const legendItemHeight = 18;
+
+    const legend = d3
+      .select(svgRef.current)
+      .append("g")
+      .attr("class", "legend");
+
+    legend
+      .selectAll("g")
+      .data(tuningNames)
+      .enter()
+      .append("g")
+      .attr(
+        "transform",
+        (_, i) => `translate(${legendX}, ${legendY + i * legendItemHeight})`,
+      )
+      .each(function (d) {
+        const g = d3.select(this);
+        g.append("rect")
+          .attr("width", 12)
+          .attr("height", 12)
+          .attr("y", -10)
+          .style("fill", color(d));
+
+        g.append("text")
+          .attr("x", 16)
+          .attr("y", 0)
+          .style("alignment-baseline", "middle")
+          .style("font-size", "12px")
+          .text(d)
+          .style("fill", "var(--mantine-color-text)");
+      });
 
     // Axis styling
     svg

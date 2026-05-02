@@ -17,6 +17,7 @@ export function PlotViewPage() {
     [currentParsedInputs],
   );
 
+  // TODO: fix modal and write tests (values not being what they should)
   const handleEditSubmit = (values) => {
     // Parse raw values through schema to get parsed inputs
     const parsed = plotInputsSchema.parse(values);
