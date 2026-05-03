@@ -1,4 +1,3 @@
-export { getPresetPlotInputs } from "./presets/presetPlotInputs";
 export { plotInputsSchema } from "./types/plotInputsSchema";
 export type { PlotModel } from "./types/plotModel";
 export type { PlotInputs } from "./types/plotInputs";

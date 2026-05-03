@@ -8,7 +8,7 @@ export function CreatePlotPage() {
 
   const handleCreatePlot = (values) => {
     const params = new URLSearchParams(values);
-    navigate(`/plot/custom?${params.toString()}`);
+    navigate(`/plot?${params.toString()}`);
   };
 
   return (

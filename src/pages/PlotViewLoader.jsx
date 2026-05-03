@@ -1,25 +1,6 @@
-import { getPresetPlotInputs, plotInputsSchema } from "../plotting";
+import { plotInputsSchema } from "../plotting";
 
-export function plotViewLoader({ params, request }) {
-  const plotId = params.plotId;
-
-  if (!plotId) {
-    // TODO: message
-    throw new Response("Plot route not found", { status: 404 });
-  }
-
-  if (plotId !== "custom") {
-    const presetInputs = getPresetPlotInputs(plotId);
-    if (!presetInputs) {
-      // TODO: message
-      throw new Response("Plot preset not found", { status: 404 });
-    }
-
-    // Ensure presets are parsed the same as custom inputs
-    const parsedPreset = plotInputsSchema.parse(presetInputs);
-    return { plotId, plotInputs: parsedPreset, rawPlotInputs: presetInputs };
-  }
-
+export function plotViewLoader({ request }) {
   // Pass raw input for reuse in modal
   const url = new URL(request.url);
   const raw = {
@@ -45,5 +26,5 @@ export function plotViewLoader({ params, request }) {
     );
   }
 
-  return { plotId, rawPlotInputs: raw, plotInputs: parsedInputs.data };
+  return { rawPlotInputs: raw, plotInputs: parsedInputs.data };
 }

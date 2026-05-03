@@ -7,7 +7,7 @@ import PlotInputsForm from "../components/PlotInputsForm";
 import { plotInputsSchema } from "../plotting/types/plotInputsSchema";
 
 export function PlotViewPage() {
-  const { plotId, plotInputs, rawPlotInputs } = useLoaderData();
+  const { plotInputs, rawPlotInputs } = useLoaderData();
 
   const [currentParsedInputs, setCurrentParsedInputs] = useState(plotInputs);
   const [opened, setOpened] = useState(false);
@@ -28,7 +28,6 @@ export function PlotViewPage() {
   return (
     <Stack>
       <Title order={2}>Plot View</Title>
-      <Text>Viewing plot: {plotId}</Text>
       <D3ScatterPlot model={model} width={800} height={600} />
 
       <Button onClick={() => setOpened(true)}>Edit Inputs</Button>

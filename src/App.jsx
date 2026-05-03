@@ -32,7 +32,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <LandingPage /> },
       {
-        path: "/plot/:plotId",
+        path: "/plot",
         loader: plotViewLoader,
         hydrateFallbackElement: <Text size="sm">Loading plot...</Text>,
         element: <PlotViewPage />,

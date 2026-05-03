@@ -5,6 +5,7 @@ import { RouterProvider, createMemoryRouter } from "react-router";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { CreatePlotPage } from "./CreatePlotPage";
 import { LandingPage } from "./LandingPage";
+import { NotFoundPage } from "./NotFoundPage";
 import { PlotViewErrorBoundary } from "./PlotViewErrorBoundary";
 import { plotViewLoader } from "./PlotViewLoader";
 import { PlotViewPage } from "./PlotViewPage";
@@ -44,12 +45,13 @@ function renderWithRouter(initialEntries) {
       },
       { path: "/create", element: <CreatePlotPage /> },
       {
-        path: "/plot/:plotId",
+        path: "/plot",
         loader: plotViewLoader,
         hydrateFallbackElement: <div>Loading plot...</div>,
         element: <PlotViewPage />,
         errorElement: <PlotViewErrorBoundary />,
       },
+      { path: "*", element: <NotFoundPage /> },
     ],
     { initialEntries },
   );
@@ -68,9 +70,7 @@ describe("plot user flows", () => {
 
     await user.click(screen.getByRole("link", { name: "Open Example Plot" }));
 
-    expect(
-      await screen.findByText("Viewing plot: Bb-scale-default"),
-    ).toBeTruthy();
+    expect(await screen.findByText("Plot View")).toBeTruthy();
   });
 
   it("creates a custom plot from create page input", async () => {
@@ -82,17 +82,17 @@ describe("plot user flows", () => {
     await user.type(notesInput, "Bb2 C3 D4");
     await user.click(screen.getByRole("button", { name: "Create Plot" }));
 
-    expect(await screen.findByText("Viewing plot: custom")).toBeTruthy();
+    expect(await screen.findByText("Plot View")).toBeTruthy();
   });
 
-  it("shows not found page for unknown preset route", async () => {
+  it("shows not found page for invalid plot route", async () => {
     renderWithRouter(["/plot/not-a-real-plot"]);
 
     expect(await screen.findByText("Page Not Found")).toBeTruthy();
   });
 
   it("shows invalid config page for malformed custom route", async () => {
-    renderWithRouter(["/plot/custom?points=abc"]);
+    renderWithRouter(["/plot?points=abc"]);
 
     expect(
       await screen.findByRole("heading", {
