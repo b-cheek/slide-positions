@@ -1,16 +1,10 @@
 import { plotInputsSchema } from "../plotting";
+import { readPlotInputRawValues } from "../plotting/utils/plotInputUrl";
 
 export function plotViewLoader({ request }) {
   // Pass raw input for reuse in modal
   const url = new URL(request.url);
-  const raw = {
-    notesString: url.searchParams.get("notesString") ?? undefined,
-    valvesString: url.searchParams.get("valvesString") ?? undefined,
-    topSlideNote: url.searchParams.get("topSlideNote") ?? undefined,
-    bottomSlideNote: url.searchParams.get("bottomSlideNote") ?? undefined,
-    lipBendStartNote: url.searchParams.get("lipBendStartNote") ?? undefined,
-    lipBendStopNote: url.searchParams.get("lipBendStopNote") ?? undefined,
-  };
+  const raw = readPlotInputRawValues(url.searchParams);
 
   const parsedInputs = plotInputsSchema.safeParse(raw);
 

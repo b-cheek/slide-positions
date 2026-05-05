@@ -4,23 +4,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { plotInputsRawSchema } from "../plotting/types/plotInputsSchema";
 import { placeholderInputs } from "../plotting/presets/examplePlotInputs";
+import { readPlotInputRawValues } from "../plotting/utils/plotInputUrl";
 
 function defaultsFromUrl() {
   if (typeof window === "undefined") return {};
-  const url = new URL(window.location.href);
-  const entries = {
-    notesString: url.searchParams.get("notesString") ?? undefined,
-    valvesString: url.searchParams.get("valvesString") ?? undefined,
-    topSlideNote: url.searchParams.get("topSlideNote") ?? undefined,
-    bottomSlideNote: url.searchParams.get("bottomSlideNote") ?? undefined,
-    lipBendStartNote: url.searchParams.get("lipBendStartNote") ?? undefined,
-    lipBendStopNote: url.searchParams.get("lipBendStopNote") ?? undefined,
-  };
-  // remove undefined values
-  Object.keys(entries).forEach((k) => {
-    if (entries[k] === undefined) delete entries[k];
-  });
-  return entries;
+  return readPlotInputRawValues(new URL(window.location.href).searchParams);
 }
 
 export function PlotInputsForm({
@@ -37,7 +25,7 @@ export function PlotInputsForm({
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
   } = useForm({
-    defaultValues: resolvedDefaults,
+    defaultValues: { notesString: resolvedDefaults.notesString },
     mode: "onChange",
     reValidateMode: "onChange",
     resolver: zodResolver(plotInputsRawSchema),
@@ -89,6 +77,13 @@ export function PlotInputsForm({
           placeholder={resolvedDefaults.lipBendStopNote}
           error={errors.lipBendStopNote?.message}
           {...register("lipBendStopNote")}
+        />
+
+        <TextInput
+          label="Custom Title (optional)"
+          placeholder="Bb/F Trombone"
+          error={errors.title?.message}
+          {...register("title")}
         />
 
         <Button type="submit" disabled={!isValid || isSubmitting}>

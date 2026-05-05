@@ -5,6 +5,7 @@ import { Tuning, TUNING_REGEX } from "../processing/types/tuning";
 import { exampleInputs } from "../presets/examplePlotInputs";
 import { NOTE_NAME_REGEX, SCI_NOTATION_REGEX } from "../processing/types/note";
 import { getNotesInRange } from "../processing/utils/music";
+import { blankStringToUndefined } from "../utils/plotInputUrl";
 
 // Ranges do not allow adjustments
 const SCI_NOTATION_RANGE_REGEX = new RegExp(
@@ -26,10 +27,6 @@ const TUNING_LIST_REGEX = new RegExp(
 
 const SINGLE_NOTE_REGEX = new RegExp(`^${SCI_NOTATION_REGEX.source}$`);
 
-// coerce empty strings to undefined so that zod can apply defaults for optional fields
-const blankStringToUndefined = (value: unknown) =>
-  typeof value === "string" && value.trim() === "" ? undefined : value;
-
 const optionalStringWithDefault = (
   regex: RegExp,
   message: string,
@@ -41,6 +38,7 @@ const optionalStringWithDefault = (
   );
 
 // TODO different error messages with examples
+// TODO!: complete rework of validation, parsing, general flow here.
 export const plotInputsRawSchema = z.object({
   notesString: z.string().regex(SCI_NOTATION_LIST_REGEX, {
     message: "Invalid note string format",
@@ -70,6 +68,7 @@ export const plotInputsRawSchema = z.object({
     "Invalid lip bend stop note format",
     exampleInputs.lipBendStopNote,
   ),
+  title: z.string().optional(),
 });
 
 // TODO dedicated parsers file
@@ -109,6 +108,11 @@ export const plotInputsSchema = plotInputsRawSchema.transform(
     const lipStart = Note.fromSciNotation(raw.lipBendStartNote);
     const lipStop = Note.fromSciNotation(raw.lipBendStopNote);
 
+    const title =
+      raw.title?.trim() ||
+      tunings.map((t) => t.name.split(" ")[0]).join("/") +
+        " Trombone Slide Positions";
+
     return {
       notes,
       tunings,
@@ -116,6 +120,7 @@ export const plotInputsSchema = plotInputsRawSchema.transform(
       bottomSlideNote: bottom,
       lipBendStartNote: lipStart,
       lipBendStopNote: lipStop,
+      title,
     };
   },
 );

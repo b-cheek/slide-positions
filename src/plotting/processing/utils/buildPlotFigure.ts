@@ -48,8 +48,7 @@ export function buildPlotModel(inputs: ParsedPlotInputs): PlotModel {
   const player = new Player(lipBendRange, firstPosDistance);
 
   return {
-    // TODO: dynamic title
-    title: "Trombone Slide Positions",
+    title: inputs.title,
     notes: inputs.notes,
     trombone,
     player,

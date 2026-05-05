@@ -8,6 +8,7 @@ export type RawPlotInputs = {
   bottomSlideNote: string; // string note
   lipBendStartNote: string; // string note
   lipBendStopNote: string; // string note
+  title?: string; // Optional custom title
 };
 
 export type ParsedPlotInputs = {
@@ -17,6 +18,7 @@ export type ParsedPlotInputs = {
   bottomSlideNote: Note;
   lipBendStartNote: Note;
   lipBendStopNote: Note;
+  title: string;
   // Derived numeric values may be computed in processing as needed
 };
 
