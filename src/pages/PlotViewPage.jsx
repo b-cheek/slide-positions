@@ -4,7 +4,7 @@ import { Link, useLoaderData } from "react-router";
 import { D3ScatterPlot } from "../components/D3ScatterPlot";
 import { buildPlotModel } from "../plotting/processing/utils/buildPlotFigure";
 import PlotInputsForm from "../components/PlotInputsForm";
-import { plotInputsSchema } from "../plotting/types/plotInputsSchema";
+import { plotInputsSchema } from "../plotting/parsing/plotInputsSchema";
 
 export function PlotViewPage() {
   const { plotInputs, rawPlotInputs } = useLoaderData();

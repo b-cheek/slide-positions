@@ -1,5 +1,5 @@
 import { plotInputsSchema } from "../plotting";
-import { readPlotInputRawValues } from "../plotting/utils/plotInputUrl";
+import { readPlotInputRawValues } from "../plotting/parsing/utils";
 
 export function plotViewLoader({ request }) {
   // Pass raw input for reuse in modal

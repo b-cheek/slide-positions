@@ -1,44 +1,18 @@
 import { z } from "zod";
-import type { RawPlotInputs, ParsedPlotInputs } from "./plotInputs";
+import type { RawPlotInputs, ParsedPlotInputs } from "../types/plotInputs";
 import { Note } from "../processing/types/note";
-import { Tuning, TUNING_REGEX } from "../processing/types/tuning";
+import { Tuning } from "../processing/types/tuning";
 import { exampleInputs } from "../presets/examplePlotInputs";
-import { NOTE_NAME_REGEX, SCI_NOTATION_REGEX } from "../processing/types/note";
-import { getNotesInRange } from "../processing/utils/music";
-import { blankStringToUndefined } from "../utils/plotInputUrl";
-
-// Ranges do not allow adjustments
-const SCI_NOTATION_RANGE_REGEX = new RegExp(
-  `${NOTE_NAME_REGEX.source}-${NOTE_NAME_REGEX.source}`,
-);
-
-const SCI_NOTATION_OR_RANGE_REGEX = new RegExp(
-  `(?:${SCI_NOTATION_REGEX.source}|${SCI_NOTATION_RANGE_REGEX.source})`,
-);
-
-const SCI_NOTATION_LIST_REGEX = new RegExp(
-  // Allowing any number of spaces or commas in delimiter to be safe
-  String.raw`^(?:${SCI_NOTATION_OR_RANGE_REGEX.source})(?:[\s,]+${SCI_NOTATION_OR_RANGE_REGEX.source})*$`,
-);
-
-const TUNING_LIST_REGEX = new RegExp(
-  String.raw`^(?:${TUNING_REGEX.source})(?:/+(?:${TUNING_REGEX.source}))*$`,
-);
-
-const SINGLE_NOTE_REGEX = new RegExp(`^${SCI_NOTATION_REGEX.source}$`);
-
-const optionalStringWithDefault = (
-  regex: RegExp,
-  message: string,
-  defaultValue: string,
-) =>
-  z.preprocess(
-    blankStringToUndefined,
-    z.string().regex(regex, { message }).default(defaultValue),
-  );
+import {
+  TUNING_LIST_REGEX,
+  SCI_NOTATION_LIST_REGEX,
+  SCI_NOTATION_RANGE_REGEX,
+  SINGLE_NOTE_REGEX,
+  optionalStringWithDefault,
+  sciNotationRangeTransform,
+} from "./utils";
 
 // TODO different error messages with examples
-// TODO!: complete rework of validation, parsing, general flow here.
 export const plotInputsRawSchema = z.object({
   notesString: z.string().regex(SCI_NOTATION_LIST_REGEX, {
     message: "Invalid note string format",
@@ -58,6 +32,7 @@ export const plotInputsRawSchema = z.object({
     "Invalid bottom slide note format",
     exampleInputs.bottomSlideNote,
   ),
+  // TODO: enforce that if you have one, you must have both
   lipBendStartNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid lip bend start note format",
@@ -70,15 +45,6 @@ export const plotInputsRawSchema = z.object({
   ),
   title: z.string().optional(),
 });
-
-// TODO dedicated parsers file
-const sciNotationRangeTransform = (value: string) => {
-  const [start, stop] = value.split("-").map((s) => s.trim());
-  const startNote = Note.fromSciNotation(start);
-  const stopNote = Note.fromSciNotation(stop);
-  const middleNotes = getNotesInRange(startNote, stopNote);
-  return [startNote, ...middleNotes, stopNote];
-};
 
 export const plotInputsSchema = plotInputsRawSchema.transform(
   (raw: RawPlotInputs): ParsedPlotInputs => {

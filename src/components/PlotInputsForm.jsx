@@ -2,9 +2,9 @@ import React from "react";
 import { Button, Stack, TextInput, Title } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { plotInputsRawSchema } from "../plotting/types/plotInputsSchema";
+import { plotInputsRawSchema } from "../plotting/parsing/plotInputsSchema";
 import { placeholderInputs } from "../plotting/presets/examplePlotInputs";
-import { readPlotInputRawValues } from "../plotting/utils/plotInputUrl";
+import { readPlotInputRawValues } from "../plotting/parsing/utils";
 
 function defaultsFromUrl() {
   if (typeof window === "undefined") return {};

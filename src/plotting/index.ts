@@ -1,4 +1,4 @@
-export { plotInputsSchema } from "./types/plotInputsSchema";
+export { plotInputsSchema } from "./parsing/plotInputsSchema";
 export type { PlotModel } from "./types/plotModel";
 export type { PlotInputs } from "./types/plotInputs";
 export type {

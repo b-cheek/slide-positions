@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { plotInputsSchema } from "./plotInputsSchema";
+import { title } from "node:process";
 
 // TODO: Add tests for unit edge cases
 
@@ -39,6 +40,7 @@ describe("plotInputsSchema", () => {
       bottomSlideNote: "",
       lipBendStartNote: "",
       lipBendStopNote: "",
+      title: "",
     });
 
     expect(result.success).toBe(true);
