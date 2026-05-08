@@ -2,28 +2,15 @@ import { Button, Stack, Text, Title, Modal } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { Link, useLoaderData } from "react-router";
 import { D3ScatterPlot } from "../components/D3ScatterPlot";
-import { buildPlotModel } from "../plotting/processing/utils/buildPlotFigure";
+import { buildPlotModel } from "../plotting/parsing/utils";
 import PlotInputsForm from "../components/PlotInputsForm";
-import { plotInputsSchema } from "../plotting/parsing/plotInputsSchema";
 
 export function PlotViewPage() {
-  const { plotInputs, rawPlotInputs } = useLoaderData();
+  const { plotInputs } = useLoaderData();
 
-  const [currentParsedInputs, setCurrentParsedInputs] = useState(plotInputs);
   const [opened, setOpened] = useState(false);
 
-  const model = useMemo(
-    () => buildPlotModel(currentParsedInputs),
-    [currentParsedInputs],
-  );
-
-  // TODO: fix modal and write tests (values not being what they should)
-  const handleEditSubmit = (values) => {
-    // Parse raw values through schema to get parsed inputs
-    const parsed = plotInputsSchema.parse(values);
-    setCurrentParsedInputs(parsed);
-    setOpened(false);
-  };
+  const model = useMemo(() => buildPlotModel(plotInputs), [plotInputs]);
 
   return (
     <Stack>
@@ -37,7 +24,7 @@ export function PlotViewPage() {
         onClose={() => setOpened(false)}
         title="Edit Plot Inputs"
       >
-        <PlotInputsForm onSubmit={handleEditSubmit} submitLabel="Apply" />
+        <PlotInputsForm onSubmit={() => setOpened(false)} submitLabel="Apply" />
       </Modal>
 
       <Button component={Link} to="/">

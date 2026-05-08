@@ -1,16 +1,14 @@
 import { z } from "zod";
-import type { RawPlotInputs, ParsedPlotInputs } from "../types/plotInputs";
 import { Note } from "../processing/types/note";
 import { Tuning } from "../processing/types/tuning";
 import { exampleInputs } from "../presets/examplePlotInputs";
 import {
-  TUNING_LIST_REGEX,
   SCI_NOTATION_LIST_REGEX,
   SCI_NOTATION_RANGE_REGEX,
+  TUNING_LIST_REGEX,
   SINGLE_NOTE_REGEX,
-  optionalStringWithDefault,
-  sciNotationRangeTransform,
-} from "./utils";
+} from "./regex";
+import { optionalStringWithDefault, sciNotationRangeTransform } from "./utils";
 
 // TODO different error messages with examples
 export const plotInputsRawSchema = z.object({
@@ -46,47 +44,49 @@ export const plotInputsRawSchema = z.object({
   title: z.string().optional(),
 });
 
-export const plotInputsSchema = plotInputsRawSchema.transform(
-  (raw: RawPlotInputs): ParsedPlotInputs => {
-    // Apply sensible defaults for optional fields before parsing
-    const noteTokens = raw.notesString
-      .replace(/,/g, " ")
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean);
-    const notes = noteTokens.flatMap((token) =>
-      SCI_NOTATION_RANGE_REGEX.test(token)
-        ? sciNotationRangeTransform(token)
-        : Note.fromSciNotation(token.trim()),
-    );
+export type RawPlotInputs = z.infer<typeof plotInputsRawSchema>;
 
-    const tuningTokens = raw.valvesString
-      .replace(/,/g, " ")
-      .trim()
-      .split(/[\s\/]+/)
-      .filter(Boolean);
-    const tunings = tuningTokens.map((s) =>
-      Tuning.fromPitchClassOrPitch(s.trim()),
-    );
+export const plotInputsSchema = plotInputsRawSchema.transform((raw) => {
+  // Apply sensible defaults for optional fields before parsing
+  const noteTokens = raw.notesString
+    .replace(/,/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const notes = noteTokens.flatMap((token) =>
+    SCI_NOTATION_RANGE_REGEX.test(token)
+      ? sciNotationRangeTransform(token)
+      : Note.fromSciNotation(token.trim()),
+  );
 
-    const top = Note.fromSciNotation(raw.topSlideNote);
-    const bottom = Note.fromSciNotation(raw.bottomSlideNote);
-    const lipStart = Note.fromSciNotation(raw.lipBendStartNote);
-    const lipStop = Note.fromSciNotation(raw.lipBendStopNote);
+  const tuningTokens = raw.valvesString
+    .replace(/,/g, " ")
+    .trim()
+    .split(/[\s\/]+/)
+    .filter(Boolean);
+  const tunings = tuningTokens.map((s) =>
+    Tuning.fromPitchClassOrPitch(s.trim()),
+  );
 
-    const title =
-      raw.title?.trim() ||
-      tunings.map((t) => t.name.split(" ")[0]).join("/") +
-        " Trombone Slide Positions";
+  const top = Note.fromSciNotation(raw.topSlideNote);
+  const bottom = Note.fromSciNotation(raw.bottomSlideNote);
+  const lipStart = Note.fromSciNotation(raw.lipBendStartNote);
+  const lipStop = Note.fromSciNotation(raw.lipBendStopNote);
 
-    return {
-      notes,
-      tunings,
-      topSlideNote: top,
-      bottomSlideNote: bottom,
-      lipBendStartNote: lipStart,
-      lipBendStopNote: lipStop,
-      title,
-    };
-  },
-);
+  const title =
+    raw.title?.trim() ||
+    tunings.map((t) => t.name.split(" ")[0]).join("/") +
+      " Trombone Slide Positions";
+
+  return {
+    notes,
+    tunings,
+    topSlideNote: top,
+    bottomSlideNote: bottom,
+    lipBendStartNote: lipStart,
+    lipBendStopNote: lipStop,
+    title,
+  };
+});
+
+export type ParsedPlotInputs = z.infer<typeof plotInputsSchema>;

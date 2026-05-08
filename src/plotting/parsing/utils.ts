@@ -1,41 +1,13 @@
 import { z } from "zod";
 import { getNotesInRange } from "../processing/utils/music";
-import { NOTE_NAME_REGEX, SCI_NOTATION_REGEX } from "../processing/types/note";
-import { TUNING_REGEX } from "../processing/types/tuning";
+import { Hertz, Meters, MidiNumber } from "..";
+import type { ParsedPlotInputs } from "../types/plotInputs";
 import { Note } from "../processing/types/note";
-import type { RawPlotInputs } from "../types/plotInputs";
+import { Player } from "../processing/types/player";
+import { Trombone } from "../processing/types/trombone";
+import { freqToLength } from "../processing/utils/physics";
 
-// Regexes
-
-// Ranges do not allow adjustments
-export const SCI_NOTATION_RANGE_REGEX = new RegExp(
-  `${NOTE_NAME_REGEX.source}-${NOTE_NAME_REGEX.source}`,
-);
-
-const SCI_NOTATION_OR_RANGE_REGEX = new RegExp(
-  `(?:${SCI_NOTATION_REGEX.source}|${SCI_NOTATION_RANGE_REGEX.source})`,
-);
-
-export const SCI_NOTATION_LIST_REGEX = new RegExp(
-  // Allowing any number of spaces or commas in delimiter to be safe
-  String.raw`^(?:${SCI_NOTATION_OR_RANGE_REGEX.source})(?:[\s,]+${SCI_NOTATION_OR_RANGE_REGEX.source})*$`,
-);
-
-export const TUNING_LIST_REGEX = new RegExp(
-  String.raw`^(?:${TUNING_REGEX.source})(?:/+(?:${TUNING_REGEX.source}))*$`,
-);
-
-export const SINGLE_NOTE_REGEX = new RegExp(`^${SCI_NOTATION_REGEX.source}$`);
-
-export const optionalStringWithDefault = (
-  regex: RegExp,
-  message: string,
-  defaultValue: string,
-) =>
-  z.preprocess(
-    coerceToUndefined,
-    z.string().regex(regex, { message }).default(defaultValue),
-  );
+// General utilities
 
 export const coerceToUndefined = (value: unknown) => {
   // I think reading from the URL params and the initial form load results in undefined values
@@ -49,6 +21,20 @@ export const coerceToUndefined = (value: unknown) => {
   return trimmed === "" ? undefined : trimmed;
 };
 
+// Schema utilities
+
+export const optionalStringWithDefault = (
+  regex: RegExp,
+  message: string,
+  defaultValue: string,
+) =>
+  z.preprocess(
+    coerceToUndefined,
+    z.string().regex(regex, { message }).default(defaultValue),
+  );
+
+// Input shorthand parsing
+
 export const sciNotationRangeTransform = (value: string) => {
   const [start, stop] = value.split("-").map((s) => s.trim());
   const startNote = Note.fromSciNotation(start);
@@ -56,6 +42,8 @@ export const sciNotationRangeTransform = (value: string) => {
   const middleNotes = getNotesInRange(startNote, stopNote);
   return [startNote, ...middleNotes, stopNote];
 };
+
+// URL utilities
 
 const PLOT_INPUT_QUERY_KEYS = [
   "notesString",
@@ -67,6 +55,7 @@ const PLOT_INPUT_QUERY_KEYS = [
   "title",
 ]; // TODO: I hate that I have to have this...
 
+// TODO: enforce stricter typing somehow
 export function readPlotInputRawValues(searchParams: URLSearchParams) {
   return Object.fromEntries(
     PLOT_INPUT_QUERY_KEYS.map((key) => [
@@ -74,4 +63,54 @@ export function readPlotInputRawValues(searchParams: URLSearchParams) {
       coerceToUndefined(searchParams.get(key)), // Perhaps better way to extract params with names?
     ]).filter(([, value]) => value !== undefined),
   );
+}
+
+// Transform ParsedPlotInputs into PlotModel
+
+// TODO should this live somewhere else?
+export type PlotModel = {
+  title: string;
+  notes: Note[];
+  trombone: Trombone;
+  player: Player;
+};
+
+export function buildPlotModel({
+  notes,
+  tunings,
+  topSlideNote,
+  bottomSlideNote,
+  lipBendStartNote,
+  lipBendStopNote,
+  title,
+}: ParsedPlotInputs): PlotModel {
+  // Get slide length
+  // TODO: figure out a way to account for any partial based on tunings?
+  const topSlideFreq = topSlideNote.freq;
+  const bottomSlideFreq = bottomSlideNote.freq;
+
+  const slideLength = (freqToLength(bottomSlideFreq) -
+    freqToLength(topSlideFreq)) as Meters;
+
+  // Get first pos distance
+  // First pos note is first in tune note moving out from mid slide distance
+  const firstPosNote = Note.fromMidiNum(
+    Math.floor(topSlideNote.midiNum) as MidiNumber,
+  );
+  const firstPosDistance = (freqToLength(firstPosNote.freq) -
+    freqToLength(topSlideFreq)) as Meters;
+
+  // Get lip bend range
+  const lipBendRange = (lipBendStartNote.freq - lipBendStopNote.freq) as Hertz;
+
+  // Build model
+  const trombone = new Trombone(tunings, slideLength);
+  const player = new Player(lipBendRange, firstPosDistance);
+
+  return {
+    title,
+    notes,
+    trombone,
+    player,
+  };
 }

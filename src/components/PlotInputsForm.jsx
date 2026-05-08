@@ -2,6 +2,7 @@ import React from "react";
 import { Button, Stack, TextInput, Title } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router";
 import { plotInputsRawSchema } from "../plotting/parsing/plotInputsSchema";
 import { placeholderInputs } from "../plotting/presets/examplePlotInputs";
 import { readPlotInputRawValues } from "../plotting/parsing/utils";
@@ -16,9 +17,17 @@ export function PlotInputsForm({
   onSubmit,
   submitLabel = "Submit",
 }) {
+  const navigate = useNavigate();
+
   const resolvedDefaults = Object.keys(defaultValues).length
     ? defaultValues
     : { ...placeholderInputs, ...defaultsFromUrl() };
+
+  const handleFormSubmit = (values) => {
+    onSubmit?.(values);
+    const params = new URLSearchParams(values);
+    navigate(`/plot?${params.toString()}`);
+  };
 
   const {
     register,
@@ -32,7 +41,7 @@ export function PlotInputsForm({
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
       <Stack>
         <Title order={3}>Plot Inputs</Title>
 
