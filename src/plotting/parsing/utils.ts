@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getNotesInRange } from "../processing/utils/music";
 import { Hertz, Meters, MidiNumber } from "..";
-import type { ParsedPlotInputs } from "../types/plotInputs";
+import type { ParsedPlotInputs } from "./plotInputsSchema";
 import { Note } from "../processing/types/note";
 import { Player } from "../processing/types/player";
 import { Trombone } from "../processing/types/trombone";
