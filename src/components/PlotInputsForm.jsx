@@ -8,7 +8,9 @@ import { placeholderInputs } from "../plotting/presets/examplePlotInputs";
 import { readPlotInputRawValues } from "../plotting/parsing/utils";
 
 function defaultsFromUrl() {
-  if (typeof window === "undefined") return {};
+  if (typeof window === "undefined") {
+    return {};
+  }
   return readPlotInputRawValues(new URL(window.location.href).searchParams);
 }
 

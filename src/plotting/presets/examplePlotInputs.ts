@@ -1,12 +1,6 @@
-import type { PlotInputs } from "../types/plotInputs";
-import { defaultOptions } from "./defaults";
+import type { RawPlotInputs } from "../parsing/plotInputsSchema";
+import { plotInputsRawSchema } from "../parsing/plotInputsSchema";
 
-export const exampleInputs: PlotInputs = {
+export const exampleInputs: RawPlotInputs = plotInputsRawSchema.parse({
   notesString: "Bb2 C3 D3 Eb3 F3 G3 A3 Bb3",
-  ...defaultOptions,
-};
-
-export const placeholderInputs: PlotInputs = {
-  notesString: "Bb2 D3 F3",
-  ...defaultOptions,
-};
+});

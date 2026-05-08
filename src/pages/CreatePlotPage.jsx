@@ -1,6 +1,5 @@
 import { Button, Stack, Text, Title } from "@mantine/core";
 import { Link } from "react-router";
-import { placeholderInputs } from "../plotting/presets/examplePlotInputs";
 import PlotInputsForm from "../components/PlotInputsForm";
 
 export function CreatePlotPage() {

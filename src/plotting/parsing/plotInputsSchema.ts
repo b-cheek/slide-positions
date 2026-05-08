@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { Note } from "../processing/types/note";
 import { Tuning } from "../processing/types/tuning";
-import { exampleInputs } from "../presets/examplePlotInputs";
 import {
   SCI_NOTATION_LIST_REGEX,
   SCI_NOTATION_RANGE_REGEX,
@@ -18,33 +17,34 @@ export const plotInputsRawSchema = z.object({
   valvesString: optionalStringWithDefault(
     TUNING_LIST_REGEX,
     "Invalid valves string format",
-    exampleInputs.valvesString,
+    "Bb/F",
   ),
   topSlideNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid top slide note format",
-    exampleInputs.topSlideNote,
+    "Bb1",
   ),
   bottomSlideNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid bottom slide note format",
-    exampleInputs.bottomSlideNote,
+    "E1",
   ),
   // TODO: enforce that if you have one, you must have both
   lipBendStartNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid lip bend start note format",
-    exampleInputs.lipBendStartNote,
+    "Bb1",
   ),
   lipBendStopNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid lip bend stop note format",
-    exampleInputs.lipBendStopNote,
+    "G1",
   ),
   title: z.string().optional(),
 });
 
 export type RawPlotInputs = z.infer<typeof plotInputsRawSchema>;
+export type OptionalPlotInputs = Omit<RawPlotInputs, "notesString">;
 
 export const plotInputsSchema = plotInputsRawSchema.transform((raw) => {
   // Apply sensible defaults for optional fields before parsing

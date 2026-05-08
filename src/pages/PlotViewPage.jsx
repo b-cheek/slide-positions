@@ -1,4 +1,4 @@
-import { Button, Stack, Text, Title, Modal } from "@mantine/core";
+import { Button, Stack, Title, Modal } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { Link, useLoaderData } from "react-router";
 import { D3ScatterPlot } from "../components/D3ScatterPlot";
