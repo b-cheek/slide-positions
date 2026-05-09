@@ -22,3 +22,11 @@ export function getNotesInRange(startNote: Note, stopNote: Note): Note[] {
 
   return notes;
 }
+
+export function freqToMidiNum(freq: number): MidiNumber {
+  return Math.round(69 + 12 * Math.log2(freq / 440)) as MidiNumber;
+}
+
+export function midiNumToFreq(midiNum: MidiNumber): number {
+  return 440 * Math.pow(2, (midiNum - 69) / 12);
+}
