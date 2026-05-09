@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import type { PlotModel } from "../plotting/parsing/utils";
+import { Note } from "../plotting/processing/types/note";
+import { MidiNumber } from "../plotting";
 
-const X_AXIS_LABEL = "Slide Distance (m)";
-const Y_AXIS_LABEL = "MIDI Number";
+const X_AXIS_LABEL = "Slide Position";
+const Y_AXIS_LABEL = "Note";
 
 interface D3ScatterPlotProps {
   model: PlotModel;
@@ -23,7 +25,23 @@ export function D3ScatterPlot({
       model.trombone.getNoteConfigs(note, model.player),
     );
 
-    if (!svgRef.current || noteConfigs.length === 0) return;
+    // TODO: prevent recomputation?
+    const openTuning = model.trombone.tunings[0];
+    const semiToneOffset = 2 ** (1 / 12);
+    let posLen = openTuning.length + model.player.firstPosDistance;
+    const posLengths: number[] = [];
+    while (
+      posLen.toPrecision(12) <=
+      (openTuning.length + model.trombone.slideLength).toPrecision(12)
+    ) {
+      posLengths.push(posLen - openTuning.length);
+      posLen *= semiToneOffset;
+    }
+    // create mapping of each pos length to its index + 1
+    const posLengthToPos: Record<number, number> = {};
+    posLengths.forEach((len, i) => {
+      posLengthToPos[len] = i + 1;
+    });
 
     // TODO: perhaps a major rework for complete dimensional consistency of labels, but for now just
     // hardcoding margins that look good with the current labels and font sizes
@@ -73,7 +91,12 @@ export function D3ScatterPlot({
     svg
       .append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale))
+      .call(
+        d3
+          .axisBottom(xScale)
+          .tickValues(posLengths)
+          .tickFormat((d) => String(posLengthToPos[+d])),
+      )
       .append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 40)
@@ -82,7 +105,12 @@ export function D3ScatterPlot({
 
     svg
       .append("g")
-      .call(d3.axisLeft(yScale))
+      .call(
+        d3
+          .axisLeft(yScale)
+          .tickValues(yScale.ticks().filter((tick) => Number.isInteger(tick)))
+          .tickFormat((d) => Note.fromMidiNum(+d as MidiNumber).name),
+      )
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -45) // Slightly farther to look even with length of numbers vs height of numbers for x-axis label
@@ -90,6 +118,25 @@ export function D3ScatterPlot({
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .text(Y_AXIS_LABEL);
+
+    // Gridlines
+    svg
+      .append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(
+        d3
+          .axisBottom(xScale)
+          .tickValues(posLengths)
+          .tickFormat(() => "")
+          .tickSize(-innerHeight),
+      )
+      // Remove unecessary domain lines that are already shown by axis
+      .call((g) => g.select(".domain").remove())
+      .selectAll("line")
+      .style("stroke", "var(--mantine-color-default-border)")
+      .style("stroke-opacity", 0.7)
+      .style("stroke-dasharray", "3,3");
 
     // Points
     // Color scale per tuning
