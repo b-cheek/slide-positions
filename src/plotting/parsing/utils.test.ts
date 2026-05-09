@@ -1,52 +1,61 @@
 import { describe, expect, it } from "vitest";
-// import { Trombone } from "../processing/types/trombone";
-// import { Note } from "../processing/types/note";
-// import { getSlideInfo, getLipBendRange, buildPlotModel } from "./utils";
+import { Trombone } from "../processing/types/trombone";
+import { Note } from "../processing/types/note";
+import { buildPlotModel } from "./utils";
+import { ParsedPlotInputs } from "./plotInputsSchema";
 
 // TODO: add random fuzzy tests and check that points, ticks are reasonable
 
-// embarassed to commit this but I need to call it for tonight
-describe("utils", () => {
-  it("passes", () => {
-    expect(true).toBe(true);
+const base_inputs: ParsedPlotInputs = {
+  notes: [],
+  tunings: [],
+  topSlideNote: Note.fromSciNotation("Bb1"),
+  bottomSlideNote: Note.fromSciNotation("E1"),
+  lipBendStartNote: Note.fromSciNotation("Bb1"),
+  lipBendStopNote: Note.fromSciNotation("G1"),
+  title: "Test",
+};
+
+// TODO: rename to not use old helper names?
+describe("getSlideInfo", () => {
+  it("calculates slide info for simple inputs", () => {
+    const plotModel = buildPlotModel({ ...base_inputs });
+    const firstPosDistance = plotModel.player.firstPosDistance;
+    const slideLength = plotModel.trombone.slideLength;
+
+    expect(firstPosDistance).toBe(0);
+    expect(slideLength).toBe(new Trombone().slideLength);
+  });
+
+  it("calculates slide info for realistic top and bottom note", () => {
+    const plotModel = buildPlotModel({
+      ...base_inputs,
+      topSlideNote: Note.fromSciNotation("Bb1+5"),
+      bottomSlideNote: Note.fromSciNotation("E1-20"),
+    });
+
+    const firstPosDistance = plotModel.player.firstPosDistance;
+    const slideLength = plotModel.trombone.slideLength;
+
+    // More accurate checks?
+    expect(firstPosDistance).toBeGreaterThan(0);
+    expect(slideLength).toBeGreaterThan(new Trombone().slideLength);
+
+    // TODO: Check that B2 accessible? C1?
   });
 });
 
-// TODO: bring these tests back from higher level? Or at least the behaviors they check
-// describe("getSlideInfo", () => {
-//   it("calculates slide info for simple notes", () => {
-//     const { firstPosDistance, slideLength } = getSlideInfo(
-//       Note.fromSciNotation("Bb1"),
-//       Note.fromSciNotation("E1"),
-//     );
-
-//     expect(firstPosDistance).toBe(0);
-//     expect(slideLength).toBe(new Trombone().slideLength);
-//   });
-
-//   it("calculates slide info for realistic notes", () => {
-//     const { firstPosDistance, slideLength } = getSlideInfo(
-//       Note.fromSciNotation("Bb1+5"),
-//       Note.fromSciNotation("E1-20"),
-//     );
-//     // More accurate checks?
-//     expect(firstPosDistance).toBeGreaterThan(0);
-//     expect(slideLength).toBeGreaterThan(new Trombone().slideLength);
-
-//     // TODO: Check that B2 accessible? C1?
-//   });
-// });
-
-// describe("getLipBendRange", () => {
-//   it("calculates lip bend range for simple notes", () => {
-//     const range = getLipBendRange(
-//       Note.fromSciNotation("Bb1"),
-//       Note.fromSciNotation("G1"),
-//     );
-
-//     expect(range).toBeCloseTo(9.27, 2);
-//   });
-// });
+describe("getLipBendRange", () => {
+  it("calculates lip bend range for simple notes", () => {
+    const plotModel = buildPlotModel({
+      ...base_inputs,
+      lipBendStartNote: Note.fromSciNotation("Bb1"),
+      lipBendStopNote: Note.fromSciNotation("G1"),
+    });
+    const range = plotModel.player.lipBendRange;
+    expect(range).toBeCloseTo(9.27, 2);
+  });
+});
 
 // TODO: move these tests to correct spot once fully implemented
 // describe("buildPlotFigure", () => {
