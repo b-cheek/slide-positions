@@ -12,13 +12,6 @@ import { PlotViewPage } from "./PlotViewPage";
 
 // TODO: add tests for example paths, other happy paths?
 
-vi.mock("plotly.js-dist", () => ({
-  default: {
-    newPlot: vi.fn(),
-    purge: vi.fn(),
-  },
-}));
-
 beforeAll(() => {
   Object.defineProperty(window, "matchMedia", {
     writable: true,
@@ -57,7 +50,7 @@ function renderWithRouter(initialEntries) {
   );
 
   return render(
-    <MantineProvider defaultColorScheme="light">
+    <MantineProvider defaultColorScheme="auto">
       <RouterProvider router={router} />
     </MantineProvider>,
   );

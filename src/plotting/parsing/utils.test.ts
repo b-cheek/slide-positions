@@ -3,16 +3,18 @@ import { Trombone } from "../processing/types/trombone";
 import { Note } from "../processing/types/note";
 import { buildPlotModel } from "./utils";
 import { ParsedPlotInputs } from "./plotInputsSchema";
+import { NoteConfiguration } from "../processing/types/noteConfiguration";
+import { Tuning } from "../processing/types/tuning";
 
 // TODO: add random fuzzy tests and check that points, ticks are reasonable
 
 const base_inputs: ParsedPlotInputs = {
   notes: [],
-  tunings: [],
+  tunings: [Tuning.fromPitchClassOrPitch("Bb")],
   topSlideNote: Note.fromSciNotation("Bb1"),
   bottomSlideNote: Note.fromSciNotation("E1"),
   lipBendStartNote: Note.fromSciNotation("Bb1"),
-  lipBendStopNote: Note.fromSciNotation("G1"),
+  lipBendStopNote: Note.fromSciNotation("Bb1"),
   title: "Test",
 };
 
@@ -57,47 +59,43 @@ describe("getLipBendRange", () => {
   });
 });
 
-// TODO: move these tests to correct spot once fully implemented
-// describe("buildPlotFigure", () => {
-//   it("builds a plot figure for simple inputs", () => {
-//     const inputs = {
-//       notes: [
-//         Note.fromSciNotation("Bb1"),
-//         Note.fromSciNotation("C2"),
-//         Note.fromSciNotation("D2"),
-//       ],
-//       tunings: [Tuning.fromPitchClassOrPitch("Bb")],
-//       topSlideNote: Note.fromSciNotation("Bb1"),
-//       bottomSlideNote: Note.fromSciNotation("E1"),
-//       lipBendStartNote: Note.fromSciNotation("Bb1"),
-//       lipBendStopNote: Note.fromSciNotation("G1"),
-//     };
+const buildPlotFigure = (inputs: ParsedPlotInputs): NoteConfiguration[] => {
+  const plotModel = buildPlotModel(inputs);
+  const noteConfigs = plotModel.notes.flatMap((note) =>
+    plotModel.trombone.getNoteConfigs(note, plotModel.player),
+  );
+  return noteConfigs;
+};
 
-//     const figure = buildPlotFigure(inputs);
+describe("buildPlotFigure", () => {
+  it("builds a plot figure for simple inputs", () => {
+    const configs = buildPlotFigure({
+      ...base_inputs,
+      notes: [
+        Note.fromSciNotation("Bb1"),
+        Note.fromSciNotation("C2"),
+        Note.fromSciNotation("D2"),
+      ],
+    });
 
-//     expect(figure).toBeDefined();
-//     // TODO: more specific checks
-//   });
+    expect(configs).toBeDefined();
+    // TODO: more specific checks
+  });
 
-//   it("plots a lip bent note", () => {
-//     const inputs = {
-//       notes: [Note.fromSciNotation("B2")],
-//       tunings: [Tuning.fromPitchClassOrPitch("Bb")],
-//       topSlideNote: Note.fromSciNotation("Bb1"),
-//       bottomSlideNote: Note.fromSciNotation("E1"),
-//       lipBendStartNote: Note.fromSciNotation("Bb1"),
-//       lipBendStopNote: Note.fromSciNotation("G1"),
-//     };
+  it("plots a lip bent note", () => {
+    const configs = buildPlotFigure({
+      ...base_inputs,
+      notes: [Note.fromSciNotation("B2")],
+      lipBendStartNote: Note.fromSciNotation("Bb1"),
+      lipBendStopNote: Note.fromSciNotation("G1"),
+    });
 
-//     const figure = buildPlotFigure(inputs);
+    expect(configs).toBeDefined();
+    expect(configs).toHaveLength(1);
+    const config = configs[0];
+    expect(config.note).toStrictEqual(Note.fromSciNotation("B2"));
+    expect(config.slideDistance).toBe(new Trombone().slideLength);
+  });
 
-//     expect(figure).toBeDefined();
-//     const points = figure.points;
-//     expect(points).toHaveLength(1);
-//     const { x, y } = points[0];
-//     expect(y).toBe(Note.fromSciNotation("B2").midiNum);
-//     expect(x).toBe(new Trombone().slideLength);
-//   });
-
-// TODO: more tests for common use cases
-// });
+  // TODO: more tests for common use cases
+});
