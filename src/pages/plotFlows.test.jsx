@@ -56,6 +56,27 @@ function renderWithRouter(initialEntries) {
   );
 }
 
+// Add tests that pages load successfully
+describe("page rendering", () => {
+  it("renders landing page", async () => {
+    renderWithRouter(["/"]);
+
+    expect(await screen.findByText("Plot Gallery")).toBeTruthy();
+  });
+
+  it("renders create plot page", async () => {
+    renderWithRouter(["/create"]);
+
+    expect(
+      // findByText doesn't work since there are two elements with this text
+      await screen.findByRole("heading", {
+        name: "Create Plot",
+        level: 2,
+      }),
+    ).toBeTruthy();
+  });
+});
+
 describe("plot user flows", () => {
   it("opens an example plot without errors", async () => {
     const user = userEvent.setup();
