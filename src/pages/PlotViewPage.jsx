@@ -24,7 +24,12 @@ export function PlotViewPage() {
         onClose={() => setOpened(false)}
         title="Edit Plot Inputs"
       >
-        <PlotInputsForm onSubmit={() => setOpened(false)} submitLabel="Apply" />
+        <PlotInputsForm
+          // TODO: get default values from current plot inputs
+          // defaultValues={}
+          onSubmit={() => setOpened(false)}
+          submitLabel="Apply"
+        />
       </Modal>
 
       <Button component={Link} to="/">
