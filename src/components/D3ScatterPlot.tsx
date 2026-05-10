@@ -52,8 +52,8 @@ export function D3ScatterPlot({
 
     d3.select(svgRef.current).selectAll("*").remove();
 
-    const xExtent = d3.extent(noteConfigs, (d) => d.slideDistance);
-    const yExtent = d3.extent(noteConfigs, (d) => d.note.midiNum);
+    const xExtent = d3.extent(noteConfigs, (d) => d.graphPoint[0]);
+    const yExtent = d3.extent(noteConfigs, (d) => d.graphPoint[1]);
     if (!xExtent || xExtent[0] == null || xExtent[1] == null) return;
     if (!yExtent || yExtent[0] == null || yExtent[1] == null) return;
     const xDomain: [number, number] = [
@@ -151,13 +151,44 @@ export function D3ScatterPlot({
 
     svg
       .selectAll("circle")
-      .data(noteConfigs)
+      .data(noteConfigs.filter((d) => d.lipBendCents === 0)) // Only draw circles for non-lip-bent notes
       .enter()
       .append("circle")
-      .attr("cx", (d) => xScale(d.slideDistance))
-      .attr("cy", (d) => yScale(d.note.midiNum))
+      .attr("cx", (d) => xScale(d.graphPoint[0]))
+      .attr("cy", (d) => yScale(d.graphPoint[1]))
       .attr("r", 3)
       .style("fill", (d) => color(d.tuning.name));
+
+    // Draw x's at lip bend points
+    const marker = d3.symbol().type(d3.symbolAsterisk).size(50);
+    svg
+      .selectAll("path.lip-bend")
+      .data(noteConfigs.filter((d) => d.lipBendCents > 0))
+      .enter()
+      .append("path")
+      .attr("class", "lip-bend")
+      .attr("d", marker)
+      .attr("transform", (d) => {
+        const x = xScale(d.graphPoint[0]);
+        const y = yScale(d.graphPoint[1]);
+        return `translate(${x}, ${y})`;
+      })
+      .style("stroke", (d) => color(d.tuning.name));
+
+    // Lip bend lines
+    svg
+      .selectAll("line.lip-bend")
+      .data(noteConfigs.filter((d) => d.lipBendCents > 0))
+      .enter()
+      .append("line")
+      .attr("class", "lip-bend")
+      .attr("x1", (_) => xScale(model.trombone.slideLength as number))
+      .attr("y1", (d) => yScale(d.graphPoint[1]))
+      .attr("x2", (d) => xScale(d.graphPoint[0]))
+      .attr("y2", (d) => yScale(d.graphPoint[1]))
+      .style("stroke", "red")
+      .style("stroke-width", 1)
+      .style("stroke-dasharray", "4,4");
 
     // Legend: render in the right margin area so it doesn't overlap plot points
     const legendX = width - xMargin + 20;
@@ -194,6 +225,31 @@ export function D3ScatterPlot({
           .text(d)
           .style("fill", "var(--mantine-color-text)");
       });
+
+    // Add legend entry for lip bends as a separate top-level item.
+    const lipBendGroup = legend
+      .append("g")
+      .attr(
+        "transform",
+        `translate(${legendX}, ${legendY + tuningNames.length * legendItemHeight})`,
+      );
+
+    const lipBendMarker = d3.symbol().type(d3.symbolAsterisk).size(120);
+    lipBendGroup
+      .append("path")
+      .attr("d", lipBendMarker)
+      .attr("transform", "translate(6, -4)")
+      .style("stroke", "red")
+      .style("fill", "none");
+
+    lipBendGroup
+      .append("text")
+      .attr("x", 16)
+      .attr("y", 0)
+      .style("alignment-baseline", "middle")
+      .style("font-size", "12px")
+      .text("Lip bent")
+      .style("fill", "var(--mantine-color-text)");
 
     // Axis styling
     svg

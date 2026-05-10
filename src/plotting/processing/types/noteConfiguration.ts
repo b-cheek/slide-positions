@@ -51,6 +51,9 @@ export class NoteConfiguration {
   }
 
   public get graphPoint(): [Meters, MidiNumber] {
-    return [this.slideDistance, this.note.midiNum];
+    const fakeSlideDistance = ((this.tuning.length + this.slideDistance) *
+      2 ** (this.lipBendCents / 1200) -
+      this.tuning.length) as Meters;
+    return [fakeSlideDistance, this.note.midiNum];
   }
 }
