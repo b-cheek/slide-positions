@@ -311,4 +311,20 @@ describe("Trombone.getNoteConfigs", () => {
 
     expect(configs).toHaveLength(0);
   });
+
+  // Test that a longer slidelength can make notes accessible that were previously inaccessible
+  it("B2 is accessible on a Bb trombone with a longer slide length", () => {
+    const longSlideTrombone = new Trombone(
+      defaultTrombone.tunings,
+      (defaultTrombone.slideLength + 0.01) as Meters,
+    );
+    const note = Note.fromSciNotation("B2");
+
+    const configs = longSlideTrombone.getNoteConfigs(note, defaultPlayer);
+
+    expect(configs).toHaveLength(1);
+    const config = configs[0];
+    expect(config.partial).toBe(3);
+    expect(config.getSlidePosition(defaultPlayer)).toBeCloseTo(7.02, 2);
+  });
 });
