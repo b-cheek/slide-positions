@@ -37,64 +37,80 @@ export class Trombone {
   }
 
   public getNoteConfigs(note: Note, player: Player): NoteConfiguration[] {
-    return this.tunings.flatMap((tuning) => {
-      const minFreq = lengthToFreq(
-        (tuning.length + this.slideLength) as Meters,
-      );
-      const maxFreq = lengthToFreq(tuning.length);
-      const minPartial = Math.ceil(note.freq / maxFreq);
-      const maxPartial = Math.floor(
-        (note.freq + player.lipBendRange) / minFreq,
-      );
+    return (
+      this.tunings
+        .flatMap((tuning) => {
+          const minFreq = lengthToFreq(
+            (tuning.length + this.slideLength) as Meters,
+          );
+          const maxFreq = lengthToFreq(tuning.length);
+          const minPartial = Math.ceil(note.freq / maxFreq);
+          const maxPartial = Math.floor(
+            (note.freq + player.lipBendRange) / minFreq,
+          );
 
-      if (maxPartial < minPartial) {
-        return [];
-      }
+          if (maxPartial < minPartial) {
+            return [];
+          }
 
-      const partials = Array.from(
-        { length: maxPartial - minPartial + 1 },
-        (_, i) => i + minPartial,
-      );
+          const partials = Array.from(
+            { length: maxPartial - minPartial + 1 },
+            (_, i) => i + minPartial,
+          );
 
-      return partials.flatMap((partial) => {
-        const targetFundamental = (note.freq / partial) as Hertz;
-        const requiredSlideDistance = (freqToLength(targetFundamental) -
-          tuning.length) as Meters;
+          return partials.flatMap((partial) => {
+            const targetFundamental = (note.freq / partial) as Hertz;
+            const requiredSlideDistance = (freqToLength(targetFundamental) -
+              tuning.length) as Meters;
 
-        if (requiredSlideDistance <= this.slideLength) {
-          return [
-            new NoteConfiguration(
-              note,
-              tuning,
-              requiredSlideDistance,
-              partial,
-              0 as Cents,
-            ),
-          ];
-        }
+            if (requiredSlideDistance <= this.slideLength) {
+              return [
+                new NoteConfiguration(
+                  note,
+                  tuning,
+                  requiredSlideDistance,
+                  partial,
+                  0 as Cents,
+                ),
+              ];
+            }
 
-        const maxSlideFundamental = lengthToFreq(
-          (tuning.length + this.slideLength) as Meters,
-        );
-        const maxSlideNoteFreq = (maxSlideFundamental * partial) as Hertz;
-        const requiredLipBendHz = (maxSlideNoteFreq - note.freq) as Hertz;
+            const maxSlideFundamental = lengthToFreq(
+              (tuning.length + this.slideLength) as Meters,
+            );
+            const maxSlideNoteFreq = (maxSlideFundamental * partial) as Hertz;
+            const requiredLipBendHz = (maxSlideNoteFreq - note.freq) as Hertz;
 
-        if (requiredLipBendHz > player.lipBendRange) {
-          return [];
-        }
+            if (requiredLipBendHz > player.lipBendRange) {
+              return [];
+            }
 
-        const lipBendCents = (1200 *
-          Math.log2(maxSlideNoteFreq / note.freq)) as Cents;
-        return [
-          new NoteConfiguration(
-            note,
-            tuning,
-            this.slideLength,
-            partial,
-            lipBendCents,
-          ),
-        ];
-      });
-    });
+            const lipBendCents = (1200 *
+              Math.log2(maxSlideNoteFreq / note.freq)) as Cents;
+            return [
+              new NoteConfiguration(
+                note,
+                tuning,
+                this.slideLength,
+                partial,
+                lipBendCents,
+              ),
+            ];
+          });
+        })
+        // Remove lip bent notes that can be played without a lip bend
+        .filter((config, idx, arr) => {
+          return (
+            config.lipBendCents === 0 ||
+            !arr.some((otherConfig, otherIdx) => {
+              return (
+                otherIdx !== idx &&
+                otherConfig.lipBendCents === 0 &&
+                otherConfig.note === config.note
+              );
+            })
+          );
+        })
+    );
   }
 }

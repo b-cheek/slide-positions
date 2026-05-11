@@ -222,30 +222,15 @@ describe("Trombone.getNoteConfigs", () => {
     const note = Note.fromSciNotation("B2");
 
     const configs = tromboneBbF.getNoteConfigs(note, playerWithLipBend);
-    expect(configs).toHaveLength(3); // Don't forget about trigger!
-    const seventhPosConfig = configs[0];
-    const secondPosConfig = configs[1];
-    const fValveSeventhPosConfig = configs[2];
-    expect(seventhPosConfig.partial).toBe(3);
+    expect(configs).toHaveLength(1);
+    const secondPosConfig = configs[0];
     expect(secondPosConfig.partial).toBe(3);
-    expect(fValveSeventhPosConfig.partial).toBe(4);
-    // Check that 7th pos is now accessible with lip bend
-    expect(seventhPosConfig.getSlidePosition(playerWithLipBend)).toBeCloseTo(
-      7,
-      2,
-    );
-    expect(seventhPosConfig.lipBendCents).toBeGreaterThan(0);
     // Check that 2nd pos is still accessible but not lip bent
     expect(secondPosConfig.getSlidePosition(playerWithLipBend)).toBeCloseTo(
       2.02,
       2,
     );
     expect(secondPosConfig.lipBendCents).toBe(0);
-    // Check that F valve 7th pos is accessible with lip bend
-    expect(
-      fValveSeventhPosConfig.getOpenPosition(playerWithLipBend, tromboneBbF),
-    ).toBeCloseTo(7, 2);
-    expect(fValveSeventhPosConfig.lipBendCents).toBeGreaterThan(0);
   });
 
   // Test that lip bend only applied when necessary
@@ -258,6 +243,18 @@ describe("Trombone.getNoteConfigs", () => {
     expect(config.partial).toBe(3);
     expect(config.slideDistance).toBeLessThan(defaultTrombone.slideLength);
     expect(config.getSlidePosition(playerWithLipBend)).toBeCloseTo(6.02, 2);
+    expect(config.lipBendCents).toBe(0);
+  });
+
+  // Test that notes that can be played without a lip bend do not get lip bend configs
+  it("B2 does not have a lip bend config on a Bb/F trombone", () => {
+    const note = Note.fromSciNotation("B2");
+
+    const configs = tromboneBbF.getNoteConfigs(note, playerWithLipBend);
+    expect(configs).toHaveLength(1);
+    const config = configs[0];
+    expect(config.partial).toBe(3);
+    expect(config.getSlidePosition(playerWithLipBend)).toBeCloseTo(2.02, 2);
     expect(config.lipBendCents).toBe(0);
   });
 
