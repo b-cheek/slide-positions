@@ -57,8 +57,8 @@ export function D3ScatterPlot({
     if (!xExtent || xExtent[0] == null || xExtent[1] == null) return;
     if (!yExtent || yExtent[0] == null || yExtent[1] == null) return;
     const xDomain: [number, number] = [
-      xExtent[0] as number,
-      xExtent[1] as number,
+      Math.min(xExtent[0] as number, 0),
+      Math.max(xExtent[1] as number, model.trombone.slideLength as number),
     ];
     const yDomain: [number, number] = [
       yExtent[0] as number,
