@@ -21,11 +21,13 @@ export function D3ScatterPlot({
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
+    // Music computation
     const noteConfigs = model.notes.flatMap((note) =>
       model.trombone.getNoteConfigs(note, model.player),
     );
 
     // TODO: prevent recomputation?
+    // Derive the available slide positions
     const openTuning = model.trombone.tunings[0];
     const semiToneOffset = 2 ** (1 / 12);
     let posLen = openTuning.length + model.player.firstPosDistance;
@@ -38,10 +40,13 @@ export function D3ScatterPlot({
       posLen *= semiToneOffset;
     }
     // create mapping of each pos length to its index + 1
+    // This is necessary since formatted tick values require a mapping function
     const posLengthToPos: Record<number, number> = {};
     posLengths.forEach((len, i) => {
       posLengthToPos[len] = i + 1;
     });
+
+    // Chart dimensions and margins
 
     // TODO: perhaps a major rework for complete dimensional consistency of labels, but for now just
     // hardcoding margins that look good with the current labels and font sizes
@@ -56,17 +61,30 @@ export function D3ScatterPlot({
     const yExtent = d3.extent(noteConfigs, (d) => d.graphPoint[1]);
     if (!xExtent || xExtent[0] == null || xExtent[1] == null) return;
     if (!yExtent || yExtent[0] == null || yExtent[1] == null) return;
-    const xDomain: [number, number] = [
-      Math.min(xExtent[0] as number, 0),
-      Math.max(xExtent[1] as number, model.trombone.slideLength as number),
-    ];
-    const yDomain: [number, number] = [
-      yExtent[0] as number,
-      yExtent[1] as number,
-    ];
 
-    const xScale = d3.scaleLinear().domain(xDomain).range([0, innerWidth]);
-    const yScale = d3.scaleLinear().domain(yDomain).range([innerHeight, 0]);
+    // Declare the x (horizontal position) scale.
+    const x = d3
+      .scaleLinear()
+      // Set x axis to cover full slide
+      .domain([
+        Math.min(xExtent[0] as number, 0),
+        Math.max(xExtent[1] as number, model.trombone.slideLength as number),
+      ])
+      .range([0, innerWidth]);
+
+    // Declare the y (vertical position) scale.
+    const y = d3
+      .scaleLinear()
+      .domain([yExtent[0] as number, yExtent[1] as number])
+      .range([innerHeight, 0]);
+
+    // Plot
+    const svg = d3
+      .select(svgRef.current)
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", `translate(${xMargin},${yMargin})`);
 
     // Title
     d3.select(svgRef.current)
@@ -79,22 +97,16 @@ export function D3ScatterPlot({
       .style("font-weight", "bold")
       .text(model.title);
 
-    // Plot
-    const svg = d3
-      .select(svgRef.current)
-      .attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", `translate(${xMargin},${yMargin})`);
-
     // Axes
     svg
       .append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(
         d3
-          .axisBottom(xScale)
+          .axisBottom(x)
           .tickValues(posLengths)
+          // this map is derived from posLengths to ensure consistency,
+          // a map function is required to since the index is not available
           .tickFormat((d) => String(posLengthToPos[+d])),
       )
       .append("text")
@@ -107,8 +119,8 @@ export function D3ScatterPlot({
       .append("g")
       .call(
         d3
-          .axisLeft(yScale)
-          .tickValues(yScale.ticks().filter((tick) => Number.isInteger(tick)))
+          .axisLeft(y)
+          .tickValues(y.ticks().filter((tick) => Number.isInteger(tick)))
           .tickFormat((d) => Note.fromMidiNum(+d as MidiNumber).name),
       )
       .append("text")
@@ -126,7 +138,7 @@ export function D3ScatterPlot({
       .attr("transform", `translate(0,${innerHeight})`)
       .call(
         d3
-          .axisBottom(xScale)
+          .axisBottom(x)
           .tickValues(posLengths)
           .tickFormat(() => "")
           .tickSize(-innerHeight),
@@ -143,35 +155,35 @@ export function D3ScatterPlot({
     const tuningNames = Array.from(
       new Set(noteConfigs.map((d) => d.tuning.name)),
     );
-    const colorScheme = d3.schemeCategory10;
     const color = d3
       .scaleOrdinal<string, string>()
       .domain(tuningNames)
-      .range(colorScheme);
+      .range(d3.schemeCategory10);
 
+    // Non lip-bent notes as circles
     svg
       .selectAll("circle")
-      .data(noteConfigs.filter((d) => d.lipBendCents === 0)) // Only draw circles for non-lip-bent notes
+      .data(noteConfigs.filter((d) => d.lipBendCents === 0))
       .enter()
       .append("circle")
-      .attr("cx", (d) => xScale(d.graphPoint[0]))
-      .attr("cy", (d) => yScale(d.graphPoint[1]))
+      .attr("cx", (d) => x(d.graphPoint[0]))
+      .attr("cy", (d) => y(d.graphPoint[1]))
       .attr("r", 3)
       .style("fill", (d) => color(d.tuning.name));
 
-    // Draw x's at lip bend points
-    const marker = d3.symbol().type(d3.symbolAsterisk).size(50);
+    // lip-bent notes as asterisks
+    const lipBendSymbol = d3.symbol().type(d3.symbolAsterisk);
     svg
       .selectAll("path.lip-bend")
       .data(noteConfigs.filter((d) => d.lipBendCents > 0))
       .enter()
       .append("path")
       .attr("class", "lip-bend")
-      .attr("d", marker)
+      .attr("d", lipBendSymbol.size(50))
       .attr("transform", (d) => {
-        const x = xScale(d.graphPoint[0]);
-        const y = yScale(d.graphPoint[1]);
-        return `translate(${x}, ${y})`;
+        const xVal = x(d.graphPoint[0]);
+        const yVal = y(d.graphPoint[1]);
+        return `translate(${xVal}, ${yVal})`;
       })
       .style("stroke", (d) => color(d.tuning.name));
 
@@ -182,10 +194,10 @@ export function D3ScatterPlot({
       .enter()
       .append("line")
       .attr("class", "lip-bend")
-      .attr("x1", (_) => xScale(model.trombone.slideLength as number))
-      .attr("y1", (d) => yScale(d.graphPoint[1]))
-      .attr("x2", (d) => xScale(d.graphPoint[0]))
-      .attr("y2", (d) => yScale(d.graphPoint[1]))
+      .attr("x1", (_) => x(model.trombone.slideLength as number))
+      .attr("y1", (d) => y(d.graphPoint[1]))
+      .attr("x2", (d) => x(d.graphPoint[0]))
+      .attr("y2", (d) => y(d.graphPoint[1]))
       .style("stroke", "red")
       .style("stroke-width", 1)
       .style("stroke-dasharray", "4,4");
@@ -234,10 +246,9 @@ export function D3ScatterPlot({
         `translate(${legendX}, ${legendY + tuningNames.length * legendItemHeight})`,
       );
 
-    const lipBendMarker = d3.symbol().type(d3.symbolAsterisk).size(120);
     lipBendGroup
       .append("path")
-      .attr("d", lipBendMarker)
+      .attr("d", lipBendSymbol.size(120))
       .attr("transform", "translate(6, -4)")
       .style("stroke", "red")
       .style("fill", "none");
@@ -251,7 +262,7 @@ export function D3ScatterPlot({
       .text("Lip bent")
       .style("fill", "var(--mantine-color-text)");
 
-    // Axis styling
+    // styling
     svg
       .selectAll(".domain, .tick line")
       .style("stroke", "var(--mantine-color-default-border)");
