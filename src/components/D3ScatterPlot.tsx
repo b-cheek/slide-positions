@@ -160,6 +160,11 @@ export function D3ScatterPlot({
       .domain(tuningNames)
       .range(d3.schemeCategory10);
 
+    const nonLipNotes = noteConfigs
+      .filter((d) => d.lipBendCents === 0)
+      .reverse(); // reverse so that notes in earlier specified tunings get color priority in blended overlaps
+    const bentNotes = noteConfigs.filter((d) => d.lipBendCents > 0);
+
     // Isolate blended points so the grid does not participate in the blend backdrop.
     const pointsLayer = svg
       .append("g")
@@ -168,11 +173,11 @@ export function D3ScatterPlot({
 
     // Non lip-bent notes as circles
     pointsLayer
-      .selectAll("circle")
-      .data(noteConfigs.filter((d) => d.lipBendCents === 0).reverse())
-      // reverse so that notes in earlier specified tunings get color priority in blended overlaps
+      .selectAll("circle.point")
+      .data(nonLipNotes)
       .enter()
       .append("circle")
+      .attr("class", "point")
       .attr("cx", (d) => x(d.graphPoint[0]))
       .attr("cy", (d) => y(d.graphPoint[1]))
       .attr("r", 3)
@@ -183,7 +188,7 @@ export function D3ScatterPlot({
     const lipBendSymbol = d3.symbol().type(d3.symbolAsterisk);
     svg
       .selectAll("path.lip-bend")
-      .data(noteConfigs.filter((d) => d.lipBendCents > 0))
+      .data(bentNotes)
       .enter()
       .append("path")
       .attr("class", "lip-bend")
@@ -193,7 +198,8 @@ export function D3ScatterPlot({
         const yVal = y(d.graphPoint[1]);
         return `translate(${xVal}, ${yVal})`;
       })
-      .style("stroke", (d) => color(d.tuning.name));
+      .style("stroke", (d) => color(d.tuning.name))
+      .style("pointer-events", "none");
 
     // Lip bend lines
     svg
@@ -208,7 +214,127 @@ export function D3ScatterPlot({
       .attr("y2", (d) => y(d.graphPoint[1]))
       .style("stroke", "red")
       .style("stroke-width", 1)
-      .style("stroke-dasharray", "4,4");
+      .style("stroke-dasharray", "4,4")
+      .style("pointer-events", "none");
+
+    // Note interactivity
+    // Larger versions of points for visibility and covering overlaps
+    const hoverPoint = pointsLayer
+      .append("circle")
+      .style("display", "none")
+      .style("mix-blend-mode", "normal");
+
+    const hoverLipBend = pointsLayer
+      .append("path")
+      .style("display", "none")
+      .style("fill", "none")
+      .style("mix-blend-mode", "normal");
+
+    const tooltip = d3
+      .select("body")
+      .selectAll("#tooltip")
+      .data([null])
+      .join("div")
+      .attr("id", "tooltip")
+      .style("position", "absolute")
+      .style("display", "none")
+      .style("pointer-events", "none") // Prevent tooltip from interfering with mouse events
+      .style("padding", "10px 12px")
+      .style("border-radius", "12px")
+      .style("backdrop-filter", "blur(5px)")
+      .style("-webkit-backdrop-filter", "blur(5px)")
+      .style("border", "1px solid var(--mantine-color-default-border)")
+      .style("font-family", "var(--mantine-font-family)")
+      .style("color", "var(--mantine-color-text)")
+      .style("font-size", "12px")
+      .style("line-height", "1.4");
+
+    const resetHoverState = () => {
+      hoverPoint.style("display", "none");
+      hoverLipBend.style("display", "none");
+    };
+
+    const highlightHoverState = (hoveredNote: (typeof noteConfigs)[number]) => {
+      resetHoverState();
+
+      if (hoveredNote.lipBendCents === 0) {
+        hoverPoint
+          .style("display", "block")
+          .attr("cx", x(hoveredNote.graphPoint[0]))
+          .attr("cy", y(hoveredNote.graphPoint[1]))
+          .attr("r", 6)
+          .style("fill", color(hoveredNote.tuning.name));
+        return;
+      }
+
+      hoverLipBend
+        .style("display", "block")
+        .attr(
+          "transform",
+          `translate(${x(hoveredNote.graphPoint[0])}, ${y(hoveredNote.graphPoint[1])})`,
+        )
+        .attr("d", lipBendSymbol.size(120))
+        .style("stroke", color(hoveredNote.tuning.name));
+    };
+
+    // Nearest neighbor to ensure fair hovering on overlaps
+    const delaunay = d3.Delaunay.from(
+      noteConfigs,
+      (d) => x(d.graphPoint[0]),
+      (d) => y(d.graphPoint[1]),
+    );
+
+    const hoverRadius = 10;
+
+    const hoverCaptureLayer = pointsLayer
+      .append("rect")
+      .attr("class", "hover-layer")
+      // Extend hover layer so no hover regions are clipped
+      .attr("x", -hoverRadius / 2)
+      .attr("y", -hoverRadius / 2)
+      .attr("width", innerWidth + hoverRadius)
+      .attr("height", innerHeight + hoverRadius)
+      .style("fill", "transparent")
+      .style("pointer-events", "all");
+
+    hoverCaptureLayer.on("mousemove", function (event) {
+      const [mouseX, mouseY] = d3.pointer(event);
+      const nearestIndex = delaunay.find(mouseX, mouseY);
+      const hoveredNote = noteConfigs[nearestIndex];
+
+      if (!hoveredNote) {
+        tooltip.style("display", "none");
+        resetHoverState();
+        return;
+      }
+
+      const pointX = x(hoveredNote.graphPoint[0]);
+      const pointY = y(hoveredNote.graphPoint[1]);
+      const distance = Math.hypot(mouseX - pointX, mouseY - pointY);
+
+      if (distance > hoverRadius) {
+        tooltip.style("display", "none");
+        resetHoverState();
+        return;
+      }
+
+      tooltip
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY + 10}px`)
+        .style("display", "block").html(`
+          <div>${hoveredNote.note.name}</div>
+          <div>Slide position: ${+hoveredNote.getSlidePosition(model.player).toFixed(2)}</div>
+          <div>Tuning: ${hoveredNote.tuning.name}</div>
+          <div>Partial: ${hoveredNote.partial}</div>
+        `);
+
+      highlightHoverState(hoveredNote);
+    });
+
+    hoverCaptureLayer.on("mouseleave", function () {
+      tooltip.style("display", "none");
+      resetHoverState();
+    });
 
     // Legend: render in the right margin area so it doesn't overlap plot points
     const legendX = width - xMargin + 20;
