@@ -160,16 +160,24 @@ export function D3ScatterPlot({
       .domain(tuningNames)
       .range(d3.schemeCategory10);
 
+    // Isolate blended points so the grid does not participate in the blend backdrop.
+    const pointsLayer = svg
+      .append("g")
+      .attr("class", "points")
+      .style("isolation", "isolate");
+
     // Non lip-bent notes as circles
-    svg
+    pointsLayer
       .selectAll("circle")
-      .data(noteConfigs.filter((d) => d.lipBendCents === 0))
+      .data(noteConfigs.filter((d) => d.lipBendCents === 0).reverse())
+      // reverse so that notes in earlier specified tunings get color priority in blended overlaps
       .enter()
       .append("circle")
       .attr("cx", (d) => x(d.graphPoint[0]))
       .attr("cy", (d) => y(d.graphPoint[1]))
       .attr("r", 3)
-      .style("fill", (d) => color(d.tuning.name));
+      .style("fill", (d) => color(d.tuning.name))
+      .style("mix-blend-mode", "color"); // Better visibility of overlapping points
 
     // lip-bent notes as asterisks
     const lipBendSymbol = d3.symbol().type(d3.symbolAsterisk);
