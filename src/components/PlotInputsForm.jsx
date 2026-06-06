@@ -9,10 +9,13 @@ import { readPlotInputRawValues } from "../plotting/parsing/utils";
 
 export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
   const navigate = useNavigate();
+  const rawValues = readPlotInputRawValues(
+    new URL(window.location.href).searchParams,
+  );
 
   const currentValues = {
-    ...readPlotInputRawValues(new URL(window.location.href).searchParams),
-    notesString: placeholderInputs.notesString,
+    ...rawValues,
+    notesString: rawValues.notesString ?? placeholderInputs.notesString,
   };
 
   const handleFormSubmit = (values) => {
