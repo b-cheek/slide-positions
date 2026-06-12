@@ -246,6 +246,24 @@ describe("Trombone.getNoteConfigs", () => {
     expect(config.lipBendCents).toBe(0);
   });
 
+  // Test that note will only get one lip bend config even if two are possible
+  it("B1 only gets one lip bend config on a Bb/F/E trombone", () => {
+    const tromboneBbFE = new Trombone([
+      Tuning.fromPitchClassOrPitch("Bb"),
+      Tuning.fromPitchClassOrPitch("F"),
+      Tuning.fromPitchClassOrPitch("E"),
+    ]);
+    const note = Note.fromSciNotation("B1");
+
+    const configs = tromboneBbFE.getNoteConfigs(note, playerWithLipBend);
+    expect(configs).toHaveLength(1);
+    const config = configs[0];
+    expect(config.partial).toBe(2);
+    // Check that slide is maxed out
+    expect(config.slideDistance).toBe(tromboneBbFE.slideLength);
+    expect(config.lipBendCents).toBeGreaterThan(0);
+  });
+
   // Test that notes that can be played without a lip bend do not get lip bend configs
   it("B2 does not have a lip bend config on a Bb/F trombone", () => {
     const note = Note.fromSciNotation("B2");

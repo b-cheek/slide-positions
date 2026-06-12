@@ -98,14 +98,16 @@ export class Trombone {
             ];
           });
         })
-        // Remove lip bent notes that can be played without a lip bend
+        // Remove lip bent notes that can be played without a lip bend, or played with a shorter lip bend
         .filter((config, idx, arr) => {
           return (
             config.lipBendCents === 0 ||
+            // Check that there isn't another config for the same note with no lip bend or simpler lip bend
             !arr.some((otherConfig, otherIdx) => {
               return (
-                otherIdx !== idx &&
-                otherConfig.lipBendCents === 0 &&
+                otherIdx !== idx && // Check that isn't the same config being tested
+                // equal lip bend cents > 0 will not happen unless two of same tuning
+                otherConfig.lipBendCents < config.lipBendCents && // Check that other config doesn't have a simpler or no lip bend
                 otherConfig.note === config.note
               );
             })
