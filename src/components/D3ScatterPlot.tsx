@@ -285,7 +285,7 @@ export function D3ScatterPlot({
       (d) => y(d.graphPoint[1]),
     );
 
-    const hoverRadius = 10;
+    const hoverRadius = 22;
 
     const hoverCaptureLayer = pointsLayer
       .append("rect")
