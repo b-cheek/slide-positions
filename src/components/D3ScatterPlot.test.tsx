@@ -79,4 +79,35 @@ describe("D3ScatterPlot hover", () => {
 
     expect(hoveredPoint).toBeTruthy();
   });
+
+  it("omits the lip bent legend entry when there are no lip bent notes", async () => {
+    const model = buildPlotModel(
+      plotInputsSchema.parse({ notesString: "Bb1" }),
+    );
+    const { container } = render(<D3ScatterPlot model={model} />);
+
+    await waitFor(() => {
+      expect(container.querySelector("g.legend")).toBeTruthy();
+    });
+
+    expect(container.textContent).not.toContain("Lip bent");
+  });
+
+  it("shows the lip bent legend entry when bent notes are present", async () => {
+    const model = buildPlotModel(
+      plotInputsSchema.parse({
+        notesString: "B1",
+        lipBendStartNote: "Bb1",
+        lipBendStopNote: "C1",
+      }),
+    );
+    const { container } = render(<D3ScatterPlot model={model} />);
+
+    await waitFor(() => {
+      expect(
+        container.querySelectorAll("path.lip-bend").length,
+      ).toBeGreaterThan(0);
+      expect(container.textContent).toContain("Lip bent");
+    });
+  });
 });

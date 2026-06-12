@@ -164,6 +164,7 @@ export function D3ScatterPlot({
       .filter((d) => d.lipBendCents === 0)
       .reverse(); // reverse so that notes in earlier specified tunings get color priority in blended overlaps
     const bentNotes = noteConfigs.filter((d) => d.lipBendCents > 0);
+    const hasBentNotes = bentNotes.length > 0;
 
     // Isolate blended points so the grid does not participate in the blend backdrop.
     const pointsLayer = svg
@@ -372,29 +373,31 @@ export function D3ScatterPlot({
           .style("fill", "var(--mantine-color-text)");
       });
 
-    // Add legend entry for lip bends as a separate top-level item.
-    const lipBendGroup = legend
-      .append("g")
-      .attr(
-        "transform",
-        `translate(${legendX}, ${legendY + tuningNames.length * legendItemHeight})`,
-      );
+    if (hasBentNotes) {
+      // Add legend entry for lip bends as a separate top-level item.
+      const lipBendGroup = legend
+        .append("g")
+        .attr(
+          "transform",
+          `translate(${legendX}, ${legendY + tuningNames.length * legendItemHeight})`,
+        );
 
-    lipBendGroup
-      .append("path")
-      .attr("d", lipBendSymbol.size(120))
-      .attr("transform", "translate(6, -4)")
-      .style("stroke", "red")
-      .style("fill", "none");
+      lipBendGroup
+        .append("path")
+        .attr("d", lipBendSymbol.size(120))
+        .attr("transform", "translate(6, -4)")
+        .style("stroke", "red")
+        .style("fill", "none");
 
-    lipBendGroup
-      .append("text")
-      .attr("x", 16)
-      .attr("y", 0)
-      .style("alignment-baseline", "middle")
-      .style("font-size", "12px")
-      .text("Lip bent")
-      .style("fill", "var(--mantine-color-text)");
+      lipBendGroup
+        .append("text")
+        .attr("x", 16)
+        .attr("y", 0)
+        .style("alignment-baseline", "middle")
+        .style("font-size", "12px")
+        .text("Lip bent")
+        .style("fill", "var(--mantine-color-text)");
+    }
 
     // styling
     svg
