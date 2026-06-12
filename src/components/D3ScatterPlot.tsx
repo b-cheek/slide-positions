@@ -319,12 +319,24 @@ export function D3ScatterPlot({
         return;
       }
 
+      let slideTip = (+hoveredNote
+        .getSlidePosition(model.player)
+        .toFixed(2)).toString();
+      // Add tuning name and open position if not open tuning:
+      // 2 -> 2F (3.2)
+      if (hoveredNote.tuning !== model.trombone.tunings[0]) {
+        const openPos = +hoveredNote
+          .getOpenPosition(model.player, model.trombone)
+          .toFixed(2);
+        slideTip += `${hoveredNote.tuning.name.split(" ")[0]} (${openPos})`;
+      }
+
       tooltip
         .style("left", `${event.pageX + 10}px`)
         .style("top", `${event.pageY + 10}px`)
         .style("display", "block").html(`
           <div>${hoveredNote.note.name}</div>
-          <div>Slide position: ${+hoveredNote.getSlidePosition(model.player).toFixed(2)}</div>
+          <div>Slide position: ${slideTip}</div>
           <div>Tuning: ${hoveredNote.tuning.name}</div>
           <div>Partial: ${hoveredNote.partial}</div>
         `);

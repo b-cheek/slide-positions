@@ -110,4 +110,53 @@ describe("D3ScatterPlot hover", () => {
       expect(container.textContent).toContain("Lip bent");
     });
   });
+
+  it("shows tuning and open position for a note on a non-open tuning", async () => {
+    const model = buildPlotModel(
+      // Using a note without an open pos for simplicity
+      plotInputsSchema.parse({
+        notesString: "B1",
+        lipBendStartNote: "Bb1",
+        lipBendStopNote: "C1",
+      }),
+    );
+    const { container } = render(<D3ScatterPlot model={model} />);
+
+    const noteConfig = model.notes
+      .flatMap((note) => model.trombone.getNoteConfigs(note, model.player))
+      .find((config) => config.tuning !== model.trombone.tunings[0]);
+
+    expect(noteConfig).toBeTruthy();
+
+    const hoverLayer = container.querySelector("rect.hover-layer");
+    expect(hoverLayer).toBeTruthy();
+
+    // Get cx and cy for the lip bend symbol
+    const lipBentPoint = Array.from(
+      container.querySelectorAll("path.lip-bend"),
+    )[0];
+    const cx = Number(
+      lipBentPoint
+        .getAttribute("transform")
+        ?.match(/translate\(([^,]+),([^)]+)\)/)?.[1],
+    );
+    const cy = Number(
+      lipBentPoint
+        .getAttribute("transform")
+        ?.match(/translate\(([^,]+),([^)]+)\)/)?.[2],
+    );
+
+    fireEvent.mouseMove(hoverLayer as Element, {
+      clientX: cx,
+      clientY: cy,
+      pageX: cx,
+      pageY: cy,
+    });
+
+    const tooltip = document.body.querySelector("#tooltip");
+
+    await waitFor(() => {
+      expect(tooltip?.textContent).toContain(`Slide position: 5.68F (7)`);
+    });
+  });
 });
