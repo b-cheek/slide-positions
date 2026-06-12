@@ -153,7 +153,7 @@ export function D3ScatterPlot({
     // Points
     // Color scale per tuning
     const tuningNames = Array.from(
-      new Set(noteConfigs.map((d) => d.tuning.name)),
+      new Set(model.trombone.tunings.map((t) => t.name)),
     );
     const color = d3
       .scaleOrdinal<string, string>()
