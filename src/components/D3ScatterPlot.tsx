@@ -218,6 +218,43 @@ export function D3ScatterPlot({
       .style("stroke-dasharray", "4,4")
       .style("pointer-events", "none");
 
+    // Note text to the left if there are not points in the way
+    svg
+      .append("g")
+      .attr("class", "note-labels")
+      .selectAll("text.note-label")
+      .data(
+        noteConfigs.filter(
+          // Exclude notes that have other notes to their left
+          (d) =>
+            !noteConfigs
+              .filter((other) => other.graphPoint[1] === d.graphPoint[1])
+              .some(
+                (other) =>
+                  other !== d &&
+                  x(other.graphPoint[0]) < x(d.graphPoint[0]) &&
+                  Math.abs(x(other.graphPoint[0]) - x(d.graphPoint[0])) < 30,
+              ) &&
+            // Exclude notes that would conflict with y axis ticks
+            !y
+              .ticks()
+              .some(
+                (tick) => x(d.graphPoint[0]) < 30 && d.graphPoint[1] === tick,
+              ),
+        ),
+      )
+      .enter()
+      .append("text")
+      .attr("class", "note-label")
+      .attr("x", (d) => x(d.graphPoint[0]) - 6)
+      .attr("y", (d) => y(d.graphPoint[1]) + (d.lipBendCents > 0 ? -6 : 0)) // Nudge up if lip bend to prevent overlap
+      .attr("dy", "0.35em")
+      .attr("text-anchor", "end")
+      .style("font-size", "10px")
+      .style("fill", (d) => color(d.tuning.name))
+      .style("pointer-events", "none") // Prevent labels from interfering with mouse events
+      .text((d) => d.note.name);
+
     // Note interactivity
     // Larger versions of points for visibility and covering overlaps
     const hoverPoint = pointsLayer
