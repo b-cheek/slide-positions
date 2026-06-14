@@ -9,6 +9,7 @@ import { NotFoundPage } from "./NotFoundPage";
 import { PlotViewErrorBoundary } from "./PlotViewErrorBoundary";
 import { plotViewLoader } from "./PlotViewLoader";
 import { PlotViewPage } from "./PlotViewPage";
+import { exampleInputs } from "../plotting/presets/examplePlotInputs";
 
 // TODO: add tests for example paths, other happy paths?
 
@@ -82,7 +83,9 @@ describe("plot user flows", () => {
     const user = userEvent.setup();
     renderWithRouter(["/"]);
 
-    await user.click(screen.getByRole("link", { name: "Open Example Plot" }));
+    await user.click(
+      screen.getByRole("link", { name: exampleInputs[0].title }),
+    );
 
     expect(await screen.findByText("Slide Positions Plot")).toBeTruthy();
   });
