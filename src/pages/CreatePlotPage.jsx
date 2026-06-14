@@ -7,15 +7,16 @@ export function CreatePlotPage() {
     // TODO refactor single note inputs as "advanced" options
     <div>
       <Stack>
-        <Title order={2}>Create Plot</Title>
+        <Title order={1}>Create a Plot</Title>
         <Text>
-          Enter notes. Trombone and player defaults are applied automatically.
+          Specify which notes to include and the plot, and optionally include
+          information about your instrument.
         </Text>
 
         <PlotInputsForm submitLabel="Create Plot" />
 
         <Button component={Link} to="/">
-          Back to Gallery
+          Back to Plots Page
         </Button>
       </Stack>
     </div>

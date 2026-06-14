@@ -14,7 +14,7 @@ export function PlotViewPage() {
 
   return (
     <Stack>
-      <Title order={2}>Plot View</Title>
+      <Title order={1}>Slide Positions Plot</Title>
       <D3ScatterPlot model={model} width={800} height={600} />
 
       <Button onClick={() => setOpened(true)}>Edit Inputs</Button>
@@ -33,7 +33,7 @@ export function PlotViewPage() {
       </Modal>
 
       <Button component={Link} to="/">
-        Back to Gallery
+        Back to Plots Page
       </Button>
     </Stack>
   );

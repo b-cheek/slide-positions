@@ -61,7 +61,7 @@ describe("page rendering", () => {
   it("renders landing page", async () => {
     renderWithRouter(["/"]);
 
-    expect(await screen.findByText("Plot Gallery")).toBeTruthy();
+    expect(await screen.findByText("Slide Position Plots")).toBeTruthy();
   });
 
   it("renders create plot page", async () => {
@@ -70,8 +70,8 @@ describe("page rendering", () => {
     expect(
       // findByText doesn't work since there are two elements with this text
       await screen.findByRole("heading", {
-        name: "Create Plot",
-        level: 2,
+        name: "Create a Plot",
+        level: 1,
       }),
     ).toBeTruthy();
   });
@@ -84,7 +84,7 @@ describe("plot user flows", () => {
 
     await user.click(screen.getByRole("link", { name: "Open Example Plot" }));
 
-    expect(await screen.findByText("Plot View")).toBeTruthy();
+    expect(await screen.findByText("Slide Positions Plot")).toBeTruthy();
   });
 
   it("creates a custom plot from create page input", async () => {
@@ -96,7 +96,7 @@ describe("plot user flows", () => {
     await user.type(notesInput, "Bb2 C3 D4");
     await user.click(screen.getByRole("button", { name: "Create Plot" }));
 
-    expect(await screen.findByText("Plot View")).toBeTruthy();
+    expect(await screen.findByText("Slide Positions Plot")).toBeTruthy();
   });
 
   it("shows not found page for invalid plot route", async () => {
