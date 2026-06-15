@@ -111,7 +111,7 @@ describe("D3ScatterPlot hover", () => {
     });
   });
 
-  it("shows tuning and open position for a note on a non-open tuning", async () => {
+  it("shows that a lip bent note has slide all the way out in tooltip", async () => {
     const model = buildPlotModel(
       // Using a note without an open pos for simplicity
       plotInputsSchema.parse({
@@ -156,7 +156,46 @@ describe("D3ScatterPlot hover", () => {
     const tooltip = document.body.querySelector("#tooltip");
 
     await waitFor(() => {
-      expect(tooltip?.textContent).toContain(`Slide position: 5.68F (7)`);
+      expect(tooltip?.textContent).toContain(`Slide position: All the way out`);
+    });
+  });
+
+  it("shows tuning and open position for a note on a non-open tuning", async () => {
+    const model = buildPlotModel(
+      // Using a note without an open pos for simplicity
+      plotInputsSchema.parse({
+        notesString: "C3",
+      }),
+    );
+    const { container } = render(<D3ScatterPlot model={model} />);
+
+    const noteConfig = model.notes
+      .flatMap((note) => model.trombone.getNoteConfigs(note, model.player))
+      .find((config) => config.tuning !== model.trombone.tunings[0]);
+
+    expect(noteConfig).toBeTruthy();
+
+    const hoverLayer = container.querySelector("rect.hover-layer");
+    expect(hoverLayer).toBeTruthy();
+
+    // Get the point using the F attachment
+    const point = Array.from(container.querySelectorAll("circle")).find(
+      (circle) => Number(circle.getAttribute("cx")) < 10,
+    );
+    const cx = Number(point?.getAttribute("cx"));
+    const cy = Number(point?.getAttribute("cy"));
+
+    fireEvent.mouseMove(hoverLayer as Element, {
+      clientX: cx,
+      clientY: cy,
+      pageX: cx,
+      pageY: cy,
+    });
+
+    const tooltip = document.body.querySelector("#tooltip");
+
+    await waitFor(() => {
+      expect(tooltip?.textContent).toContain(`Slide position: 1.02F (1.03)`);
     });
   });
 });

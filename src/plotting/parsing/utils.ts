@@ -5,6 +5,7 @@ import type { ParsedPlotInputs } from "./plotInputsSchema";
 import { Note } from "../processing/types/note";
 import { Player } from "../processing/types/player";
 import { Trombone } from "../processing/types/trombone";
+import { Tuning } from "../processing/types/tuning";
 import { freqToLength } from "../processing/utils/physics";
 
 // General utilities
@@ -100,11 +101,17 @@ export function buildPlotModel({
   const firstPosDistance = (freqToLength(firstPosNote.freq) -
     freqToLength(topSlideFreq)) as Meters;
 
+  // modify tunings to account for first pos distance, while preserving name
+  const newTunings = tunings.map(
+    (tuning) =>
+      new Tuning((tuning.length - firstPosDistance) as Meters, tuning.name),
+  );
+
   // Get lip bend range
   const lipBendRange = (lipBendStartNote.freq - lipBendStopNote.freq) as Hertz;
 
   // Build model
-  const trombone = new Trombone(tunings, slideLength);
+  const trombone = new Trombone(newTunings, slideLength);
   const player = new Player(lipBendRange, firstPosDistance);
 
   return {

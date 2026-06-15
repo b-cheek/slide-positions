@@ -356,16 +356,21 @@ export function D3ScatterPlot({
         return;
       }
 
-      let slideTip = (+hoveredNote
-        .getSlidePosition(model.player)
-        .toFixed(2)).toString();
-      // Add tuning name and open position if not open tuning:
-      // 2 -> 2F (3.2)
-      if (hoveredNote.tuning !== model.trombone.tunings[0]) {
-        const openPos = +hoveredNote
-          .getOpenPosition(model.player, model.trombone)
-          .toFixed(2);
-        slideTip += `${hoveredNote.tuning.name.split(" ")[0]} (${openPos})`;
+      let slideTip;
+      if (hoveredNote.lipBendCents === 0) {
+        slideTip = (+hoveredNote
+          .getSlidePosition(model.player)
+          .toFixed(2)).toString();
+        // Add tuning name and open position if not open tuning:
+        // 2 -> 2F (3.2)
+        if (hoveredNote.tuning !== model.trombone.tunings[0]) {
+          const openPos = +hoveredNote
+            .getOpenPosition(model.player, model.trombone)
+            .toFixed(2);
+          slideTip += `${hoveredNote.tuning.name.split(" ")[0]} (${openPos})`;
+        }
+      } else {
+        slideTip = "All the way out";
       }
 
       tooltip

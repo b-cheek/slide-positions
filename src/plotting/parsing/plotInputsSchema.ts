@@ -23,12 +23,12 @@ export const plotInputsRawSchema = z.object({
   topSlideNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid top slide note format",
-    "Bb1",
+    "Bb1+5",
   ),
   bottomSlideNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid bottom slide note format",
-    "E1",
+    "E1-10",
   ),
   // TODO: enforce that if you have one, you must have both
   lipBendStartNote: optionalStringWithDefault(
