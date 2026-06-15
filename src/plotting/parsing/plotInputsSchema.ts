@@ -19,6 +19,7 @@ export const plotInputsRawSchema = z.object({
     "Invalid valves string format",
     "Bb/F",
   ),
+  // TODO: add handling to adjust tunings to account for first pos distance
   topSlideNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid top slide note format",

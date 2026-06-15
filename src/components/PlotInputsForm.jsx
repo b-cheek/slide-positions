@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Stack, TextInput, Title } from "@mantine/core";
+import { Accordion, Button, Stack, TextInput, Title } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
@@ -43,54 +43,73 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
         <TextInput
           label="Notes"
           withAsterisk
+          // TODO: accept other notations?
+          description="The notes to plot in scientific pitch notation"
           placeholder={placeholderInputs.notesString}
           error={errors.notesString?.message}
           {...register("notesString")}
         />
 
         <TextInput
-          label="Tunings (optional)"
+          label="Tuning(s) (optional)"
+          description="The fundamental pitch of the instrument with "
           placeholder={placeholderInputs.valvesString}
           error={errors.valvesString?.message}
           {...register("valvesString")}
         />
 
         <TextInput
-          label="Top Slide Note (optional)"
-          placeholder={placeholderInputs.topSlideNote}
-          error={errors.topSlideNote?.message}
-          {...register("topSlideNote")}
-        />
-
-        <TextInput
-          label="Bottom Slide Note (optional)"
-          placeholder={placeholderInputs.bottomSlideNote}
-          error={errors.bottomSlideNote?.message}
-          {...register("bottomSlideNote")}
-        />
-
-        <TextInput
-          label="Lip Bend Start Note (optional)"
-          placeholder={placeholderInputs.lipBendStartNote}
-          error={errors.lipBendStartNote?.message}
-          {...register("lipBendStartNote")}
-        />
-
-        <TextInput
-          label="Lip Bend Stop Note (optional)"
-          placeholder={placeholderInputs.lipBendStopNote}
-          error={errors.lipBendStopNote?.message}
-          {...register("lipBendStopNote")}
-        />
-
-        <TextInput
           label="Custom Title (optional)"
-          // TODO: rework the title for more consistency alongside dynamic defaults
           placeholder="Bb/F Trombone Slide Positions"
           error={errors.title?.message}
           {...register("title")}
         />
 
+        <Accordion variant="unstyled" defaultValue="advancedOptions">
+          <Accordion.Item value="advancedOptions">
+            <Accordion.Control>Advanced Options</Accordion.Control>
+
+            <Accordion.Panel>
+              <Stack>
+                {/* <Text>
+                  The following sections are to specify exact ranges, so they
+                  require two notes each.
+                </Text> */}
+                <TextInput
+                  label="Top Slide Note (optional)"
+                  description="The note when the slide is all the way in"
+                  placeholder={placeholderInputs.topSlideNote}
+                  error={errors.topSlideNote?.message}
+                  {...register("topSlideNote")}
+                />
+
+                <TextInput
+                  label="Bottom Slide Note (optional)"
+                  description="The note when the slide is all the way out"
+                  placeholder={placeholderInputs.bottomSlideNote}
+                  error={errors.bottomSlideNote?.message}
+                  {...register("bottomSlideNote")}
+                />
+
+                <TextInput
+                  label="Lip Bend Start Note (optional)"
+                  description="The note you are starting the lip bend from"
+                  placeholder={placeholderInputs.lipBendStartNote}
+                  error={errors.lipBendStartNote?.message}
+                  {...register("lipBendStartNote")}
+                />
+
+                <TextInput
+                  label="Lip Bend Stop Note (optional)"
+                  description="The lowest note you can bend down to"
+                  placeholder={placeholderInputs.lipBendStopNote}
+                  error={errors.lipBendStopNote?.message}
+                  {...register("lipBendStopNote")}
+                />
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
         <Button type="submit" disabled={!isValid || isSubmitting}>
           {submitLabel}
         </Button>
