@@ -1,9 +1,10 @@
-import { Container, Text } from "@mantine/core";
+import { Container, Text, AppShell, Group } from "@mantine/core";
 import {
   Outlet,
   RouterProvider,
   createBrowserRouter,
   useNavigation,
+  Link,
 } from "react-router";
 import { CreatePlotPage } from "./pages/CreatePlotPage";
 import { LandingPage } from "./pages/LandingPage";
@@ -11,17 +12,42 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { PlotViewErrorBoundary } from "./pages/PlotViewErrorBoundary";
 import { plotViewLoader } from "./pages/PlotViewLoader";
 import { PlotViewPage } from "./pages/PlotViewPage";
+import { SlidePositionsIcon } from "./components/SlidePositionsIcon";
 
 function AppLayout() {
   const navigation = useNavigation();
 
   return (
-    <Container py="xl">
-      {navigation.state === "loading" ? (
-        <Text size="sm">Loading...</Text>
-      ) : null}
-      <Outlet />
-    </Container>
+    <AppShell header={{ height: 60 }}>
+      <AppShell.Header px="md">
+        <Group h="100%" justify="space-between">
+          <Group
+            component={Link}
+            to="/"
+            aria-label="Homepage"
+            style={{ textDecoration: "none", color: "inherit" }}
+            gap="xs"
+          >
+            <SlidePositionsIcon
+              size="1.75em"
+              style={{ verticalAlign: "-0.5em" }}
+            />
+            <Text fw={700} size="lg">
+              SlidePositions
+            </Text>
+          </Group>
+        </Group>
+      </AppShell.Header>
+
+      <AppShell.Main>
+        <Container py="xl">
+          {navigation.state === "loading" ? (
+            <Text size="sm">Loading...</Text>
+          ) : null}
+          <Outlet />
+        </Container>
+      </AppShell.Main>
+    </AppShell>
   );
 }
 

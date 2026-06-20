@@ -1,6 +1,6 @@
 import { Button, Stack, Title, Modal, Center } from "@mantine/core";
 import { useMemo, useState } from "react";
-import { Link, useLoaderData } from "react-router";
+import { useLoaderData } from "react-router";
 import { D3ScatterPlot } from "../components/D3ScatterPlot";
 import { buildPlotModel } from "../plotting/parsing/utils";
 import PlotInputsForm from "../components/PlotInputsForm";
@@ -37,9 +37,6 @@ export function PlotViewPage() {
           submitLabel="Apply"
         />
       </Modal>
-      <Button component={Link} to="/" style={{ width: "fit-content" }}>
-        Home
-      </Button>
     </Stack>
   );
 }

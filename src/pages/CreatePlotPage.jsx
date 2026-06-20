@@ -1,5 +1,4 @@
-import { Button, Stack, Text, Title } from "@mantine/core";
-import { Link } from "react-router";
+import { Stack, Text, Title } from "@mantine/core";
 import PlotInputsForm from "../components/PlotInputsForm";
 
 export function CreatePlotPage() {
@@ -14,10 +13,6 @@ export function CreatePlotPage() {
         </Text>
 
         <PlotInputsForm submitLabel="Create Plot" />
-
-        <Button component={Link} to="/" style={{ width: "fit-content" }}>
-          Home
-        </Button>
       </Stack>
     </div>
   );

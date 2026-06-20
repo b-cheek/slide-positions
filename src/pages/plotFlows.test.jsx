@@ -62,7 +62,7 @@ describe("page rendering", () => {
   it("renders landing page", async () => {
     renderWithRouter(["/"]);
 
-    expect(await screen.findByText("SlidePositions")).toBeTruthy();
+    expect(await screen.findByText("Gallery")).toBeTruthy();
   });
 
   it("renders create plot page", async () => {
