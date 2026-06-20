@@ -150,6 +150,39 @@ export function D3ScatterPlot({
       .style("stroke-opacity", 0.7)
       .style("stroke-dasharray", "3,3");
 
+    // Lip bend lines
+    svg
+      .selectAll("line.lip-bend")
+      .data(noteConfigs.filter((d) => d.lipBendCents > 0))
+      .enter()
+      .append("line")
+      .attr("class", "lip-bend")
+      .attr("x1", (_) => x(model.trombone.slideLength as number))
+      .attr("y1", (d) => y(d.graphPoint[1]))
+      .attr("x2", (d) => x(d.graphPoint[0]))
+      .attr("y2", (d) => y(d.graphPoint[1]))
+      .style("stroke", "red")
+      .style("stroke-width", 1)
+      .style("stroke-dasharray", "4,4")
+      .style("pointer-events", "none");
+
+    // Slide all the way out marker
+    svg
+      .append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${innerHeight + 6})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .tickValues([model.trombone.slideLength as number])
+          .tickFormat(() => "All the way out")
+          .tickSize(-(innerHeight + 6)),
+      )
+      // Remove unecessary domain lines that are already shown by axis
+      .call((g) => g.select(".domain").remove())
+      // Format text to not overlap numbers
+      .call((g) => g.select(".tick text").style("text-anchor", "start"));
+
     // Points
     // Color scale per tuning
     const tuningNames = Array.from(
@@ -200,22 +233,6 @@ export function D3ScatterPlot({
         return `translate(${xVal}, ${yVal})`;
       })
       .style("stroke", (d) => color(d.tuning.name))
-      .style("pointer-events", "none");
-
-    // Lip bend lines
-    svg
-      .selectAll("line.lip-bend")
-      .data(noteConfigs.filter((d) => d.lipBendCents > 0))
-      .enter()
-      .append("line")
-      .attr("class", "lip-bend")
-      .attr("x1", (_) => x(model.trombone.slideLength as number))
-      .attr("y1", (d) => y(d.graphPoint[1]))
-      .attr("x2", (d) => x(d.graphPoint[0]))
-      .attr("y2", (d) => y(d.graphPoint[1]))
-      .style("stroke", "red")
-      .style("stroke-width", 1)
-      .style("stroke-dasharray", "4,4")
       .style("pointer-events", "none");
 
     // Note text to the left if there are not points in the way
