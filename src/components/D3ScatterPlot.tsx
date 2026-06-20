@@ -113,6 +113,7 @@ export function D3ScatterPlot({
       .attr("x", innerWidth / 2)
       .attr("y", 40)
       .style("text-anchor", "middle")
+      .style("font-size", "16px")
       .text(X_AXIS_LABEL);
 
     svg
@@ -125,10 +126,11 @@ export function D3ScatterPlot({
       )
       .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -45) // Slightly farther to look even with length of numbers vs height of numbers for x-axis label
+      .attr("y", -60) // Slightly farther than x-axis label to look even with length of numbers vs height of numbers for x-axis label
       .attr("x", 0 - innerHeight / 2)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
+      .style("font-size", "16px")
       .text(Y_AXIS_LABEL);
 
     // Gridlines
@@ -477,7 +479,8 @@ export function D3ScatterPlot({
     svg
       .selectAll(".tick text")
       .style("font-family", "var(--mantine-font-family)")
-      .style("fill", "var(--mantine-color-text)");
+      .style("fill", "var(--mantine-color-text)")
+      .style("font-size", "12px");
     svg
       .selectAll("text")
       .style("font-family", "var(--mantine-font-family)")
