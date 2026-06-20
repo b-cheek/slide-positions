@@ -16,7 +16,7 @@ export function CreatePlotPage() {
         <PlotInputsForm submitLabel="Create Plot" />
 
         <Button component={Link} to="/">
-          Back to Plots Page
+          Home
         </Button>
       </Stack>
     </div>

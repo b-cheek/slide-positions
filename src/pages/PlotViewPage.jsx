@@ -33,7 +33,7 @@ export function PlotViewPage() {
       </Modal>
 
       <Button component={Link} to="/">
-        Back to Plots Page
+        Home
       </Button>
     </Stack>
   );
