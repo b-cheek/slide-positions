@@ -1,6 +1,7 @@
 import { Button, Group, Stack, Title } from "@mantine/core";
 import { Link } from "react-router";
 import { exampleInputs } from "../plotting/presets/examplePlotInputs";
+import { SlidePositionsIcon } from "../components/SlidePositionsIcon";
 
 export function LandingPage() {
   const examplePlots = exampleInputs.map((inputs) => {
@@ -14,7 +15,14 @@ export function LandingPage() {
 
   return (
     <Stack>
-      <Title order={1}>Slide Position Plots</Title>
+      <Title order={1}>
+        <SlidePositionsIcon
+          size="2em"
+          style={{ verticalAlign: "-0.6em", marginRight: "0.2em" }}
+        />
+        SlidePositions
+      </Title>
+
       <Group>{examplePlots}</Group>
       <Button component={Link} to="/create" variant="outline">
         Create a Plot
