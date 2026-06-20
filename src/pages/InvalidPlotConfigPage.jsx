@@ -9,7 +9,7 @@ export function InvalidPlotConfigPage({ message }) {
       <Text>
         {message ?? "The custom plot URL is missing or has invalid inputs."}
       </Text>
-      <Button component={Link} to="/create">
+      <Button component={Link} to="/create" style={{ width: "fit-content" }}>
         Create a Plot
       </Button>
     </Stack>

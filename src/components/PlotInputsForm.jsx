@@ -1,5 +1,12 @@
 import React from "react";
-import { Accordion, Button, Stack, TextInput, Title } from "@mantine/core";
+import {
+  Accordion,
+  Button,
+  Stack,
+  TextInput,
+  Title,
+  Center,
+} from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
@@ -110,9 +117,15 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
             </Accordion.Panel>
           </Accordion.Item>
         </Accordion>
-        <Button type="submit" disabled={!isValid || isSubmitting}>
-          {submitLabel}
-        </Button>
+        <Center>
+          <Button
+            type="submit"
+            disabled={!isValid || isSubmitting}
+            style={{ width: "fit-content" }}
+          >
+            {submitLabel}
+          </Button>
+        </Center>
       </Stack>
     </form>
   );

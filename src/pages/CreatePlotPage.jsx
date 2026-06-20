@@ -15,7 +15,7 @@ export function CreatePlotPage() {
 
         <PlotInputsForm submitLabel="Create Plot" />
 
-        <Button component={Link} to="/">
+        <Button component={Link} to="/" style={{ width: "fit-content" }}>
           Home
         </Button>
       </Stack>

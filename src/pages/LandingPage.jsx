@@ -24,7 +24,12 @@ export function LandingPage() {
       </Title>
 
       <Group>{examplePlots}</Group>
-      <Button component={Link} to="/create" variant="outline">
+      <Button
+        component={Link}
+        to="/create"
+        variant="outline"
+        style={{ width: "fit-content" }}
+      >
         Create a Plot
       </Button>
     </Stack>

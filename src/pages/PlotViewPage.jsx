@@ -1,4 +1,4 @@
-import { Button, Stack, Title, Modal } from "@mantine/core";
+import { Button, Stack, Title, Modal, Center } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { Link, useLoaderData } from "react-router";
 import { D3ScatterPlot } from "../components/D3ScatterPlot";
@@ -17,8 +17,14 @@ export function PlotViewPage() {
       <Title order={1}>Slide Positions Plot</Title>
       <D3ScatterPlot model={model} width={800} height={600} />
 
-      <Button onClick={() => setOpened(true)}>Edit Inputs</Button>
-
+      <Center>
+        <Button
+          onClick={() => setOpened(true)}
+          style={{ width: "fit-content" }}
+        >
+          Edit Inputs
+        </Button>
+      </Center>
       <Modal
         opened={opened}
         onClose={() => setOpened(false)}
@@ -31,8 +37,7 @@ export function PlotViewPage() {
           submitLabel="Apply"
         />
       </Modal>
-
-      <Button component={Link} to="/">
+      <Button component={Link} to="/" style={{ width: "fit-content" }}>
         Home
       </Button>
     </Stack>
