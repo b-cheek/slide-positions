@@ -17,8 +17,8 @@ export function LandingPage() {
     <Stack>
       <Title order={1}>
         <SlidePositionsIcon
-          size="2em"
-          style={{ verticalAlign: "-0.6em", marginRight: "0.2em" }}
+          size="1.75em"
+          style={{ verticalAlign: "-0.5em", marginRight: "0.2em" }}
         />
         SlidePositions
       </Title>
