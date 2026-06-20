@@ -41,9 +41,7 @@ function AppLayout() {
 
       <AppShell.Main>
         <Container py="xl">
-          {navigation.state === "loading" ? (
-            <Text size="sm">Loading...</Text>
-          ) : null}
+          {navigation.state === "loading" && <Text size="sm">Loading...</Text>}
           <Outlet />
         </Container>
       </AppShell.Main>

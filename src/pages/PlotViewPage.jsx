@@ -1,4 +1,5 @@
 import { Button, Stack, Title, Modal, Center } from "@mantine/core";
+import { useElementSize } from "@mantine/hooks";
 import { useMemo, useState } from "react";
 import { useLoaderData } from "react-router";
 import { D3ScatterPlot } from "../components/D3ScatterPlot";
@@ -12,10 +13,14 @@ export function PlotViewPage() {
 
   const model = useMemo(() => buildPlotModel(plotInputs), [plotInputs]);
 
+  const { ref, width, height } = useElementSize();
+
   return (
-    <Stack>
+    <Stack ref={ref}>
       <Title order={1}>Slide Positions Plot</Title>
-      <D3ScatterPlot model={model} width={800} height={600} />
+      <Center>
+        <D3ScatterPlot model={model} width={width} height={height * 0.8} />
+      </Center>
 
       <Center>
         <Button

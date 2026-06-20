@@ -14,6 +14,7 @@ import { exampleInputs } from "../plotting/presets/examplePlotInputs";
 // TODO: add tests for example paths, other happy paths?
 
 beforeAll(() => {
+  // 1. Mock matchMedia (Mantine requirement)
   Object.defineProperty(window, "matchMedia", {
     writable: true,
     value: vi.fn().mockImplementation((query) => ({
@@ -27,6 +28,16 @@ beforeAll(() => {
       dispatchEvent: () => false,
     })),
   });
+
+  // 2. Mock ResizeObserver (Vitest way)
+  vi.stubGlobal(
+    "ResizeObserver",
+    class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
 });
 
 function renderWithRouter(initialEntries) {
