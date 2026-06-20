@@ -65,7 +65,7 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
           {...register("title")}
         />
 
-        <Accordion variant="unstyled" defaultValue="advancedOptions">
+        <Accordion variant="unstyled">
           <Accordion.Item value="advancedOptions">
             <Accordion.Control>Advanced Options</Accordion.Control>
 
