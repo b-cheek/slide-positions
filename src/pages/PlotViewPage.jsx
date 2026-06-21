@@ -1,4 +1,12 @@
-import { Button, Stack, Title, Modal, Center } from "@mantine/core";
+import {
+  Button,
+  Checkbox,
+  Group,
+  Stack,
+  Title,
+  Modal,
+  Center,
+} from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import { useMemo, useState } from "react";
 import { useLoaderData } from "react-router";
@@ -15,20 +23,54 @@ export function PlotViewPage() {
 
   const { ref, width, height } = useElementSize();
 
+  const [viewOptions, setViewOptions] = useState({
+    showNoteLabels: true,
+    showOptimalSlidePath: false,
+  });
+
+  const handleViewOptionsChange = (e) => {
+    const { name, checked } = e.currentTarget;
+    setViewOptions((prev) => ({
+      ...prev,
+      [name]: checked,
+    }));
+  };
+
   return (
     <Stack ref={ref}>
       <Title order={1}>Slide Positions Plot</Title>
       <Center>
-        <D3ScatterPlot model={model} width={width} height={height * 0.8} />
+        <D3ScatterPlot
+          model={model}
+          viewOptions={viewOptions}
+          width={width}
+          height={height * 0.8}
+        />
       </Center>
 
       <Center>
-        <Button
-          onClick={() => setOpened(true)}
-          style={{ width: "fit-content" }}
-        >
-          Edit Inputs
-        </Button>
+        <Group>
+          <Button
+            onClick={() => setOpened(true)}
+            style={{ width: "fit-content" }}
+          >
+            Edit Inputs
+          </Button>
+          <Checkbox
+            checked={viewOptions.showNoteLabels}
+            onChange={handleViewOptionsChange}
+            name="showNoteLabels"
+            label="Show Individual Note Names"
+            description="Show note name labels at each point"
+          />
+          <Checkbox
+            checked={viewOptions.showOptimalSlidePath}
+            onChange={handleViewOptionsChange}
+            name="showOptimalSlidePath"
+            label="Show optimal slide path"
+            description="Show arrows indicating optimal slide movements to travel between input notes"
+          />
+        </Group>
       </Center>
       <Modal
         opened={opened}

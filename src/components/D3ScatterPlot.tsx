@@ -9,12 +9,17 @@ const Y_AXIS_LABEL = "Note";
 
 interface D3ScatterPlotProps {
   model: PlotModel;
+  viewOptions?: {
+    showNoteLabels: boolean;
+    showOptimalSlidePath: boolean;
+  };
   width?: number;
   height?: number;
 }
 
 export function D3ScatterPlot({
   model,
+  viewOptions = { showNoteLabels: true, showOptimalSlidePath: false },
   width = 800,
   height = 600,
 }: D3ScatterPlotProps) {
@@ -244,8 +249,9 @@ export function D3ScatterPlot({
       .selectAll("text.note-label")
       .data(
         noteConfigs.filter(
-          // Exclude notes that have other notes to their left
           (d) =>
+            viewOptions.showNoteLabels &&
+            // Exclude notes that have other notes to their left
             !noteConfigs
               .filter((other) => other.graphPoint[1] === d.graphPoint[1])
               .some(
@@ -485,7 +491,7 @@ export function D3ScatterPlot({
       .selectAll("text")
       .style("font-family", "var(--mantine-font-family)")
       .style("fill", "var(--mantine-color-text)");
-  }, [model, width, height]);
+  }, [model, viewOptions, width, height]);
 
   return <svg ref={svgRef} style={{ display: "block", margin: "0 auto" }} />;
 }
