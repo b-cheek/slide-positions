@@ -88,3 +88,94 @@ export function getNoteConfigs(
       })
   );
 }
+
+export function getViterbiSlidePath(
+  noteConfigs: NoteConfiguration[],
+  player: Player,
+  trombone: Trombone,
+): NoteConfiguration[] {
+  // Group contiguous configs by the note occurrence order (flatMap preserves order)
+  const groups: NoteConfiguration[][] = [];
+  for (const cfg of noteConfigs) {
+    const lastGroup = groups[groups.length - 1];
+    if (!lastGroup || lastGroup[0].note !== cfg.note) {
+      groups.push([cfg]);
+    } else {
+      lastGroup.push(cfg);
+    }
+  }
+
+  if (groups.length === 0) return [];
+
+  // Cost functions
+  const emissionCost = (cfg: NoteConfiguration) => {
+    // Prefer configurations with no lip bend and shorter slide distances.
+    const lipBendPenalty = Math.abs(cfg.lipBendCents) / 100; // cents -> scaled penalty
+    const slideNorm =
+      Number(cfg.slideDistance) / Number(trombone.slideLength || 1);
+    const slidePenalty = slideNorm; // linear penalty for further slides
+    return lipBendPenalty * 1.0 + slidePenalty * 1.0;
+  };
+
+  const transitionCost = (from: NoteConfiguration, to: NoteConfiguration) => {
+    // Penalize large jumps in slide position (in relative positions)
+    const fromPos = from.getSlidePosition(player);
+    const toPos = to.getSlidePosition(player);
+    const posDelta = Math.abs(Number(toPos) - Number(fromPos));
+
+    // Penalize changes in partials (prefer smoother partial transitions)
+    const partialDelta = Math.abs(to.partial - from.partial);
+
+    return posDelta * 1.0 + partialDelta * 0.5;
+  };
+
+  // Viterbi DP
+  // dp[t][j] = best cost ending at group t, choice j
+  const dp: number[][] = [];
+  const backpointer: number[][] = [];
+
+  // initialize
+  dp[0] = groups[0].map((cfg) => emissionCost(cfg));
+  backpointer[0] = groups[0].map(() => -1);
+
+  for (let t = 1; t < groups.length; t++) {
+    dp[t] = new Array(groups[t].length).fill(Infinity);
+    backpointer[t] = new Array(groups[t].length).fill(-1);
+
+    for (let j = 0; j < groups[t].length; j++) {
+      const toCfg = groups[t][j];
+      const eCost = emissionCost(toCfg);
+
+      for (let i = 0; i < groups[t - 1].length; i++) {
+        const fromCfg = groups[t - 1][i];
+        const cost = dp[t - 1][i] + transitionCost(fromCfg, toCfg) + eCost;
+        if (cost < dp[t][j]) {
+          dp[t][j] = cost;
+          backpointer[t][j] = i;
+        }
+      }
+    }
+  }
+
+  // find best last
+  const last = groups.length - 1;
+  let bestIdx = 0;
+  let bestCost = dp[last][0];
+  for (let j = 1; j < dp[last].length; j++) {
+    if (dp[last][j] < bestCost) {
+      bestCost = dp[last][j];
+      bestIdx = j;
+    }
+  }
+
+  // backtrack
+  const path: NoteConfiguration[] = [];
+  let curIdx = bestIdx;
+  for (let t = last; t >= 0; t--) {
+    path.unshift(groups[t][curIdx]);
+    curIdx = backpointer[t][curIdx];
+    if (curIdx === -1) break;
+  }
+
+  return path;
+}

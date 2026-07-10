@@ -4,7 +4,7 @@ import { Player } from "../types/player";
 import { Trombone } from "../types/trombone";
 import { Tuning } from "../types/tuning";
 import { Hertz, Meters } from "../..";
-import { getNoteConfigs } from "./slideCalculation";
+import { getNoteConfigs, getViterbiSlidePath } from "./slideCalculation";
 
 describe("getNoteConfigs", () => {
   // Test defaults (Bb trombone 7 slide pos, no lip bend or first pos distance)
@@ -309,5 +309,36 @@ describe("getNoteConfigs", () => {
     const config = configs[0];
     expect(config.partial).toBe(3);
     expect(config.getSlidePosition(defaultPlayer)).toBeCloseTo(7.02, 2);
+  });
+});
+
+describe("getViterbiSlidePath", () => {
+  it("returns an empty path when there are no note configurations", () => {
+    expect(getViterbiSlidePath([], new Player(), new Trombone())).toEqual([]);
+  });
+
+  it("prefers a smoother slide transition even if the local emission cost is worse", () => {
+    const tromboneBbF = new Trombone([
+      Tuning.fromPitchClassOrPitch("Bb"),
+      Tuning.fromPitchClassOrPitch("F"),
+    ]);
+    const playerWithLipBend = new Player(20 as Hertz);
+
+    const notes = [Note.fromSciNotation("B1"), Note.fromSciNotation("C3")];
+    const noteConfigs = notes.flatMap((note) =>
+      getNoteConfigs(tromboneBbF, note, playerWithLipBend),
+    );
+
+    const path = getViterbiSlidePath(
+      noteConfigs,
+      playerWithLipBend,
+      tromboneBbF,
+    );
+
+    expect(path).toHaveLength(2);
+    expect(path[0].note).toStrictEqual(Note.fromSciNotation("B1"));
+    expect(path[1].note).toStrictEqual(Note.fromSciNotation("C3"));
+    expect(path[1].getSlidePosition(playerWithLipBend)).toBeCloseTo(6.02, 2);
+    expect(path[1].lipBendCents).toBe(0);
   });
 });
