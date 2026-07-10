@@ -3,20 +3,24 @@ import { Link } from "react-router";
 import { exampleInputs } from "../plotting/presets/examplePlotInputs";
 
 export function LandingPage() {
-  const examplePlots = exampleInputs.map((inputs) => {
-    const params = new URLSearchParams(inputs).toString();
-    return (
-      <Button key={params} component={Link} to={`/plot?${params}`}>
-        {inputs.title ?? "Example Plot"}
-      </Button>
-    );
-  });
-
   return (
     <Stack>
       <Title order={1}>Gallery</Title>
 
-      <Group>{examplePlots}</Group>
+      <Group>
+        {exampleInputs.map((inputs) => {
+          const params = new URLSearchParams(
+            Object.entries(inputs).filter(([, v]) => v),
+          );
+
+          return (
+            <Button key={inputs.title} component={Link} to={`/plot?${params}`}>
+              {inputs.title ?? "Example Plot"}
+            </Button>
+          );
+        })}
+      </Group>
+
       <Button
         component={Link}
         to="/create"

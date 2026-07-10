@@ -26,24 +26,16 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
   };
 
   const handleFormSubmit = (values) => {
-    // Apply custom onSubmit handler if provided (right now only for modal)
     onSubmit?.(values);
-    // Preserve any non-plot-input search params (e.g. view options) while
-    // replacing the raw plot input values in the query string.
-    const newParams = new URLSearchParams(searchParams);
-    // Overwrite plot input keys with submitted values; remove empty/undefined
-    Object.entries(values).forEach(([k, v]) => {
-      if (v === undefined || v === null || v === "") {
-        newParams.delete(k);
-      } else {
-        newParams.set(k, String(v));
-      }
-    });
-
-    navigate({
-      pathname: "/plot",
-      search: `?${newParams.toString()}`,
-    });
+    const newParams = new URLSearchParams(searchParams.toString());
+    // Remove plot input keys and set submitted values; preserve view flags.
+    Object.keys(readPlotInputRawValues(newParams)).forEach((k) =>
+      newParams.delete(k),
+    );
+    Object.entries(values).forEach(([k, v]) =>
+      v ? newParams.set(k, String(v)) : newParams.delete(k),
+    );
+    navigate(`/plot?${newParams.toString()}`);
   };
 
   const {
@@ -93,10 +85,6 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
 
             <Accordion.Panel>
               <Stack>
-                {/* <Text>
-                  The following sections are to specify exact ranges, so they
-                  require two notes each.
-                </Text> */}
                 <TextInput
                   label="Top Slide Note (optional)"
                   description="The note when the slide is all the way in"

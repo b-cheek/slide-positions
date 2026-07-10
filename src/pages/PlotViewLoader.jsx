@@ -2,9 +2,7 @@ import { plotInputsSchema } from "../plotting";
 import { readPlotInputRawValues } from "../plotting/parsing/utils";
 
 export function plotViewLoader({ request }) {
-  // Pass raw input for reuse in modal
   const url = new URL(request.url);
-  // TODO: need to codify typing from URL better
   const raw = readPlotInputRawValues(url.searchParams);
 
   const parsedInputs = plotInputsSchema.safeParse(raw);
