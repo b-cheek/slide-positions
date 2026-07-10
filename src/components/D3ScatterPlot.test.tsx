@@ -3,6 +3,7 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { D3ScatterPlot } from "./D3ScatterPlot";
 import { buildPlotModel } from "../plotting/parsing/utils";
 import { plotInputsSchema } from "../plotting/parsing/plotInputsSchema";
+import { getNoteConfigs } from "../plotting/processing/utils/slideCalculation";
 
 const identityMatrix = {
   inverse() {
@@ -123,7 +124,7 @@ describe("D3ScatterPlot hover", () => {
     const { container } = render(<D3ScatterPlot model={model} />);
 
     const noteConfig = model.notes
-      .flatMap((note) => model.trombone.getNoteConfigs(note, model.player))
+      .flatMap((note) => getNoteConfigs(model.trombone, note, model.player))
       .find((config) => config.tuning !== model.trombone.tunings[0]);
 
     expect(noteConfig).toBeTruthy();
@@ -170,7 +171,7 @@ describe("D3ScatterPlot hover", () => {
     const { container } = render(<D3ScatterPlot model={model} />);
 
     const noteConfig = model.notes
-      .flatMap((note) => model.trombone.getNoteConfigs(note, model.player))
+      .flatMap((note) => getNoteConfigs(model.trombone, note, model.player))
       .find((config) => config.tuning !== model.trombone.tunings[0]);
 
     expect(noteConfig).toBeTruthy();

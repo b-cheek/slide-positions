@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import type { PlotModel } from "../plotting/parsing/utils";
 import { Note } from "../plotting/processing/types/note";
 import { MidiNumber } from "../plotting";
+import { getNoteConfigs } from "../plotting/processing/utils/slideCalculation";
 
 const X_AXIS_LABEL = "Slide Position";
 const Y_AXIS_LABEL = "Note";
@@ -28,7 +29,7 @@ export function D3ScatterPlot({
   useEffect(() => {
     // Music computation
     const noteConfigs = model.notes.flatMap((note) =>
-      model.trombone.getNoteConfigs(note, model.player),
+      getNoteConfigs(model.trombone, note, model.player),
     );
 
     // TODO: prevent recomputation?

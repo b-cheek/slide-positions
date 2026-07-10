@@ -5,6 +5,7 @@ import { buildPlotModel } from "./utils";
 import { ParsedPlotInputs } from "./plotInputsSchema";
 import { NoteConfiguration } from "../processing/types/noteConfiguration";
 import { Tuning } from "../processing/types/tuning";
+import { getNoteConfigs } from "../processing/utils/slideCalculation";
 
 // TODO: add random fuzzy tests and check that points, ticks are reasonable
 
@@ -62,7 +63,7 @@ describe("getLipBendRange", () => {
 const buildPlotFigure = (inputs: ParsedPlotInputs): NoteConfiguration[] => {
   const plotModel = buildPlotModel(inputs);
   const noteConfigs = plotModel.notes.flatMap((note) =>
-    plotModel.trombone.getNoteConfigs(note, plotModel.player),
+    getNoteConfigs(plotModel.trombone, note, plotModel.player),
   );
   return noteConfigs;
 };
