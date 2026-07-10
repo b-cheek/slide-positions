@@ -3,7 +3,10 @@ import * as d3 from "d3";
 import type { PlotModel } from "../plotting/parsing/utils";
 import { Note } from "../plotting/processing/types/note";
 import { MidiNumber } from "../plotting";
-import { getNoteConfigs } from "../plotting/processing/utils/slideCalculation";
+import {
+  getNoteConfigs,
+  getViterbiSlidePath,
+} from "../plotting/processing/utils/slideCalculation";
 
 const X_AXIS_LABEL = "Slide Position";
 const Y_AXIS_LABEL = "Note";
@@ -31,6 +34,9 @@ export function D3ScatterPlot({
     const noteConfigs = model.notes.flatMap((note) =>
       getNoteConfigs(model.trombone, note, model.player),
     );
+    const optimalSlidePath = viewOptions.showOptimalSlidePath
+      ? getViterbiSlidePath(noteConfigs, model.player, model.trombone)
+      : [];
 
     // TODO: prevent recomputation?
     // Derive the available slide positions
@@ -91,6 +97,20 @@ export function D3ScatterPlot({
       .attr("height", height)
       .append("g")
       .attr("transform", `translate(${xMargin},${yMargin})`);
+
+    const defs = d3.select(svgRef.current).append("defs");
+    defs
+      .append("marker")
+      .attr("id", "optimal-slide-arrow")
+      .attr("viewBox", "0 0 10 10")
+      .attr("refX", 9)
+      .attr("refY", 5)
+      .attr("markerWidth", 6)
+      .attr("markerHeight", 6)
+      .attr("orient", "auto-start-reverse")
+      .append("path")
+      .attr("d", "M 0 0 L 10 5 L 0 10 z")
+      .style("fill", "var(--mantine-color-blue-6)");
 
     // Title
     d3.select(svgRef.current)
@@ -212,6 +232,29 @@ export function D3ScatterPlot({
       .append("g")
       .attr("class", "points")
       .style("isolation", "isolate");
+
+    if (viewOptions.showOptimalSlidePath && optimalSlidePath.length > 1) {
+      const optimalPathLayer = svg
+        .append("g")
+        .attr("class", "optimal-path")
+        .style("pointer-events", "none");
+
+      optimalPathLayer
+        .selectAll("line.optimal-path-segment")
+        .data(optimalSlidePath.slice(1))
+        .enter()
+        .append("line")
+        .attr("class", "optimal-path-segment")
+        .attr("x1", (_, i) => x(optimalSlidePath[i].graphPoint[0]))
+        .attr("y1", (_, i) => y(optimalSlidePath[i].graphPoint[1]))
+        .attr("x2", (d) => x(d.graphPoint[0]))
+        .attr("y2", (d) => y(d.graphPoint[1]))
+        .style("stroke", "var(--mantine-color-blue-6)")
+        .style("stroke-width", 1.5)
+        .style("stroke-opacity", 0.75)
+        .style("stroke-dasharray", "4,4")
+        .style("marker-end", "url(#optimal-slide-arrow)");
+    }
 
     // Non lip-bent notes as circles
     pointsLayer

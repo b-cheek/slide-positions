@@ -112,6 +112,30 @@ describe("D3ScatterPlot hover", () => {
     });
   });
 
+  it("draws optimal path arrows when enabled", async () => {
+    const model = buildPlotModel(
+      plotInputsSchema.parse({
+        notesString: "Bb1 C3",
+      }),
+    );
+    const { container } = render(
+      <D3ScatterPlot
+        model={model}
+        viewOptions={{ showNoteLabels: false, showOptimalSlidePath: true }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector("g.optimal-path")).toBeTruthy();
+      expect(
+        container.querySelectorAll("line.optimal-path-segment").length,
+      ).toBeGreaterThan(0);
+      expect(
+        container.querySelector("marker#optimal-slide-arrow"),
+      ).toBeTruthy();
+    });
+  });
+
   it("shows that a lip bent note has slide all the way out in tooltip", async () => {
     const model = buildPlotModel(
       // Using a note without an open pos for simplicity
