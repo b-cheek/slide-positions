@@ -57,6 +57,7 @@ const PLOT_INPUT_QUERY_KEYS = [
 ]; // TODO: I hate that I have to have this...
 
 // TODO: enforce stricter typing somehow
+// TODO: can useSearchParams make this better?
 export function readPlotInputRawValues(searchParams: URLSearchParams) {
   return Object.fromEntries(
     PLOT_INPUT_QUERY_KEYS.map((key) => [

@@ -9,13 +9,14 @@ import {
 } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import { useMemo, useState } from "react";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useSearchParams } from "react-router";
 import { D3ScatterPlot } from "../components/D3ScatterPlot";
 import { buildPlotModel } from "../plotting/parsing/utils";
 import PlotInputsForm from "../components/PlotInputsForm";
 
 export function PlotViewPage() {
   const { plotInputs } = useLoaderData();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [opened, setOpened] = useState(false);
 
@@ -23,17 +24,28 @@ export function PlotViewPage() {
 
   const { ref, width, height } = useElementSize();
 
-  const [viewOptions, setViewOptions] = useState({
-    showNoteLabels: true,
-    showOptimalSlidePath: false,
-  });
+  // 1. Derive viewOptions directly from searchParams (No useState or useEffect needed)
+  const viewOptions = useMemo(
+    () => ({
+      showNoteLabels: searchParams.get("showNoteLabels") === "true",
+      showOptimalSlidePath: searchParams.get("showOptimalSlidePath") === "true",
+    }),
+    [searchParams],
+  );
 
   const handleViewOptionsChange = (e) => {
     const { name, checked } = e.currentTarget;
-    setViewOptions((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
+    const newParams = new URLSearchParams(searchParams);
+
+    if (checked) {
+      newParams.set(name, "true");
+    } else {
+      newParams.delete(name);
+    }
+
+    // 2. Just update the URL. React Router will trigger a re-render,
+    // and viewOptions will automatically recalculate with the new params.
+    setSearchParams(newParams);
   };
 
   return (

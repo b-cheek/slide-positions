@@ -61,11 +61,13 @@ function renderWithRouter(initialEntries) {
     { initialEntries },
   );
 
-  return render(
+  const renderResult = render(
     <MantineProvider defaultColorScheme="auto">
       <RouterProvider router={router} />
     </MantineProvider>,
   );
+
+  return { ...renderResult, router };
 }
 
 // Add tests that pages load successfully
@@ -127,5 +129,33 @@ describe("plot user flows", () => {
         name: "Invalid Plot Configuration",
       }),
     ).toBeTruthy();
+  });
+
+  it("syncs view options with URL params and updates the URL", async () => {
+    const user = userEvent.setup();
+
+    const { router } = renderWithRouter([
+      "/plot?notesString=Bb1&showNoteLabels=true&showOptimalSlidePath=true",
+    ]);
+
+    const noteCheckbox = await screen.findByLabelText(
+      "Show Individual Note Names",
+    );
+    const pathCheckbox = await screen.findByLabelText(
+      "Show optimal slide path",
+    );
+
+    expect(noteCheckbox.checked).toBeTruthy();
+    expect(pathCheckbox.checked).toBeTruthy();
+
+    // Uncheck the note labels checkbox; URL should remove the param
+    await user.click(noteCheckbox);
+    expect(noteCheckbox.checked).toBeFalsy();
+    expect(router.state.location.search).not.toContain("showNoteLabels");
+
+    // Uncheck the optimal slide path checkbox; URL should remove the param
+    await user.click(pathCheckbox);
+    expect(pathCheckbox.checked).toBeFalsy();
+    expect(router.state.location.search).not.toContain("showOptimalSlidePath");
   });
 });

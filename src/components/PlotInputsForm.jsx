@@ -9,16 +9,16 @@ import {
 } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSearchParams } from "react-router";
 import { useNavigate } from "react-router";
 import { plotInputsRawSchema } from "../plotting/parsing/plotInputsSchema";
 import { placeholderInputs } from "../plotting/presets/examplePlotInputs";
 import { readPlotInputRawValues } from "../plotting/parsing/utils";
 
 export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const rawValues = readPlotInputRawValues(
-    new URL(window.location.href).searchParams,
-  );
+  const rawValues = readPlotInputRawValues(searchParams);
 
   const currentValues = {
     ...rawValues,
@@ -26,9 +26,24 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
   };
 
   const handleFormSubmit = (values) => {
+    // Apply custom onSubmit handler if provided (right now only for modal)
     onSubmit?.(values);
-    const params = new URLSearchParams(values);
-    navigate(`/plot?${params.toString()}`);
+    // Preserve any non-plot-input search params (e.g. view options) while
+    // replacing the raw plot input values in the query string.
+    const newParams = new URLSearchParams(searchParams);
+    // Overwrite plot input keys with submitted values; remove empty/undefined
+    Object.entries(values).forEach(([k, v]) => {
+      if (v === undefined || v === null || v === "") {
+        newParams.delete(k);
+      } else {
+        newParams.set(k, String(v));
+      }
+    });
+
+    navigate({
+      pathname: "/plot",
+      search: `?${newParams.toString()}`,
+    });
   };
 
   const {
