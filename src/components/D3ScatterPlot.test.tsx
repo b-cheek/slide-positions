@@ -55,7 +55,7 @@ describe("D3ScatterPlot hover", () => {
     expect(basePoint).toBeTruthy();
     const baseRadius = Number(basePoint?.getAttribute("r"));
 
-    const hoverLayer = container.querySelector("rect.hover-layer");
+    const hoverLayer = container.querySelector("g.points rect");
     expect(hoverLayer).toBeTruthy();
 
     const cx = Number(basePoint?.getAttribute("cx"));
@@ -106,7 +106,7 @@ describe("D3ScatterPlot hover", () => {
 
     await waitFor(() => {
       expect(
-        container.querySelectorAll("path.lip-bend").length,
+        container.querySelectorAll("use.lip-bend-point").length,
       ).toBeGreaterThan(0);
       expect(container.textContent).toContain("Lip bent");
     });
@@ -153,12 +153,12 @@ describe("D3ScatterPlot hover", () => {
 
     expect(noteConfig).toBeTruthy();
 
-    const hoverLayer = container.querySelector("rect.hover-layer");
+    const hoverLayer = container.querySelector("g.points rect");
     expect(hoverLayer).toBeTruthy();
 
     // Get cx and cy for the lip bend symbol
     const lipBentPoint = Array.from(
-      container.querySelectorAll("path.lip-bend"),
+      container.querySelectorAll("use.lip-bend-point"),
     )[0];
     const cx = Number(
       lipBentPoint
@@ -200,7 +200,7 @@ describe("D3ScatterPlot hover", () => {
 
     expect(noteConfig).toBeTruthy();
 
-    const hoverLayer = container.querySelector("rect.hover-layer");
+    const hoverLayer = container.querySelector("g.points rect");
     expect(hoverLayer).toBeTruthy();
 
     // Get the point using the F attachment

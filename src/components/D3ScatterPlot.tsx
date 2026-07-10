@@ -30,20 +30,21 @@ export function D3ScatterPlot({
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    // Music computation
+    // --- 1. Data Computation ---
     const noteConfigs = model.notes.flatMap((note) =>
       getNoteConfigs(model.trombone, note, model.player),
     );
+
     const optimalSlidePath = viewOptions.showOptimalSlidePath
       ? getViterbiSlidePath(noteConfigs, model.player, model.trombone)
       : [];
 
-    // TODO: prevent recomputation?
     // Derive the available slide positions
     const openTuning = model.trombone.tunings[0];
     const semiToneOffset = 2 ** (1 / 12);
     let posLen = openTuning.length + model.player.firstPosDistance;
     const posLengths: number[] = [];
+
     while (
       posLen.toPrecision(12) <=
       (openTuning.length + model.trombone.slideLength).toPrecision(12)
@@ -51,14 +52,13 @@ export function D3ScatterPlot({
       posLengths.push(posLen - openTuning.length);
       posLen *= semiToneOffset;
     }
-    // create mapping of each pos length to its index + 1
+
+    // Create mapping of each pos length to its index + 1
     // This is necessary since formatted tick values require a mapping function
     const posLengthToPos: Record<number, number> = {};
-    posLengths.forEach((len, i) => {
-      posLengthToPos[len] = i + 1;
-    });
+    posLengths.forEach((len, i) => (posLengthToPos[len] = i + 1));
 
-    // Chart dimensions and margins
+    // --- 2. Chart Setup & Scales ---
 
     // TODO: perhaps a major rework for complete dimensional consistency of labels, but for now just
     // hardcoding margins that look good with the current labels and font sizes
@@ -67,38 +67,41 @@ export function D3ScatterPlot({
     const innerWidth = width - xMargin * 2;
     const innerHeight = height - yMargin * 2;
 
-    d3.select(svgRef.current).selectAll("*").remove();
-
     const xExtent = d3.extent(noteConfigs, (d) => d.graphPoint[0]);
     const yExtent = d3.extent(noteConfigs, (d) => d.graphPoint[1]);
-    if (!xExtent || xExtent[0] == null || xExtent[1] == null) return;
-    if (!yExtent || yExtent[0] == null || yExtent[1] == null) return;
+    if (!xExtent[0] || !xExtent[1] || !yExtent[0] || !yExtent[1]) return;
 
-    // Declare the x (horizontal position) scale.
+    // Declare the x (horizontal position) scale. Set x axis to cover full slide.
     const x = d3
       .scaleLinear()
-      // Set x axis to cover full slide
       .domain([
-        Math.min(xExtent[0] as number, 0),
-        Math.max(xExtent[1] as number, model.trombone.slideLength as number),
+        Math.min(xExtent[0], 0),
+        Math.max(xExtent[1], model.trombone.slideLength as number),
       ])
       .range([0, innerWidth]);
 
     // Declare the y (vertical position) scale.
     const y = d3
       .scaleLinear()
-      .domain([yExtent[0] as number, yExtent[1] as number])
+      .domain([yExtent[0], yExtent[1]])
       .range([innerHeight, 0]);
 
-    // Plot
-    const svg = d3
-      .select(svgRef.current)
-      .attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", `translate(${xMargin},${yMargin})`);
+    // Color scale per tuning
+    const tuningNames = Array.from(
+      new Set(model.trombone.tunings.map((t) => t.name)),
+    );
+    const color = d3
+      .scaleOrdinal<string, string>()
+      .domain(tuningNames)
+      .range(d3.schemeCategory10);
 
-    const defs = d3.select(svgRef.current).append("defs");
+    // --- 3. Base SVG & Defs ---
+    const svgRoot = d3.select(svgRef.current);
+    svgRoot.selectAll("*").remove();
+
+    const defs = svgRoot.append("defs");
+
+    // Def: Arrow marker for optimal path
     defs
       .append("marker")
       .attr("id", "optimal-slide-arrow")
@@ -112,8 +115,25 @@ export function D3ScatterPlot({
       .attr("d", "M 0 0 L 10 5 L 0 10 z")
       .style("fill", "var(--mantine-color-blue-6)");
 
+    // Def: Reusable asterisk symbols for lip bends
+    const asteriskGen = d3.symbol().type(d3.symbolAsterisk);
+    defs
+      .append("path")
+      .attr("id", "lip-bend-symbol")
+      .attr("d", asteriskGen.size(50)());
+    defs
+      .append("path")
+      .attr("id", "lip-bend-symbol-large")
+      .attr("d", asteriskGen.size(120)());
+
+    const svg = svgRoot
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", `translate(${xMargin},${yMargin})`);
+
     // Title
-    d3.select(svgRef.current)
+    svgRoot
       .append("text")
       .attr("x", width / 2)
       .attr("y", 15)
@@ -123,18 +143,19 @@ export function D3ScatterPlot({
       .style("font-weight", "bold")
       .text(model.title);
 
-    // Axes
-    svg
+    // --- 4. Axes & Gridlines ---
+    const xAxisGroup = svg
       .append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(
         d3
           .axisBottom(x)
           .tickValues(posLengths)
-          // this map is derived from posLengths to ensure consistency,
-          // a map function is required to since the index is not available
+          // this map is derived from posLengths to ensure consistency
           .tickFormat((d) => String(posLengthToPos[+d])),
-      )
+      );
+
+    xAxisGroup
       .append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 40)
@@ -142,18 +163,18 @@ export function D3ScatterPlot({
       .style("font-size", "16px")
       .text(X_AXIS_LABEL);
 
-    svg
-      .append("g")
-      .call(
-        d3
-          .axisLeft(y)
-          .tickValues(y.ticks().filter((tick) => Number.isInteger(tick)))
-          .tickFormat((d) => Note.fromMidiNum(+d as MidiNumber).name),
-      )
+    const yAxisGroup = svg.append("g").call(
+      d3
+        .axisLeft(y)
+        .tickValues(y.ticks().filter(Number.isInteger))
+        .tickFormat((d) => Note.fromMidiNum(+d as MidiNumber).name),
+    );
+
+    yAxisGroup
       .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -60) // Slightly farther than x-axis label to look even with length of numbers vs height of numbers for x-axis label
-      .attr("x", 0 - innerHeight / 2)
+      .attr("y", -60) // Slightly farther than x-axis label to look even with length of numbers vs height of numbers
+      .attr("x", -innerHeight / 2)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .style("font-size", "16px")
@@ -171,28 +192,12 @@ export function D3ScatterPlot({
           .tickFormat(() => "")
           .tickSize(-innerHeight),
       )
-      // Remove unecessary domain lines that are already shown by axis
+      // Remove unnecessary domain lines that are already shown by axis
       .call((g) => g.select(".domain").remove())
       .selectAll("line")
       .style("stroke", "var(--mantine-color-default-border)")
       .style("stroke-opacity", 0.7)
       .style("stroke-dasharray", "3,3");
-
-    // Lip bend lines
-    svg
-      .selectAll("line.lip-bend")
-      .data(noteConfigs.filter((d) => d.lipBendCents > 0))
-      .enter()
-      .append("line")
-      .attr("class", "lip-bend")
-      .attr("x1", (_) => x(model.trombone.slideLength as number))
-      .attr("y1", (d) => y(d.graphPoint[1]))
-      .attr("x2", (d) => x(d.graphPoint[0]))
-      .attr("y2", (d) => y(d.graphPoint[1]))
-      .style("stroke", "red")
-      .style("stroke-width", 1)
-      .style("stroke-dasharray", "4,4")
-      .style("pointer-events", "none");
 
     // Slide all the way out marker
     svg
@@ -206,26 +211,13 @@ export function D3ScatterPlot({
           .tickFormat(() => "All the way out")
           .tickSize(-(innerHeight + 6)),
       )
-      // Remove unecessary domain lines that are already shown by axis
-      .call((g) => g.select(".domain").remove())
-      // Format text to not overlap numbers
-      .call((g) => g.select(".tick text").style("text-anchor", "start"));
+      .call((g) => {
+        g.select(".domain").remove();
+        // Format text to not overlap numbers
+        g.select(".tick text").style("text-anchor", "start");
+      });
 
-    // Points
-    // Color scale per tuning
-    const tuningNames = Array.from(
-      new Set(model.trombone.tunings.map((t) => t.name)),
-    );
-    const color = d3
-      .scaleOrdinal<string, string>()
-      .domain(tuningNames)
-      .range(d3.schemeCategory10);
-
-    const nonLipNotes = noteConfigs
-      .filter((d) => d.lipBendCents === 0)
-      .reverse(); // reverse so that notes in earlier specified tunings get color priority in blended overlaps
-    const bentNotes = noteConfigs.filter((d) => d.lipBendCents > 0);
-    const hasBentNotes = bentNotes.length > 0;
+    // --- 5. Data Layers ---
 
     // Isolate blended points so the grid does not participate in the blend backdrop.
     const pointsLayer = svg
@@ -233,17 +225,65 @@ export function D3ScatterPlot({
       .attr("class", "points")
       .style("isolation", "isolate");
 
+    const nonLipNotes = noteConfigs
+      .filter((d) => d.lipBendCents === 0)
+      .reverse(); // reverse so that notes in earlier specified tunings get color priority in blended overlaps
+
+    const bentNotes = noteConfigs.filter((d) => d.lipBendCents > 0);
+
+    // Lip bend connection lines
+    svg
+      .selectAll("line.lip-bend")
+      .data(bentNotes)
+      .join("line")
+      .attr("class", "lip-bend")
+      .attr("x1", () => x(model.trombone.slideLength as number))
+      .attr("y1", (d) => y(d.graphPoint[1]))
+      .attr("x2", (d) => x(d.graphPoint[0]))
+      .attr("y2", (d) => y(d.graphPoint[1]))
+      .style("stroke", "red")
+      .style("stroke-width", 1)
+      .style("stroke-dasharray", "4,4")
+      .style("pointer-events", "none");
+
+    // Points (Standard Non-Lip Bent Notes)
+    pointsLayer
+      .selectAll("circle.point")
+      .data(nonLipNotes)
+      .join("circle")
+      .attr("class", "point")
+      .attr("cx", (d) => x(d.graphPoint[0]))
+      .attr("cy", (d) => y(d.graphPoint[1]))
+      .attr("r", 3)
+      .style("fill", (d) => color(d.tuning.name))
+      .style("mix-blend-mode", "color"); // Better visibility of overlapping points
+
+    // Points (Lip bent via reusable <use> tag)
+    svg
+      .selectAll("use.lip-bend-point")
+      .data(bentNotes)
+      .join("use")
+      .attr("class", "lip-bend-point")
+      .attr("href", "#lip-bend-symbol")
+      .attr(
+        "transform",
+        (d) => `translate(${x(d.graphPoint[0])}, ${y(d.graphPoint[1])})`,
+      )
+      .style("stroke", (d) => color(d.tuning.name))
+      .style("pointer-events", "none")
+      .style("fill", "none");
+
+    // --- 6. Optional Layers (Conditionals) ---
+
+    // Optimal Path
     if (viewOptions.showOptimalSlidePath && optimalSlidePath.length > 1) {
-      const optimalPathLayer = svg
+      svg
         .append("g")
         .attr("class", "optimal-path")
-        .style("pointer-events", "none");
-
-      optimalPathLayer
+        .style("pointer-events", "none")
         .selectAll("line.optimal-path-segment")
         .data(optimalSlidePath.slice(1))
-        .enter()
-        .append("line")
+        .join("line")
         .attr("class", "optimal-path-segment")
         .attr("x1", (_, i) => x(optimalSlidePath[i].graphPoint[0]))
         .attr("y1", (_, i) => y(optimalSlidePath[i].graphPoint[1]))
@@ -256,86 +296,54 @@ export function D3ScatterPlot({
         .style("marker-end", "url(#optimal-slide-arrow)");
     }
 
-    // Non lip-bent notes as circles
-    pointsLayer
-      .selectAll("circle.point")
-      .data(nonLipNotes)
-      .enter()
-      .append("circle")
-      .attr("class", "point")
-      .attr("cx", (d) => x(d.graphPoint[0]))
-      .attr("cy", (d) => y(d.graphPoint[1]))
-      .attr("r", 3)
-      .style("fill", (d) => color(d.tuning.name))
-      .style("mix-blend-mode", "color"); // Better visibility of overlapping points
+    // Note Labels
+    if (viewOptions.showNoteLabels) {
+      const visibleLabels = noteConfigs.filter(
+        (d) =>
+          // Exclude notes that have other notes to their left
+          !noteConfigs
+            .filter((other) => other.graphPoint[1] === d.graphPoint[1])
+            .some(
+              (other) =>
+                other !== d &&
+                x(other.graphPoint[0]) < x(d.graphPoint[0]) &&
+                Math.abs(x(other.graphPoint[0]) - x(d.graphPoint[0])) < 30,
+            ) &&
+          // Exclude notes that would conflict with y axis ticks
+          !y
+            .ticks()
+            .some(
+              (tick) => x(d.graphPoint[0]) < 30 && d.graphPoint[1] === tick,
+            ),
+      );
 
-    // lip-bent notes as asterisks
-    const lipBendSymbol = d3.symbol().type(d3.symbolAsterisk);
-    svg
-      .selectAll("path.lip-bend")
-      .data(bentNotes)
-      .enter()
-      .append("path")
-      .attr("class", "lip-bend")
-      .attr("d", lipBendSymbol.size(50))
-      .attr("transform", (d) => {
-        const xVal = x(d.graphPoint[0]);
-        const yVal = y(d.graphPoint[1]);
-        return `translate(${xVal}, ${yVal})`;
-      })
-      .style("stroke", (d) => color(d.tuning.name))
-      .style("pointer-events", "none");
+      // Note text to the left if there are no points in the way
+      svg
+        .append("g")
+        .attr("class", "note-labels")
+        .selectAll("text.note-label")
+        .data(visibleLabels)
+        .join("text")
+        .attr("class", "note-label")
+        .attr("x", (d) => x(d.graphPoint[0]) - 6)
+        .attr("y", (d) => y(d.graphPoint[1]) + (d.lipBendCents > 0 ? -6 : 0)) // Nudge up if lip bend to prevent overlap
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "end")
+        .style("font-size", "10px")
+        .style("fill", (d) => color(d.tuning.name))
+        .style("pointer-events", "none") // Prevent labels from interfering with mouse events
+        .text((d) => d.note.name);
+    }
 
-    // Note text to the left if there are not points in the way
-    svg
-      .append("g")
-      .attr("class", "note-labels")
-      .selectAll("text.note-label")
-      .data(
-        noteConfigs.filter(
-          (d) =>
-            viewOptions.showNoteLabels &&
-            // Exclude notes that have other notes to their left
-            !noteConfigs
-              .filter((other) => other.graphPoint[1] === d.graphPoint[1])
-              .some(
-                (other) =>
-                  other !== d &&
-                  x(other.graphPoint[0]) < x(d.graphPoint[0]) &&
-                  Math.abs(x(other.graphPoint[0]) - x(d.graphPoint[0])) < 30,
-              ) &&
-            // Exclude notes that would conflict with y axis ticks
-            !y
-              .ticks()
-              .some(
-                (tick) => x(d.graphPoint[0]) < 30 && d.graphPoint[1] === tick,
-              ),
-        ),
-      )
-      .enter()
-      .append("text")
-      .attr("class", "note-label")
-      .attr("x", (d) => x(d.graphPoint[0]) - 6)
-      .attr("y", (d) => y(d.graphPoint[1]) + (d.lipBendCents > 0 ? -6 : 0)) // Nudge up if lip bend to prevent overlap
-      .attr("dy", "0.35em")
-      .attr("text-anchor", "end")
-      .style("font-size", "10px")
-      .style("fill", (d) => color(d.tuning.name))
-      .style("pointer-events", "none") // Prevent labels from interfering with mouse events
-      .text((d) => d.note.name);
+    // --- 7. Interactivity & Hover State ---
 
-    // Note interactivity
-    // Larger versions of points for visibility and covering overlaps
-    const hoverPoint = pointsLayer
-      .append("circle")
-      .style("display", "none")
-      .style("mix-blend-mode", "normal");
-
+    // Larger versions of points for visibility and covering overlaps during hover
+    const hoverPoint = pointsLayer.append("circle").style("display", "none");
     const hoverLipBend = pointsLayer
-      .append("path")
+      .append("use")
+      .attr("href", "#lip-bend-symbol-large")
       .style("display", "none")
-      .style("fill", "none")
-      .style("mix-blend-mode", "normal");
+      .style("fill", "none");
 
     const tooltip = d3
       .select("body")
@@ -371,17 +379,15 @@ export function D3ScatterPlot({
           .attr("cy", y(hoveredNote.graphPoint[1]))
           .attr("r", 6)
           .style("fill", color(hoveredNote.tuning.name));
-        return;
+      } else {
+        hoverLipBend
+          .style("display", "block")
+          .attr(
+            "transform",
+            `translate(${x(hoveredNote.graphPoint[0])}, ${y(hoveredNote.graphPoint[1])})`,
+          )
+          .style("stroke", color(hoveredNote.tuning.name));
       }
-
-      hoverLipBend
-        .style("display", "block")
-        .attr(
-          "transform",
-          `translate(${x(hoveredNote.graphPoint[0])}, ${y(hoveredNote.graphPoint[1])})`,
-        )
-        .attr("d", lipBendSymbol.size(120))
-        .style("stroke", color(hoveredNote.tuning.name));
     };
 
     // Nearest neighbor to ensure fair hovering on overlaps
@@ -390,124 +396,110 @@ export function D3ScatterPlot({
       (d) => x(d.graphPoint[0]),
       (d) => y(d.graphPoint[1]),
     );
-
     const hoverRadius = 22;
 
-    const hoverCaptureLayer = pointsLayer
+    pointsLayer
       .append("rect")
-      .attr("class", "hover-layer")
       // Extend hover layer so no hover regions are clipped
       .attr("x", -hoverRadius / 2)
       .attr("y", -hoverRadius / 2)
       .attr("width", innerWidth + hoverRadius)
       .attr("height", innerHeight + hoverRadius)
       .style("fill", "transparent")
-      .style("pointer-events", "all");
+      .style("pointer-events", "all")
+      .on("mousemove", function (event) {
+        const [mouseX, mouseY] = d3.pointer(event);
+        const nearestIndex = delaunay.find(mouseX, mouseY);
+        const hoveredNote = noteConfigs[nearestIndex];
 
-    hoverCaptureLayer.on("mousemove", function (event) {
-      const [mouseX, mouseY] = d3.pointer(event);
-      const nearestIndex = delaunay.find(mouseX, mouseY);
-      const hoveredNote = noteConfigs[nearestIndex];
-
-      if (!hoveredNote) {
-        tooltip.style("display", "none");
-        resetHoverState();
-        return;
-      }
-
-      const pointX = x(hoveredNote.graphPoint[0]);
-      const pointY = y(hoveredNote.graphPoint[1]);
-      const distance = Math.hypot(mouseX - pointX, mouseY - pointY);
-
-      if (distance > hoverRadius) {
-        tooltip.style("display", "none");
-        resetHoverState();
-        return;
-      }
-
-      let slideTip;
-      if (hoveredNote.lipBendCents === 0) {
-        slideTip = (+hoveredNote
-          .getSlidePosition(model.player)
-          .toFixed(2)).toString();
-        // Add tuning name and open position if not open tuning:
-        // 2 -> 2F (3.2)
-        if (hoveredNote.tuning !== model.trombone.tunings[0]) {
-          const openPos = +hoveredNote
-            .getOpenPosition(model.player, model.trombone)
-            .toFixed(2);
-          slideTip += `${hoveredNote.tuning.name.split(" ")[0]} (${openPos})`;
+        if (
+          !hoveredNote ||
+          Math.hypot(
+            mouseX - x(hoveredNote.graphPoint[0]),
+            mouseY - y(hoveredNote.graphPoint[1]),
+          ) > hoverRadius
+        ) {
+          tooltip.style("display", "none");
+          resetHoverState();
+          return;
         }
-      } else {
-        slideTip = "All the way out";
-      }
 
-      tooltip
-        .style("left", `${event.pageX + 10}px`)
-        .style("top", `${event.pageY + 10}px`)
-        .style("display", "block").html(`
-          <div>${hoveredNote.note.name}</div>
-          <div>Slide position: ${slideTip}</div>
-          <div>Tuning: ${hoveredNote.tuning.name}</div>
-          <div>Partial: ${hoveredNote.partial}</div>
-        `);
+        let slideTip = "All the way out";
+        if (hoveredNote.lipBendCents === 0) {
+          slideTip = (+hoveredNote
+            .getSlidePosition(model.player)
+            .toFixed(2)).toString();
 
-      highlightHoverState(hoveredNote);
-    });
+          // Add tuning name and open position if not open tuning:
+          // Example output: "2F (3.2)"
+          if (hoveredNote.tuning !== model.trombone.tunings[0]) {
+            const openPos = +hoveredNote
+              .getOpenPosition(model.player, model.trombone)
+              .toFixed(2);
+            slideTip += `${hoveredNote.tuning.name.split(" ")[0]} (${openPos})`;
+          }
+        }
 
-    hoverCaptureLayer.on("mouseleave", function () {
-      tooltip.style("display", "none");
-      resetHoverState();
-    });
+        tooltip
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY + 10}px`)
+          .style("display", "block").html(`
+            <div>${hoveredNote.note.name}</div>
+            <div>Slide position: ${slideTip}</div>
+            <div>Tuning: ${hoveredNote.tuning.name}</div>
+            <div>Partial: ${hoveredNote.partial}</div>
+          `);
 
-    // Legend: render in the right margin area so it doesn't overlap plot points
-    const legendX = width - xMargin + 20;
-    const legendY = yMargin + 5; // Better alignment
-    const legendItemHeight = 18;
-
-    const legend = d3
-      .select(svgRef.current)
-      .append("g")
-      .attr("class", "legend");
-
-    legend
-      .selectAll("g")
-      .data(tuningNames)
-      .enter()
-      .append("g")
-      .attr(
-        "transform",
-        (_, i) => `translate(${legendX}, ${legendY + i * legendItemHeight})`,
-      )
-      .each(function (d) {
-        const g = d3.select(this);
-        g.append("rect")
-          .attr("width", 12)
-          .attr("height", 12)
-          .attr("y", -10)
-          .style("fill", color(d));
-
-        g.append("text")
-          .attr("x", 16)
-          .attr("y", 0)
-          .style("alignment-baseline", "middle")
-          .style("font-size", "12px")
-          .text(d)
-          .style("fill", "var(--mantine-color-text)");
+        highlightHoverState(hoveredNote);
+      })
+      .on("mouseleave", () => {
+        tooltip.style("display", "none");
+        resetHoverState();
       });
 
-    if (hasBentNotes) {
+    // --- 8. Legend ---
+
+    // Render in the right margin area so it doesn't overlap plot points
+    const legend = svgRoot.append("g").attr("class", "legend");
+    const legendX = width - xMargin + 20;
+    const legendY = yMargin + 5; // Better alignment
+
+    const legendItems = legend
+      .selectAll("g.legend-item")
+      .data(tuningNames)
+      .join("g")
+      .attr("class", "legend-item")
+      .attr(
+        "transform",
+        (_, i) => `translate(${legendX}, ${legendY + i * 18})`,
+      );
+
+    legendItems
+      .append("rect")
+      .attr("width", 12)
+      .attr("height", 12)
+      .attr("y", -10)
+      .style("fill", color);
+    legendItems
+      .append("text")
+      .attr("x", 16)
+      .attr("y", 0)
+      .style("alignment-baseline", "middle")
+      .style("font-size", "12px")
+      .text((d) => d);
+
+    if (bentNotes.length > 0) {
       // Add legend entry for lip bends as a separate top-level item.
       const lipBendGroup = legend
         .append("g")
         .attr(
           "transform",
-          `translate(${legendX}, ${legendY + tuningNames.length * legendItemHeight})`,
+          `translate(${legendX}, ${legendY + tuningNames.length * 18})`,
         );
 
       lipBendGroup
-        .append("path")
-        .attr("d", lipBendSymbol.size(120))
+        .append("use")
+        .attr("href", "#lip-bend-symbol-large")
         .attr("transform", "translate(6, -4)")
         .style("stroke", "red")
         .style("fill", "none");
@@ -518,23 +510,18 @@ export function D3ScatterPlot({
         .attr("y", 0)
         .style("alignment-baseline", "middle")
         .style("font-size", "12px")
-        .text("Lip bent")
-        .style("fill", "var(--mantine-color-text)");
+        .text("Lip bent");
     }
 
-    // styling
-    svg
+    // --- 9. Final Global Styling ---
+    svgRoot
       .selectAll(".domain, .tick line")
       .style("stroke", "var(--mantine-color-default-border)");
-    svg
-      .selectAll(".tick text")
-      .style("font-family", "var(--mantine-font-family)")
-      .style("fill", "var(--mantine-color-text)")
-      .style("font-size", "12px");
-    svg
-      .selectAll("text")
+    svgRoot
+      .selectAll("text, .tick text")
       .style("font-family", "var(--mantine-font-family)")
       .style("fill", "var(--mantine-color-text)");
+    svgRoot.selectAll(".tick text").style("font-size", "12px");
   }, [model, viewOptions, width, height]);
 
   return <svg ref={svgRef} style={{ display: "block", margin: "0 auto" }} />;
