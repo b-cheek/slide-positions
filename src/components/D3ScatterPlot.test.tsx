@@ -128,7 +128,7 @@ describe("D3ScatterPlot hover", () => {
     await waitFor(() => {
       expect(container.querySelector("g.optimal-path")).toBeTruthy();
       expect(
-        container.querySelectorAll("line.optimal-path-segment").length,
+        container.querySelectorAll("path.optimal-path-segment").length,
       ).toBeGreaterThan(0);
       expect(
         container.querySelector("marker#optimal-slide-arrow"),

@@ -28,8 +28,14 @@ export function D3ScatterPlot({
   height = 600,
 }: D3ScatterPlotProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  // Track previous state of the slide path checkbox to prevent re-animating on unrelated renders
+  const prevShowSlidePathRef = useRef(viewOptions.showOptimalSlidePath);
 
   useEffect(() => {
+    // Determine if the checkbox was JUST turned on
+    const shouldAnimatePath =
+      viewOptions.showOptimalSlidePath && !prevShowSlidePathRef.current;
+
     // --- 1. Data Computation ---
     const noteConfigs = model.notes.flatMap((note) =>
       getNoteConfigs(model.trombone, note, model.player),
@@ -39,7 +45,6 @@ export function D3ScatterPlot({
       ? getViterbiSlidePath(noteConfigs, model.player, model.trombone)
       : [];
 
-    // Derive the available slide positions
     const openTuning = model.trombone.tunings[0];
     const semiToneOffset = 2 ** (1 / 12);
     let posLen = openTuning.length + model.player.firstPosDistance;
@@ -53,15 +58,10 @@ export function D3ScatterPlot({
       posLen *= semiToneOffset;
     }
 
-    // Create mapping of each pos length to its index + 1
-    // This is necessary since formatted tick values require a mapping function
     const posLengthToPos: Record<number, number> = {};
     posLengths.forEach((len, i) => (posLengthToPos[len] = i + 1));
 
     // --- 2. Chart Setup & Scales ---
-
-    // TODO: perhaps a major rework for complete dimensional consistency of labels, but for now just
-    // hardcoding margins that look good with the current labels and font sizes
     const xMargin = 90;
     const yMargin = 40;
     const innerWidth = width - xMargin * 2;
@@ -71,7 +71,6 @@ export function D3ScatterPlot({
     const yExtent = d3.extent(noteConfigs, (d) => d.graphPoint[1]);
     if (!xExtent[0] || !xExtent[1] || !yExtent[0] || !yExtent[1]) return;
 
-    // Declare the x (horizontal position) scale. Set x axis to cover full slide.
     const x = d3
       .scaleLinear()
       .domain([
@@ -80,13 +79,11 @@ export function D3ScatterPlot({
       ])
       .range([0, innerWidth]);
 
-    // Declare the y (vertical position) scale.
     const y = d3
       .scaleLinear()
       .domain([yExtent[0], yExtent[1]])
       .range([innerHeight, 0]);
 
-    // Color scale per tuning
     const tuningNames = Array.from(
       new Set(model.trombone.tunings.map((t) => t.name)),
     );
@@ -101,21 +98,20 @@ export function D3ScatterPlot({
 
     const defs = svgRoot.append("defs");
 
-    // Def: Arrow marker for optimal path
+    // Def: Arrow marker. Tip is exactly at x=10 so it aligns with the end of the shortened paths.
     defs
       .append("marker")
       .attr("id", "optimal-slide-arrow")
       .attr("viewBox", "0 0 10 10")
-      .attr("refX", 9)
+      .attr("refX", 10)
       .attr("refY", 5)
       .attr("markerWidth", 6)
       .attr("markerHeight", 6)
       .attr("orient", "auto-start-reverse")
       .append("path")
       .attr("d", "M 0 0 L 10 5 L 0 10 z")
-      .style("fill", "var(--mantine-color-blue-6)");
+      .style("fill", "var(--mantine-color-teal-8)");
 
-    // Def: Reusable asterisk symbols for lip bends
     const asteriskGen = d3.symbol().type(d3.symbolAsterisk);
     defs
       .append("path")
@@ -151,7 +147,6 @@ export function D3ScatterPlot({
         d3
           .axisBottom(x)
           .tickValues(posLengths)
-          // this map is derived from posLengths to ensure consistency
           .tickFormat((d) => String(posLengthToPos[+d])),
       );
 
@@ -173,14 +168,13 @@ export function D3ScatterPlot({
     yAxisGroup
       .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -60) // Slightly farther than x-axis label to look even with length of numbers vs height of numbers
+      .attr("y", -60)
       .attr("x", -innerHeight / 2)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .style("font-size", "16px")
       .text(Y_AXIS_LABEL);
 
-    // Gridlines
     svg
       .append("g")
       .attr("class", "grid")
@@ -192,14 +186,12 @@ export function D3ScatterPlot({
           .tickFormat(() => "")
           .tickSize(-innerHeight),
       )
-      // Remove unnecessary domain lines that are already shown by axis
       .call((g) => g.select(".domain").remove())
       .selectAll("line")
       .style("stroke", "var(--mantine-color-default-border)")
       .style("stroke-opacity", 0.7)
       .style("stroke-dasharray", "3,3");
 
-    // Slide all the way out marker
     svg
       .append("g")
       .attr("class", "grid")
@@ -213,25 +205,113 @@ export function D3ScatterPlot({
       )
       .call((g) => {
         g.select(".domain").remove();
-        // Format text to not overlap numbers
         g.select(".tick text").style("text-anchor", "start");
       });
 
-    // --- 5. Data Layers ---
+    // --- 5. Layer Ordering ---
 
-    // Isolate blended points so the grid does not participate in the blend backdrop.
+    // 1. Z-Index Fix: Path layer declared BEFORE points layer so lines draw underneath nodes
+    const pathLayer = svg
+      .append("g")
+      .attr("class", "optimal-path")
+      .style("pointer-events", "none");
+
+    // 2. Points layer sits on top
     const pointsLayer = svg
       .append("g")
       .attr("class", "points")
       .style("isolation", "isolate");
 
+    // --- 6. Path Layer (Conditionals & Animation) ---
+    if (viewOptions.showOptimalSlidePath && optimalSlidePath.length > 1) {
+      pathLayer
+        .selectAll("path.optimal-path-segment")
+        .data(optimalSlidePath.slice(1))
+        .join(
+          (enter) => {
+            const path = enter
+              .append("path")
+              .attr("class", "optimal-path-segment")
+              .attr("d", (d, i) => {
+                const prev = optimalSlidePath[i];
+                const x1 = x(prev.graphPoint[0]);
+                const y1 = y(prev.graphPoint[1]);
+                const x2 = x(d.graphPoint[0]);
+                const y2 = y(d.graphPoint[1]);
+
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist === 0) return "";
+
+                // Padding offsets the straight line from the center of the nodes
+                const padding = 3;
+                if (dist <= padding * 2) return "";
+
+                const ux = dx / dist;
+                const uy = dy / dist;
+
+                const startX = x1;
+                const startY = y1;
+                const endX = x2 - ux * padding;
+                const endY = y2 - uy * padding;
+
+                return `M${startX},${startY}L${endX},${endY}`;
+              })
+              .style("fill", "none")
+              .style("stroke", "var(--mantine-color-teal-8)")
+              .style("stroke-width", 1.5)
+              .style("stroke-opacity", 0.6);
+
+            // Only play the drawing animation if the checkbox was just activated
+            if (shouldAnimatePath) {
+              path
+                .attr("stroke-dasharray", function () {
+                  const length = this.getTotalLength();
+                  return `${length} ${length}`;
+                })
+                .attr("stroke-dashoffset", function () {
+                  return this.getTotalLength();
+                })
+                .transition()
+                .duration(400)
+                .delay((_, i) => i * 400) // Sequential animation based on index
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", 0)
+                .on("end", function () {
+                  d3.select(this).style(
+                    "marker-end",
+                    "url(#optimal-slide-arrow)",
+                  );
+                });
+            } else {
+              // Otherwise render instantly with arrowheads already attached
+              path
+                .style("marker-end", "url(#optimal-slide-arrow)")
+                .attr("stroke-dasharray", "none")
+                .attr("stroke-dashoffset", 0);
+            }
+
+            return path;
+          },
+          (update) =>
+            update
+              .style("marker-end", "url(#optimal-slide-arrow)")
+              .attr("stroke-dasharray", "none")
+              .attr("stroke-dashoffset", 0),
+          (exit) => exit.remove(),
+        );
+    } else {
+      pathLayer.selectAll("path.optimal-path-segment").remove();
+    }
+
+    // --- 7. Data Points Layer ---
     const nonLipNotes = noteConfigs
       .filter((d) => d.lipBendCents === 0)
-      .reverse(); // reverse so that notes in earlier specified tunings get color priority in blended overlaps
-
+      .reverse();
     const bentNotes = noteConfigs.filter((d) => d.lipBendCents > 0);
 
-    // Lip bend connection lines
     svg
       .selectAll("line.lip-bend")
       .data(bentNotes)
@@ -246,7 +326,6 @@ export function D3ScatterPlot({
       .style("stroke-dasharray", "4,4")
       .style("pointer-events", "none");
 
-    // Points (Standard Non-Lip Bent Notes)
     pointsLayer
       .selectAll("circle.point")
       .data(nonLipNotes)
@@ -256,9 +335,8 @@ export function D3ScatterPlot({
       .attr("cy", (d) => y(d.graphPoint[1]))
       .attr("r", 3)
       .style("fill", (d) => color(d.tuning.name))
-      .style("mix-blend-mode", "color"); // Better visibility of overlapping points
+      .style("mix-blend-mode", "color");
 
-    // Points (Lip bent via reusable <use> tag)
     svg
       .selectAll("use.lip-bend-point")
       .data(bentNotes)
@@ -273,34 +351,9 @@ export function D3ScatterPlot({
       .style("pointer-events", "none")
       .style("fill", "none");
 
-    // --- 6. Optional Layers (Conditionals) ---
-
-    // Optimal Path
-    if (viewOptions.showOptimalSlidePath && optimalSlidePath.length > 1) {
-      svg
-        .append("g")
-        .attr("class", "optimal-path")
-        .style("pointer-events", "none")
-        .selectAll("line.optimal-path-segment")
-        .data(optimalSlidePath.slice(1))
-        .join("line")
-        .attr("class", "optimal-path-segment")
-        .attr("x1", (_, i) => x(optimalSlidePath[i].graphPoint[0]))
-        .attr("y1", (_, i) => y(optimalSlidePath[i].graphPoint[1]))
-        .attr("x2", (d) => x(d.graphPoint[0]))
-        .attr("y2", (d) => y(d.graphPoint[1]))
-        .style("stroke", "var(--mantine-color-blue-6)")
-        .style("stroke-width", 1.5)
-        .style("stroke-opacity", 0.75)
-        .style("stroke-dasharray", "4,4")
-        .style("marker-end", "url(#optimal-slide-arrow)");
-    }
-
-    // Note Labels
     if (viewOptions.showNoteLabels) {
       const visibleLabels = noteConfigs.filter(
         (d) =>
-          // Exclude notes that have other notes to their left
           !noteConfigs
             .filter((other) => other.graphPoint[1] === d.graphPoint[1])
             .some(
@@ -309,7 +362,6 @@ export function D3ScatterPlot({
                 x(other.graphPoint[0]) < x(d.graphPoint[0]) &&
                 Math.abs(x(other.graphPoint[0]) - x(d.graphPoint[0])) < 30,
             ) &&
-          // Exclude notes that would conflict with y axis ticks
           !y
             .ticks()
             .some(
@@ -317,7 +369,6 @@ export function D3ScatterPlot({
             ),
       );
 
-      // Note text to the left if there are no points in the way
       svg
         .append("g")
         .attr("class", "note-labels")
@@ -326,18 +377,16 @@ export function D3ScatterPlot({
         .join("text")
         .attr("class", "note-label")
         .attr("x", (d) => x(d.graphPoint[0]) - 6)
-        .attr("y", (d) => y(d.graphPoint[1]) + (d.lipBendCents > 0 ? -6 : 0)) // Nudge up if lip bend to prevent overlap
+        .attr("y", (d) => y(d.graphPoint[1]) + (d.lipBendCents > 0 ? -6 : 0))
         .attr("dy", "0.35em")
         .attr("text-anchor", "end")
         .style("font-size", "10px")
         .style("fill", (d) => color(d.tuning.name))
-        .style("pointer-events", "none") // Prevent labels from interfering with mouse events
+        .style("pointer-events", "none")
         .text((d) => d.note.name);
     }
 
-    // --- 7. Interactivity & Hover State ---
-
-    // Larger versions of points for visibility and covering overlaps during hover
+    // --- 8. Interactivity & Hover State ---
     const hoverPoint = pointsLayer.append("circle").style("display", "none");
     const hoverLipBend = pointsLayer
       .append("use")
@@ -353,7 +402,7 @@ export function D3ScatterPlot({
       .attr("id", "tooltip")
       .style("position", "absolute")
       .style("display", "none")
-      .style("pointer-events", "none") // Prevent tooltip from interfering with mouse events
+      .style("pointer-events", "none")
       .style("padding", "10px 12px")
       .style("border-radius", "12px")
       .style("backdrop-filter", "blur(5px)")
@@ -390,7 +439,6 @@ export function D3ScatterPlot({
       }
     };
 
-    // Nearest neighbor to ensure fair hovering on overlaps
     const delaunay = d3.Delaunay.from(
       noteConfigs,
       (d) => x(d.graphPoint[0]),
@@ -400,7 +448,6 @@ export function D3ScatterPlot({
 
     pointsLayer
       .append("rect")
-      // Extend hover layer so no hover regions are clipped
       .attr("x", -hoverRadius / 2)
       .attr("y", -hoverRadius / 2)
       .attr("width", innerWidth + hoverRadius)
@@ -430,8 +477,6 @@ export function D3ScatterPlot({
             .getSlidePosition(model.player)
             .toFixed(2)).toString();
 
-          // Add tuning name and open position if not open tuning:
-          // Example output: "2F (3.2)"
           if (hoveredNote.tuning !== model.trombone.tunings[0]) {
             const openPos = +hoveredNote
               .getOpenPosition(model.player, model.trombone)
@@ -457,12 +502,10 @@ export function D3ScatterPlot({
         resetHoverState();
       });
 
-    // --- 8. Legend ---
-
-    // Render in the right margin area so it doesn't overlap plot points
+    // --- 9. Legend ---
     const legend = svgRoot.append("g").attr("class", "legend");
     const legendX = width - xMargin + 20;
-    const legendY = yMargin + 5; // Better alignment
+    const legendY = yMargin + 5;
 
     const legendItems = legend
       .selectAll("g.legend-item")
@@ -489,7 +532,6 @@ export function D3ScatterPlot({
       .text((d) => d);
 
     if (bentNotes.length > 0) {
-      // Add legend entry for lip bends as a separate top-level item.
       const lipBendGroup = legend
         .append("g")
         .attr(
@@ -513,7 +555,7 @@ export function D3ScatterPlot({
         .text("Lip bent");
     }
 
-    // --- 9. Final Global Styling ---
+    // --- 10. Final Global Styling ---
     svgRoot
       .selectAll(".domain, .tick line")
       .style("stroke", "var(--mantine-color-default-border)");
@@ -522,6 +564,9 @@ export function D3ScatterPlot({
       .style("font-family", "var(--mantine-font-family)")
       .style("fill", "var(--mantine-color-text)");
     svgRoot.selectAll(".tick text").style("font-size", "12px");
+
+    // Update the ref for subsequent renders
+    prevShowSlidePathRef.current = viewOptions.showOptimalSlidePath;
   }, [model, viewOptions, width, height]);
 
   return <svg ref={svgRef} style={{ display: "block", margin: "0 auto" }} />;
