@@ -216,10 +216,6 @@ function computeSlidePositionTicks(model: PlotModel) {
   return { posLengths, posLengthToPos };
 }
 
-function formatNumber(value: number, decimals = 2) {
-  return (+value.toFixed(decimals)).toString();
-}
-
 // --- Static chrome (defs, title) --------------------------------------
 
 function renderDefs(svgRoot: Root) {
@@ -565,18 +561,6 @@ function setupHoverInteractivity(
     }
   };
 
-  const describeSlidePosition = (note: NoteConfig) => {
-    if (note.lipBendCents !== 0) return "All the way out";
-
-    const position = formatNumber(note.getSlidePosition(model.player));
-    if (note.tuning === model.trombone.tunings[0]) return position;
-
-    const openPosition = formatNumber(
-      note.getOpenPosition(model.player, model.trombone),
-    );
-    return `${position}${note.tuning.name.split(" ")[0]} (${openPosition})`;
-  };
-
   const delaunay = d3.Delaunay.from(
     noteConfigs,
     (d) => x(d.graphPoint[0]),
@@ -612,7 +596,7 @@ function setupHoverInteractivity(
         .style("top", `${event.clientY + 10}px`)
         .style("display", "block").html(`
           <div>${note.note.name}</div>
-          <div>Slide position: ${describeSlidePosition(note)}</div>
+          <div>Slide position: ${note.getSlidePositionString(model.player, model.trombone)}</div>
           <div>Tuning: ${note.tuning.name}</div>
           <div>Partial: ${note.partial}</div>
         `);

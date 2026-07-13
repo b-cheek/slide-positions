@@ -50,6 +50,18 @@ export class NoteConfiguration {
       1) as AbsolutePosition;
   }
 
+  public getSlidePositionString(player: Player, trombone: Trombone): string {
+    if (this.lipBendCents !== 0) return "All the way out";
+
+    const formatNumber = (value: number, decimals = 2) =>
+      (+value.toFixed(decimals)).toString();
+    const position = formatNumber(this.getSlidePosition(player));
+    if (this.tuning === trombone.tunings[0]) return position;
+
+    const openPosition = formatNumber(this.getOpenPosition(player, trombone));
+    return `${position}${this.tuning.name.split(" ")[0]} (${openPosition})`;
+  }
+
   public get graphPoint(): [Meters, MidiNumber] {
     const fakeSlideDistance = ((this.tuning.length + this.slideDistance) *
       2 ** (this.lipBendCents / 1200) -
