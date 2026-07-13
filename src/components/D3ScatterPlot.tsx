@@ -16,7 +16,7 @@ const X_AXIS_LABEL = "Slide Position";
 const Y_AXIS_LABEL = "Note";
 const MARGIN = { top: 40, right: 90, bottom: 40, left: 90 };
 const HOVER_RADIUS = 22;
-const PATH_STEP_MS = 400;
+const DRAW_SPEED_PX_PER_MS = 1;
 
 interface D3ScatterPlotProps {
   model: PlotModel;
@@ -229,14 +229,18 @@ function renderDefs(svgRoot: Root) {
     .append("marker")
     .attr("id", "optimal-slide-arrow")
     .attr("viewBox", "0 0 10 10")
-    .attr("refX", 10)
+    .attr("refX", 9) // Adjusted to match the new vertex at x = 9
     .attr("refY", 5)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
+    .attr("markerWidth", 8)
+    .attr("markerHeight", 8)
     .attr("orient", "auto-start-reverse")
     .append("path")
-    .attr("d", "M 0 0 L 10 5 L 0 10 z")
-    .style("fill", "var(--mantine-color-teal-8)");
+    .attr("d", "M 1 1 L 9 5 L 1 9") // Removed 'z' and inset coordinates
+    .style("fill", "none")
+    .style("stroke", "var(--mantine-color-teal-8)")
+    .style("stroke-width", 1.5)
+    .style("stroke-linecap", "round")
+    .style("stroke-linejoin", "round");
 
   const asterisk = d3.symbol().type(d3.symbolAsterisk);
   defs
@@ -360,8 +364,7 @@ function renderOptimalPath(
     .attr("d", (d, i) => pathSegmentD(x, y, path[i], d))
     .style("fill", "none")
     .style("stroke", "var(--mantine-color-teal-8)")
-    .style("stroke-width", 1.5)
-    .style("stroke-opacity", 0.6);
+    .style("stroke-width", 1);
 
   if (animate) {
     animateSegments(segments);
@@ -400,6 +403,8 @@ function pathSegmentD(
 function animateSegments(
   segments: d3.Selection<SVGPathElement, NoteConfig, SVGGElement, unknown>,
 ) {
+  let accumulatedDelay = 0;
+
   segments
     .attr("stroke-dasharray", function () {
       const length = this.getTotalLength();
@@ -409,8 +414,20 @@ function animateSegments(
       return this.getTotalLength();
     })
     .transition()
-    .duration(PATH_STEP_MS)
-    .delay((_, i) => i * PATH_STEP_MS)
+    .duration(function () {
+      // 1. Time = Distance / Speed
+      return this.getTotalLength() / DRAW_SPEED_PX_PER_MS;
+    })
+    .delay(function () {
+      // 2. Capture the delay for THIS segment before adding to it
+      const currentDelay = accumulatedDelay;
+
+      // 3. Add this segment's duration to the running total for the NEXT segment
+      const duration = this.getTotalLength() / DRAW_SPEED_PX_PER_MS;
+      accumulatedDelay += duration;
+
+      return currentDelay;
+    })
     .ease(d3.easeLinear)
     .attr("stroke-dashoffset", 0)
     .on("end", function () {
