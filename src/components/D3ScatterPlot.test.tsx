@@ -68,11 +68,16 @@ describe("D3ScatterPlot hover", () => {
       pageY: cy,
     });
 
-    const tooltip = document.body.querySelector("#tooltip");
-    expect(tooltip?.textContent).toContain("Bb1");
-    expect(tooltip?.textContent).toContain("Slide position: 1");
-    expect(tooltip?.textContent).toContain("Tuning:");
-    expect(tooltip?.textContent).toContain("Partial:");
+    await waitFor(() => {
+      const tooltip = container.querySelector(
+        'div > div[style*="position: fixed"]',
+      );
+      expect(tooltip).toBeTruthy();
+      expect(tooltip?.textContent).toContain("Bb1");
+      expect(tooltip?.textContent).toContain("Slide position: 1");
+      expect(tooltip?.textContent).toContain("Tuning:");
+      expect(tooltip?.textContent).toContain("Partial:");
+    });
 
     const hoveredPoint = Array.from(container.querySelectorAll("circle")).find(
       (circle) => Number(circle.getAttribute("r")) > baseRadius,
@@ -178,9 +183,11 @@ describe("D3ScatterPlot hover", () => {
       pageY: cy,
     });
 
-    const tooltip = document.body.querySelector("#tooltip");
-
     await waitFor(() => {
+      const tooltip = container.querySelector(
+        'div > div[style*="position: fixed"]',
+      );
+      expect(tooltip).toBeTruthy();
       expect(tooltip?.textContent).toContain(`Slide position: All the way out`);
     });
   });
@@ -217,9 +224,11 @@ describe("D3ScatterPlot hover", () => {
       pageY: cy,
     });
 
-    const tooltip = document.body.querySelector("#tooltip");
-
     await waitFor(() => {
+      const tooltip = container.querySelector(
+        'div > div[style*="position: fixed"]',
+      );
+      expect(tooltip).toBeTruthy();
       expect(tooltip?.textContent).toContain(`Slide position: 1.02F (1.03)`);
     });
   });
