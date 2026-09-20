@@ -49,15 +49,25 @@ export function PlotViewPage() {
   };
 
   return (
-    <Stack ref={ref}>
+    <Stack>
       <Title order={1}>Slide Positions Plot</Title>
       <Center>
-        <D3ScatterPlot
-          model={model}
-          viewOptions={viewOptions}
-          width={width}
-          height={height * 0.8}
-        />
+        <div
+          ref={ref}
+          style={{
+            width: "100%",
+            height: "clamp(220px, min(90vw, calc(100vh - 260px)), 720px)",
+          }}
+        >
+          {width > 0 && height > 0 && (
+            <D3ScatterPlot
+              model={model}
+              viewOptions={viewOptions}
+              width={width}
+              height={height}
+            />
+          )}
+        </div>
       </Center>
 
       <Center>

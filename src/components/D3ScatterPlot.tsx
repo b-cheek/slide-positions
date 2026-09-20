@@ -56,8 +56,8 @@ export function D3ScatterPlot({
       getNoteConfigs(model.trombone, note, model.player),
     );
 
-    const innerWidth = width - MARGIN.left - MARGIN.right;
-    const innerHeight = height - MARGIN.top - MARGIN.bottom;
+    const innerWidth = Math.max(0, width - MARGIN.left - MARGIN.right);
+    const innerHeight = Math.max(0, height - MARGIN.top - MARGIN.bottom);
 
     const scales = createScales(noteConfigs, model, innerWidth, innerHeight);
     if (!scales) return;
