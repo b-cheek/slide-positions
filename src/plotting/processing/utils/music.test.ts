@@ -7,14 +7,42 @@ describe("getNotesInRange", () => {
     const startNote = Note.fromSciNotation("C4");
     const stopNote = Note.fromSciNotation("E4");
     const notesInRange = getNotesInRange(startNote, stopNote);
-    expect(notesInRange.map((n) => n.name)).toEqual(["Db4", "D4", "Eb4"]);
+    expect(notesInRange.map((n) => n.name)).toEqual([
+      "C4",
+      "Db4",
+      "D4",
+      "Eb4",
+      "E4",
+    ]);
   });
 
   it("returns notes in descending order when the range is reversed", () => {
     const startNote = Note.fromSciNotation("E4");
     const stopNote = Note.fromSciNotation("C4");
     const notesInRange = getNotesInRange(startNote, stopNote);
-    expect(notesInRange.map((n) => n.name)).toEqual(["Eb4", "D4", "Db4"]);
+    expect(notesInRange.map((n) => n.name)).toEqual([
+      "E4",
+      "Eb4",
+      "D4",
+      "Db4",
+      "C4",
+    ]);
+  });
+
+  it("filters notes based on the specified key", () => {
+    const startNote = Note.fromSciNotation("C3");
+    const stopNote = Note.fromSciNotation("C4");
+    const notesInRange = getNotesInRange(startNote, stopNote, "Bb");
+    expect(notesInRange.map((n) => n.name)).toEqual([
+      "C3",
+      "D3",
+      "Eb3",
+      "F3",
+      "G3",
+      "A3",
+      "Bb3",
+      "C4",
+    ]);
   });
 });
 

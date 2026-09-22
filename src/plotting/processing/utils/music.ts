@@ -1,7 +1,11 @@
-import type { MidiNumber } from "../types/constants";
+import { NOTE_OFFSETS, type MidiNumber } from "../types/constants";
 import { Note } from "../types/note";
 
-export function getNotesInRange(startNote: Note, stopNote: Note): Note[] {
+export function getNotesInRange(
+  startNote: Note,
+  stopNote: Note,
+  key?: string,
+): Note[] {
   const notes: Note[] = [];
   const startMidi = startNote.midiNum;
   const stopMidi = stopNote.midiNum;
@@ -12,12 +16,22 @@ export function getNotesInRange(startNote: Note, stopNote: Note): Note[] {
 
   const step = startMidi < stopMidi ? 1 : -1;
 
+  // NOTE: this is inclusive
   for (
-    let midiNum = (startMidi + step) as MidiNumber;
-    step > 0 ? midiNum < stopMidi : midiNum > stopMidi;
+    let midiNum = startMidi;
+    step > 0 ? midiNum <= stopMidi : midiNum >= stopMidi;
     midiNum = (midiNum + step) as MidiNumber
   ) {
     notes.push(Note.fromMidiNum(midiNum));
+  }
+
+  if (key) {
+    return notes.filter((note) => {
+      const keyOffset = NOTE_OFFSETS[key];
+      const midiOffset = note.midiNum % 12;
+      const relativeOffset = (midiOffset - keyOffset + 12) % 12;
+      return [0, 2, 4, 5, 7, 9, 11].includes(relativeOffset);
+    });
   }
 
   return notes;

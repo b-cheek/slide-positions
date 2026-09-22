@@ -2,7 +2,11 @@ import { z } from "zod";
 import { getNotesInRange } from "../processing/utils/music";
 import { Hertz, Meters, MidiNumber } from "..";
 import type { ParsedPlotInputs } from "./plotInputsSchema";
-import { Note } from "../processing/types/note";
+import {
+  Note,
+  SCI_NOTATION_REGEX,
+  PITCH_CLASS_REGEX,
+} from "../processing/types/note";
 import { Player } from "../processing/types/player";
 import { Trombone } from "../processing/types/trombone";
 import { Tuning } from "../processing/types/tuning";
@@ -37,11 +41,25 @@ export const optionalStringWithDefault = (
 // Input shorthand parsing
 
 export const sciNotationRangeTransform = (value: string) => {
-  const [start, stop] = value.split("-").map((s) => s.trim());
+  // Note TODO to maybe use capturing groups in regex.ts. hopefully clean this up, but idk if feasible
+  const parseRegex = new RegExp(
+    `(?<start>${SCI_NOTATION_REGEX.source})` +
+      `-(?<stop>${SCI_NOTATION_REGEX.source})` +
+      `(?:\\((?<key>${PITCH_CLASS_REGEX.source})\\))?`,
+  );
+  const match = value.match(parseRegex) as RegExpMatchArray & {
+    groups: {
+      start: string;
+      stop: string;
+      key?: string;
+    };
+  };
+  const { start, stop, key } = match.groups;
+
   const startNote = Note.fromSciNotation(start);
-  const stopNote = Note.fromSciNotation(stop);
-  const middleNotes = getNotesInRange(startNote, stopNote);
-  return [startNote, ...middleNotes, stopNote];
+  const stopNote = Note.fromSciNotation(stop.trim());
+
+  return getNotesInRange(startNote, stopNote, key);
 };
 
 // URL utilities
