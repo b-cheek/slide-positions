@@ -90,14 +90,21 @@ export function getNoteConfigs(
 }
 
 // emission cost weights
-const LIP_BEND_CENTS_COST = 0.01;
-const SLIDE_DISTANCE_COST = 1.0;
-const TUNING_COST = 0.1;
+const LIP_BEND_CENTS_COST = 0.1; // per cent of lip bend
+const SLIDE_DISTANCE_COST = 1; // multiplied by slide distance in meters (0-0.7m for standard tenor trombone)
+const TUNING_COST = 0.5; // multiplied by tuning index in user-defined order (0-1 for standard tenor trombone)
 
 // transition cost weights
-const PARTIAL_CHANGE_COST = 0.5;
-const POS_CHANGE_COST = 1.0;
-const DIRECTION_CHANGE_COST = 0.5;
+const PARTIAL_CHANGE_COST = 0.25; // * partial delta
+const SLIDE_DISTANCE_CHANGE_COST = 2; // * abs slide distance delta
+const DIRECTION_CHANGE_COST = 0; // added if direction changes
+const VELOCITY_CHANGE_COST = 1; // * abs(velocity delta)
+
+// TODO:
+// Make user configurable
+// speed dependent?
+// tuning delta, but depends on configuration
+// and probably much more. AI model?
 
 export function getViterbiSlidePath(
   noteConfigs: NoteConfiguration[],
@@ -129,11 +136,10 @@ export function getViterbiSlidePath(
   // Cost functions
   const emissionCost = (cfg: NoteConfiguration, tb: Trombone) => {
     const lipBendPenalty = Math.abs(cfg.lipBendCents);
-    const slideNorm = Number(cfg.slideDistance) / Number(tb.slideLength);
     const tuningIndex = tb.tunings.indexOf(cfg.tuning);
     return (
       lipBendPenalty * LIP_BEND_CENTS_COST +
-      slideNorm * SLIDE_DISTANCE_COST +
+      cfg.slideDistance * SLIDE_DISTANCE_COST +
       tuningIndex * TUNING_COST
     );
   };
@@ -143,17 +149,16 @@ export function getViterbiSlidePath(
     to: NoteConfiguration,
     prevFrom?: NoteConfiguration,
   ) => {
-    const fromPos = Number(from.getSlidePosition(player));
-    const toPos = Number(to.getSlidePosition(player));
-    const posDelta = Math.abs(toPos - fromPos);
+    const slideDelta = Math.abs(to.slideDistance - from.slideDistance);
     const partialDelta = Math.abs(to.partial - from.partial);
 
     // Calculate direction change penalty if we have a 3-state chain
     let directionPenalty = 0;
+    let velocityDelta = 0;
     if (prevFrom) {
-      const prevPos = Number(prevFrom.getSlidePosition(player));
-      const delta1 = fromPos - prevPos; // Velocity vector of step t-1
-      const delta2 = toPos - fromPos; // Velocity vector of step t
+      const delta1 = from.slideDistance - prevFrom.slideDistance; // Velocity vector of step t-1
+      const delta2 = to.slideDistance - from.slideDistance; // Velocity vector of step t
+      velocityDelta = Math.abs(delta2 - delta1);
 
       // If signs are opposite (e.g., out-then-in or in-then-out), product is negative
       if (delta1 * delta2 < 0) {
@@ -162,8 +167,9 @@ export function getViterbiSlidePath(
     }
 
     return (
-      posDelta * POS_CHANGE_COST +
+      slideDelta * SLIDE_DISTANCE_CHANGE_COST +
       partialDelta * PARTIAL_CHANGE_COST +
+      velocityDelta * VELOCITY_CHANGE_COST +
       directionPenalty
     );
   };
