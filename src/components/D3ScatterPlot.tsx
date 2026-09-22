@@ -634,13 +634,13 @@ function renderLegend(
     .append("rect")
     .attr("width", 12)
     .attr("height", 12)
-    .attr("y", -10)
+    .attr("y", -7)
     .style("fill", color);
   items
     .append("text")
     .attr("x", 16)
     .attr("y", 0)
-    .style("alignment-baseline", "middle")
+    .attr("dominant-baseline", "middle")
     .style("font-size", "12px")
     .text((d) => d);
 
@@ -656,7 +656,7 @@ function renderLegend(
   lipBendItem
     .append("use")
     .attr("href", "#lip-bend-symbol-large")
-    .attr("transform", "translate(6, -4)")
+    .attr("transform", "translate(6, -2)")
     .style("stroke", "red")
     .style("fill", "none");
 
@@ -664,7 +664,7 @@ function renderLegend(
     .append("text")
     .attr("x", 16)
     .attr("y", 0)
-    .style("alignment-baseline", "middle")
+    .attr("dominant-baseline", "middle")
     .style("font-size", "12px")
     .text("Lip bent");
 }

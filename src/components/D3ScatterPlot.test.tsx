@@ -99,6 +99,28 @@ describe("D3ScatterPlot hover", () => {
     expect(container.textContent).not.toContain("Lip bent");
   });
 
+  it("centers legend markers and labels on the same row", async () => {
+    const model = buildPlotModel(
+      plotInputsSchema.parse({ notesString: "Bb1" }),
+    );
+    const { container } = render(<D3ScatterPlot model={model} />);
+
+    await waitFor(() => {
+      expect(container.querySelector("g.legend")).toBeTruthy();
+    });
+
+    expect(
+      Array.from(container.querySelectorAll("g.legend-item rect"), (rect) =>
+        rect.getAttribute("y"),
+      ).every((y) => y === "-7"),
+    ).toBe(true);
+    expect(
+      Array.from(container.querySelectorAll("g.legend-item text"), (text) =>
+        text.getAttribute("dominant-baseline"),
+      ).every((baseline) => baseline === "middle"),
+    ).toBe(true);
+  });
+
   it("shows the lip bent legend entry when bent notes are present", async () => {
     const model = buildPlotModel(
       plotInputsSchema.parse({
@@ -115,6 +137,12 @@ describe("D3ScatterPlot hover", () => {
       ).toBeGreaterThan(0);
       expect(container.textContent).toContain("Lip bent");
     });
+
+    expect(
+      container
+        .querySelector("g.legend text:last-child")
+        ?.getAttribute("dominant-baseline"),
+    ).toBe("middle");
   });
 
   it("draws optimal path arrows when enabled", async () => {
