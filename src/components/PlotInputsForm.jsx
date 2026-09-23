@@ -3,6 +3,7 @@ import {
   Accordion,
   Button,
   Stack,
+  Text,
   TextInput,
   Title,
   Center,
@@ -66,7 +67,7 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
 
         <TextInput
           label="Tuning(s) (optional)"
-          description="The fundamental pitch of the instrument with "
+          description="The first fundamental pitch* of the instrument for each tuning"
           placeholder={placeholderInputs.valvesString}
           error={errors.valvesString?.message}
           {...register("valvesString")}
@@ -129,6 +130,10 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
             {submitLabel}
           </Button>
         </Center>
+        <Text order={3} size="sm" color="dimmed">
+          * Defaulting to octave 1 in line with typical Bb, F, Gb, D tunings.
+          Otherwise specify in scientific notation, like Eb2 for alto trombone.
+        </Text>
       </Stack>
     </form>
   );

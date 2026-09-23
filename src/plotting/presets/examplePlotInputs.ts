@@ -15,4 +15,11 @@ export const exampleInputs: RawPlotInputs[] = [
     valvesString: "Bb/F/Gb/D",
     title: "Bb/F/Gb/D Bass Trombone 2 Octaves in Bb",
   } satisfies Partial<RawPlotInputs>),
+  plotInputsRawSchema.parse({
+    notesString: "Eb3-Eb5",
+    valvesString: "Eb2",
+    topSlideNote: "Eb2+5",
+    bottomSlideNote: "A1-10",
+    title: "Eb Alto Trombone Eb3-Eb5",
+  } satisfies Partial<RawPlotInputs>),
 ];
