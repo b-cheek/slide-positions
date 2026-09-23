@@ -31,6 +31,13 @@ beforeAll(() => {
       };
     },
   });
+
+  Object.defineProperty(SVGElement.prototype, "getTotalLength", {
+    configurable: true,
+    value() {
+      return 10;
+    },
+  });
 });
 
 afterEach(() => {
@@ -121,6 +128,25 @@ describe("D3ScatterPlot hover", () => {
     ).toBe(true);
   });
 
+  it("keeps note label colors separate from themed legend text", async () => {
+    const model = buildPlotModel(
+      plotInputsSchema.parse({ notesString: "Bb1 C3" }),
+    );
+    const { container } = render(<D3ScatterPlot model={model} />);
+
+    await waitFor(() => {
+      expect(container.querySelector("g.legend")).toBeTruthy();
+      expect(container.querySelector("text.note-label")).toBeTruthy();
+    });
+
+    expect(
+      container.querySelector("text.note-label")?.getAttribute("style"),
+    ).toContain("fill: var(--mantine-color-text)");
+    expect(
+      container.querySelector("g.legend text")?.getAttribute("style"),
+    ).toContain("fill: var(--mantine-color-text)");
+  });
+
   it("shows the lip bent legend entry when bent notes are present", async () => {
     const model = buildPlotModel(
       plotInputsSchema.parse({
@@ -175,6 +201,47 @@ describe("D3ScatterPlot hover", () => {
     expect((tickText as SVGTextElement | null)?.style.fontFamily).toBe(
       "var(--mantine-font-family)",
     );
+  });
+
+  it("keeps tick label geometry stable when the optimal path is toggled", async () => {
+    const model = buildPlotModel(
+      plotInputsSchema.parse({ notesString: "Bb1 C3" }),
+    );
+    const { container, rerender } = render(
+      <D3ScatterPlot
+        model={model}
+        viewOptions={{ showNoteLabels: true, showOptimalSlidePath: false }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelectorAll(".tick text").length).toBeGreaterThan(
+        0,
+      );
+    });
+
+    const tickGeometryBefore = Array.from(
+      container.querySelectorAll<SVGTextElement>(".tick text"),
+      (text) => [text.getAttribute("transform"), text.getAttribute("dy")],
+    );
+
+    rerender(
+      <D3ScatterPlot
+        model={model}
+        viewOptions={{ showNoteLabels: true, showOptimalSlidePath: true }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector(".optimal-path path")).toBeTruthy();
+    });
+
+    const tickGeometryAfter = Array.from(
+      container.querySelectorAll<SVGTextElement>(".tick text"),
+      (text) => [text.getAttribute("transform"), text.getAttribute("dy")],
+    );
+
+    expect(tickGeometryAfter).toEqual(tickGeometryBefore);
   });
 
   it("shows that a lip bent note has slide all the way out in tooltip", async () => {

@@ -85,7 +85,6 @@ export function D3ScatterPlot({
     };
 
     renderAxes(ctx, computeSlidePositionTicks(model));
-    applyGlobalStyles(svgRoot);
 
     // Path layer added before the points layer so lines sit underneath the nodes
     const pathLayer: Group = svg
@@ -125,6 +124,7 @@ export function D3ScatterPlot({
       );
     }
 
+    applyGlobalStyles(svgRoot);
     wasPathVisible.current = viewOptions.showOptimalSlidePath;
   }, [model, viewOptions, width, height]);
 
@@ -251,6 +251,7 @@ function renderDefs(svgRoot: Root) {
 function renderTitle(svgRoot: Root, title: string, width: number) {
   svgRoot
     .append("text")
+    .attr("class", "plot-title")
     .attr("x", width / 2)
     .attr("y", 15)
     .style("text-anchor", "middle")
@@ -281,6 +282,7 @@ function renderAxes(
 
   xAxis
     .append("text")
+    .attr("class", "axis-label")
     .attr("x", innerWidth / 2)
     .attr("y", 40)
     .style("text-anchor", "middle")
@@ -296,6 +298,7 @@ function renderAxes(
 
   yAxis
     .append("text")
+    .attr("class", "axis-label")
     .attr("transform", "rotate(-90)")
     .attr("y", -60)
     .attr("x", -innerHeight / 2)
@@ -481,7 +484,7 @@ function renderPoints(
 }
 
 function renderNoteLabels(ctx: ChartContext, noteConfigs: NoteConfig[]) {
-  const { svg, x, y, color } = ctx;
+  const { svg, x, y } = ctx;
   const yTicks = y.ticks();
 
   const isOverlapping = (d: NoteConfig) =>
@@ -512,7 +515,6 @@ function renderNoteLabels(ctx: ChartContext, noteConfigs: NoteConfig[]) {
     .attr("dy", "0.35em")
     .attr("text-anchor", "end")
     .style("font-size", "10px")
-    .style("fill", (d) => color(d.tuning.name))
     .style("pointer-events", "none")
     .text((d) => d.note.name);
 }
@@ -641,6 +643,7 @@ function renderLegend(
     .attr("y", 0)
     .attr("dominant-baseline", "middle")
     .style("font-size", "12px")
+    .style("fill", "var(--mantine-color-text)")
     .text((d) => d);
 
   if (!hasLipBend) return;
@@ -665,6 +668,7 @@ function renderLegend(
     .attr("y", 0)
     .attr("dominant-baseline", "middle")
     .style("font-size", "12px")
+    .style("fill", "var(--mantine-color-text)")
     .text("Lip bent");
 }
 
@@ -675,7 +679,9 @@ function applyGlobalStyles(svgRoot: Root) {
     .selectAll(".domain, .tick line")
     .style("stroke", "var(--mantine-color-default-border)");
   svgRoot
-    .selectAll("text, .tick text")
+    .selectAll(
+      ".tick text, .axis-label, .plot-title, .legend text, .note-label",
+    )
     .style("font-family", "var(--mantine-font-family)")
     .style("fill", "var(--mantine-color-text)");
   svgRoot.selectAll(".tick text").style("font-size", "12px");
