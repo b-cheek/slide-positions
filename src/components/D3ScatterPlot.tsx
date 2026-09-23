@@ -85,6 +85,7 @@ export function D3ScatterPlot({
     };
 
     renderAxes(ctx, computeSlidePositionTicks(model));
+    applyGlobalStyles(svgRoot);
 
     // Path layer added before the points layer so lines sit underneath the nodes
     const pathLayer: Group = svg
@@ -123,8 +124,6 @@ export function D3ScatterPlot({
         tooltipRef.current,
       );
     }
-
-    applyGlobalStyles(svgRoot);
 
     wasPathVisible.current = viewOptions.showOptimalSlidePath;
   }, [model, viewOptions, width, height]);

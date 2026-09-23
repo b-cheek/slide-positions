@@ -167,6 +167,14 @@ describe("D3ScatterPlot hover", () => {
         container.querySelector("marker#optimal-slide-arrow"),
       ).toBeTruthy();
     });
+
+    const tickText = container.querySelector("g .tick text");
+    expect(tickText?.getAttribute("font-family")).toBeNull();
+    expect(tickText?.getAttribute("font-size")).toBeNull();
+    expect((tickText as SVGTextElement | null)?.style.fontSize).toBe("12px");
+    expect((tickText as SVGTextElement | null)?.style.fontFamily).toBe(
+      "var(--mantine-font-family)",
+    );
   });
 
   it("shows that a lip bent note has slide all the way out in tooltip", async () => {
