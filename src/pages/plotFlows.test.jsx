@@ -138,12 +138,8 @@ describe("plot user flows", () => {
       "/plot?notesString=Bb1&showNoteLabels=true&showOptimalSlidePath=true",
     ]);
 
-    const noteCheckbox = await screen.findByLabelText(
-      "Show Individual Note Names",
-    );
-    const pathCheckbox = await screen.findByLabelText(
-      "Show optimal slide path",
-    );
+    const noteCheckbox = await screen.findByLabelText("Note Names");
+    const pathCheckbox = await screen.findByLabelText("Optimal Slide Path");
 
     expect(noteCheckbox.checked).toBeTruthy();
     expect(pathCheckbox.checked).toBeTruthy();
