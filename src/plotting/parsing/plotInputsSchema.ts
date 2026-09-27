@@ -41,7 +41,7 @@ export const plotInputsRawSchema = z.object({
     "Invalid lip bend stop note format",
     "G1",
   ),
-  title: z.string().max(40).optional(),
+  title: z.string().max(50, "Title must be at most 50 characters").optional(),
 });
 
 export type RawPlotInputs = z.infer<typeof plotInputsRawSchema>;

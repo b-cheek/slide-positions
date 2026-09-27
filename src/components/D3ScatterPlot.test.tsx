@@ -38,6 +38,13 @@ beforeAll(() => {
       return 10;
     },
   });
+
+  Object.defineProperty(SVGElement.prototype, "getComputedTextLength", {
+    configurable: true,
+    value() {
+      return (this.textContent?.length ?? 0) * 8;
+    },
+  });
 });
 
 afterEach(() => {

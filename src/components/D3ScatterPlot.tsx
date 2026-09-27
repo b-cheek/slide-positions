@@ -258,7 +258,54 @@ function renderTitle(svgRoot: Root, title: string, width: number) {
     .style("fill", "var(--mantine-color-text)")
     .style("font-size", "16px")
     .style("font-weight", "bold")
-    .text(title);
+    .text(title)
+    .call(wrap, width * 0.8);
+}
+
+// TODO: still allows various bad configurations,
+// but I like it for now for reasonable titles.
+function wrap(
+  textSelection: d3.Selection<SVGTextElement, unknown, null, undefined>,
+  maxWidth: number,
+) {
+  textSelection.each(function () {
+    const text = d3.select(this);
+    const words = text.text().split(/\s+/).reverse();
+    const x = text.attr("x");
+    const y = text.attr("y");
+    const lineHeight = 1.1;
+    let line: string[] = [];
+    let lineNumber = 0;
+    let word: string | undefined;
+
+    text.text(null);
+    let tspan = text
+      .append("tspan")
+      .attr("x", x)
+      .attr("y", y)
+      .attr("dy", "0em");
+
+    while ((word = words.pop())) {
+      line.push(word);
+      tspan.text(line.join(" "));
+      const tspanNode = tspan.node();
+      if (
+        tspanNode &&
+        tspanNode.getComputedTextLength() > maxWidth &&
+        line.length > 1
+      ) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text
+          .append("tspan")
+          .attr("x", x)
+          .attr("y", y)
+          .attr("dy", `${++lineNumber * lineHeight}em`)
+          .text(word);
+      }
+    }
+  });
 }
 
 // --- Axes & grid --------------------------------------------------------
@@ -284,7 +331,7 @@ function renderAxes(
     .append("text")
     .attr("class", "axis-label")
     .attr("x", innerWidth / 2)
-    .attr("y", 40)
+    .attr("y", 39) // if we exactly touch bottom margin of 40 there is slight clip
     .style("text-anchor", "middle")
     .style("font-size", "16px")
     .text(X_AXIS_LABEL);

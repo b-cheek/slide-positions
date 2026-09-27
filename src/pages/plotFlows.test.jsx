@@ -1,5 +1,5 @@
 import { MantineProvider } from "@mantine/core";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RouterProvider, createMemoryRouter } from "react-router";
 import { beforeAll, describe, expect, it, vi } from "vitest";
@@ -146,12 +146,18 @@ describe("plot user flows", () => {
 
     // Uncheck the note labels checkbox; URL should remove the param
     await user.click(noteCheckbox);
-    expect(noteCheckbox.checked).toBeFalsy();
-    expect(router.state.location.search).not.toContain("showNoteLabels");
+    await waitFor(() => {
+      expect(noteCheckbox.checked).toBeFalsy();
+      expect(router.state.location.search).not.toContain("showNoteLabels");
+    });
 
     // Uncheck the optimal slide path checkbox; URL should remove the param
     await user.click(pathCheckbox);
-    expect(pathCheckbox.checked).toBeFalsy();
-    expect(router.state.location.search).not.toContain("showOptimalSlidePath");
+    await waitFor(() => {
+      expect(pathCheckbox.checked).toBeFalsy();
+      expect(router.state.location.search).not.toContain(
+        "showOptimalSlidePath",
+      );
+    });
   });
 });
