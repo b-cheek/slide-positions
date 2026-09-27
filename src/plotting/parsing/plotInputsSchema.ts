@@ -41,7 +41,7 @@ export const plotInputsRawSchema = z.object({
     "Invalid lip bend stop note format",
     "G1",
   ),
-  title: z.string().optional(),
+  title: z.string().max(40).optional(),
 });
 
 export type RawPlotInputs = z.infer<typeof plotInputsRawSchema>;

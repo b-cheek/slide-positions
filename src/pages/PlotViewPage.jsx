@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useSearchParams } from "react-router";
 import {
   Button,
@@ -22,20 +22,122 @@ import { ShareButton } from "../components/ShareButton";
 import PlotInputsForm from "../components/PlotInputsForm";
 import { buildPlotModel } from "../plotting/parsing/utils";
 
+/**
+ * Detects whether the browser actually supports the native Fullscreen API.
+ * Some browsers (older Safari on iOS, some embedded webviews) either omit
+ * the API entirely or report `fullscreenEnabled: false`, in which case we
+ * fall back to a CSS-based "fake fullscreen" view instead.
+ */
+function useFullscreenSupport() {
+  return useMemo(() => {
+    if (typeof document === "undefined") return false;
+    return Boolean(
+      document.fullscreenEnabled ??
+      document.webkitFullscreenEnabled ??
+      document.mozFullScreenEnabled ??
+      document.msFullscreenEnabled,
+    );
+  }, []);
+}
+
+// Three possible states the plot container can be in, spread directly onto
+// <Paper> as props. Everything here uses Mantine's own style props (pos,
+// top, left, w, h) rather than a raw `style` object — mixing the two for
+// the same CSS property (e.g. pos="relative" alongside style={{ position:
+// "fixed" }}) is what silently broke the fallback view before: the pos
+// prop won, so it was never actually fixed.
+const PLOT_VIEW_CONFIG = {
+  normal: {
+    p: "sm",
+    radius: "md",
+    h: "clamp(220px, min(75vh, 100vw), 720px)",
+    withBorder: true,
+    pos: "relative",
+  },
+  fullscreen: {
+    p: "md",
+    radius: 0,
+    h: "100vh",
+    withBorder: false,
+    pos: "relative",
+    style: { backgroundColor: "var(--mantine-color-body)" },
+  },
+  // Used when the native Fullscreen API isn't available: pinned to the
+  // viewport with plain CSS instead of the browser's real fullscreen mode.
+  fallback: {
+    p: "md",
+    radius: 0,
+    h: "100dvh",
+    withBorder: false,
+    pos: "fixed",
+    top: 0,
+    left: 0,
+    w: "100vw",
+    style: { backgroundColor: "var(--mantine-color-body)", zIndex: 1000 },
+  },
+};
+
 export function PlotViewPage() {
   const { plotInputs } = useLoaderData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const isFullscreenSupported = useFullscreenSupport();
+  const [isFallbackActive, setIsFallbackActive] = useState(false);
+
   // Target only the plot container element for native full-screen mode
   const {
     ref: fullscreenRef,
-    toggle: toggleFullscreen,
-    fullscreen,
+    toggle: toggleNativeFullscreen,
+    fullscreen: isNativeFullscreen,
   } = useFullscreenElement();
 
   // Measure container dimensions for dynamic D3 rendering
   const { ref: sizeRef, width, height } = useElementSize();
+
+  // Single source of truth for which of the 3 views we're in.
+  const viewMode = isNativeFullscreen
+    ? "fullscreen"
+    : isFallbackActive
+      ? "fallback"
+      : "normal";
+  const isExpanded = viewMode !== "normal";
+  const viewConfig = PLOT_VIEW_CONFIG[viewMode];
+
+  const toggleFullscreen = () => {
+    if (isFullscreenSupported) {
+      toggleNativeFullscreen();
+    } else {
+      setIsFallbackActive((prev) => !prev);
+    }
+  };
+
+  // The fallback view has no browser chrome/gesture to exit with, so wire
+  // up Escape manually to mirror native fullscreen behavior.
+  useEffect(() => {
+    if (!isFallbackActive) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsFallbackActive(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFallbackActive]);
+
+  // The overlay covers the viewport visually, but the page underneath can
+  // still scroll unless we lock it — which would be jarring on exit.
+  useEffect(() => {
+    if (!isFallbackActive) return;
+
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [isFallbackActive]);
 
   const model = useMemo(() => buildPlotModel(plotInputs), [plotInputs]);
 
@@ -58,6 +160,40 @@ export function PlotViewPage() {
     setSearchParams(next);
   };
 
+  const plotPaper = (
+    <Paper ref={fullscreenRef} {...viewConfig}>
+      {/* Quick action button positioned over the chart */}
+      <Tooltip label={isExpanded ? "Exit Fullscreen" : "Fullscreen Plot"}>
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          onClick={toggleFullscreen}
+          size="sm"
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            zIndex: 10,
+          }}
+        >
+          {isExpanded ? "✕" : "⛶"}
+        </ActionIcon>
+      </Tooltip>
+
+      {/* Container measured for D3 responsiveness */}
+      <Box ref={sizeRef} w="100%" h="100%">
+        {width > 0 && height > 0 && (
+          <D3ScatterPlot
+            model={model}
+            viewOptions={viewOptions}
+            width={width}
+            height={height}
+          />
+        )}
+      </Box>
+    </Paper>
+  );
+
   return (
     <Stack gap="lg" w="100%" p="md">
       {/* Page Header */}
@@ -78,51 +214,7 @@ export function PlotViewPage() {
       {/* Main Content Layout */}
       <Grid gutter="lg" align="stretch">
         {/* Plot Visualization Area */}
-        <Grid.Col span={{ base: 12, md: 8, lg: 9 }}>
-          <Paper
-            ref={fullscreenRef}
-            p={fullscreen ? "md" : "sm"}
-            radius={fullscreen ? 0 : "md"}
-            withBorder={!fullscreen}
-            h={fullscreen ? "100vh" : 500}
-            pos="relative"
-            style={{
-              backgroundColor: fullscreen
-                ? "var(--mantine-color-body)"
-                : undefined,
-            }}
-          >
-            {/* Quick action button positioned over the chart */}
-            <Tooltip label={fullscreen ? "Exit Fullscreen" : "Fullscreen Plot"}>
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                onClick={toggleFullscreen}
-                size="sm"
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  right: 10,
-                  zIndex: 10,
-                }}
-              >
-                {fullscreen ? "✕" : "⛶"}
-              </ActionIcon>
-            </Tooltip>
-
-            {/* Container measured for D3 responsiveness */}
-            <Box ref={sizeRef} w="100%" h="100%">
-              {width > 0 && height > 0 && (
-                <D3ScatterPlot
-                  model={model}
-                  viewOptions={viewOptions}
-                  width={width}
-                  height={height}
-                />
-              )}
-            </Box>
-          </Paper>
-        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 8, lg: 9 }}>{plotPaper}</Grid.Col>
 
         {/* Controls & Options Sidebar */}
         <Grid.Col span={{ base: 12, md: 4, lg: 3 }}>
@@ -156,7 +248,7 @@ export function PlotViewPage() {
                 onClick={toggleFullscreen}
                 fullWidth
               >
-                {fullscreen ? "Exit Fullscreen Mode" : "View Fullscreen Plot"}
+                {isExpanded ? "Exit Fullscreen Mode" : "View Fullscreen Plot"}
               </Button>
             </Stack>
           </Paper>

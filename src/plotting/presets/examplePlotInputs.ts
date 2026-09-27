@@ -8,12 +8,12 @@ export const placeholderInputs: RawPlotInputs = plotInputsRawSchema.parse({
 export const exampleInputs: RawPlotInputs[] = [
   plotInputsRawSchema.parse({
     notesString: "Bb2-Bb4(Bb)",
-    title: "Bb/F Tenor Trombone 2 Octaves in Bb",
+    title: "Tenor Trombone Bb Scale",
   } satisfies Partial<RawPlotInputs>),
   plotInputsRawSchema.parse({
     notesString: "Bb1-Bb3(Bb)",
     valvesString: "Bb/F/Gb/D",
-    title: "Bb/F/Gb/D Bass Trombone 2 Octaves in Bb",
+    title: "Bb/F/Gb/D Bass Trombone Bb Scale",
   } satisfies Partial<RawPlotInputs>),
   plotInputsRawSchema.parse({
     notesString: "Eb3-Eb5",
