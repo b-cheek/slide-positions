@@ -130,7 +130,12 @@ export function D3ScatterPlot({
 
   return (
     <div>
-      <svg ref={svgRef} style={{ display: "block", margin: "0 auto" }} />
+      <svg
+        ref={svgRef}
+        role="img"
+        aria-label={`${model.title} chart`}
+        style={{ display: "block", margin: "0 auto" }}
+      />
       <div
         ref={tooltipRef}
         style={{
@@ -642,12 +647,16 @@ function setupHoverInteractivity(
       tooltip
         .style("left", `${event.clientX + 10}px`)
         .style("top", `${event.clientY + 10}px`)
-        .style("display", "block").html(`
-          <div>${note.note.name}</div>
-          <div>Slide position: ${note.getSlidePositionString(model.player, model.trombone)}</div>
-          <div>Tuning: ${note.tuning.name}</div>
-          <div>Partial: ${note.partial}</div>
-        `);
+        .style("display", "block")
+        .selectAll("*")
+        .remove();
+
+      [
+        note.note.name,
+        `Slide position: ${note.getSlidePositionString(model.player, model.trombone)}`,
+        `Tuning: ${note.tuning.name}`,
+        `Partial: ${note.partial}`,
+      ].forEach((line) => tooltip.append("div").text(line));
 
       highlightHover(note);
     })

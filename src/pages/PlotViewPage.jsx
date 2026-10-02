@@ -167,6 +167,9 @@ export function PlotViewPage() {
         <ActionIcon
           variant="subtle"
           color="gray"
+          aria-label={
+            isExpanded ? "Exit fullscreen plot" : "View fullscreen plot"
+          }
           onClick={toggleFullscreen}
           size="sm"
           style={{
