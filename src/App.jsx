@@ -1,4 +1,4 @@
-import { Container, Text, AppShell, Group } from "@mantine/core";
+import { Anchor, Container, Text, AppShell, Group } from "@mantine/core";
 import {
   Outlet,
   RouterProvider,
@@ -45,6 +45,29 @@ function AppLayout() {
           <Outlet />
         </Container>
       </AppShell.Main>
+
+      <AppShell.Footer
+        px="md"
+        py="xs"
+        withBorder={false}
+        style={{ background: "transparent" }}
+      >
+        <Group h="100%" justify="center">
+          <Text size="xs" c="dimmed" style={{ opacity: 0.6 }}>
+            © {new Date().getFullYear()}{" "}
+            <Anchor
+              href="https://bcheek.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              size="xs"
+              c="dimmed"
+              underline="hover"
+            >
+              Brayden Cheek
+            </Anchor>
+          </Text>
+        </Group>
+      </AppShell.Footer>
     </AppShell>
   );
 }
