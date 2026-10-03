@@ -14,10 +14,12 @@ import {
   Text,
   Tooltip,
   ActionIcon,
+  SegmentedControl,
 } from "@mantine/core";
 import { useElementSize, useFullscreenElement } from "@mantine/hooks";
 
 import { D3ScatterPlot } from "../components/D3ScatterPlot";
+import { VerovioSheetMusic } from "../components/VerovioSheetMusic";
 import { ShareButton } from "../components/ShareButton";
 import PlotInputsForm from "../components/PlotInputsForm";
 import { buildPlotModel } from "../plotting/parsing/utils";
@@ -96,13 +98,13 @@ export function PlotViewPage() {
   const { ref: sizeRef, width, height } = useElementSize();
 
   // Single source of truth for which of the 3 views we're in.
-  const viewMode = isNativeFullscreen
+  const pageViewMode = isNativeFullscreen
     ? "fullscreen"
     : isFallbackActive
       ? "fallback"
       : "normal";
-  const isExpanded = viewMode !== "normal";
-  const viewConfig = PLOT_VIEW_CONFIG[viewMode];
+  const isExpanded = pageViewMode !== "normal";
+  const viewConfig = PLOT_VIEW_CONFIG[pageViewMode];
 
   const toggleFullscreen = () => {
     if (isFullscreenSupported) {
@@ -144,6 +146,7 @@ export function PlotViewPage() {
   // Derive view options directly from URL search parameters
   const viewOptions = useMemo(
     () => ({
+      renderMode: searchParams.get("renderMode") === "chart" ? "chart" : "plot",
       showNoteLabels: searchParams.get("showNoteLabels") === "true",
       showOptimalSlidePath: searchParams.get("showOptimalSlidePath") === "true",
     }),
@@ -157,6 +160,12 @@ export function PlotViewPage() {
     } else {
       next.delete(name);
     }
+    setSearchParams(next);
+  };
+
+  const handleRenderModeChange = (renderMode) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("renderMode", renderMode);
     setSearchParams(next);
   };
 
@@ -183,16 +192,25 @@ export function PlotViewPage() {
         </ActionIcon>
       </Tooltip>
 
-      {/* Container measured for D3 responsiveness */}
+      {/* Container measured for responsive rendering */}
       <Box ref={sizeRef} w="100%" h="100%">
-        {width > 0 && height > 0 && (
-          <D3ScatterPlot
-            model={model}
-            viewOptions={viewOptions}
-            width={width}
-            height={height}
-          />
-        )}
+        {width > 0 &&
+          height > 0 &&
+          (viewOptions.renderMode === "chart" ? (
+            <VerovioSheetMusic
+              model={model}
+              width={width}
+              height={height}
+              showOptimalSlidePath={viewOptions.showOptimalSlidePath}
+            />
+          ) : (
+            <D3ScatterPlot
+              model={model}
+              viewOptions={viewOptions}
+              width={width}
+              height={height}
+            />
+          ))}
       </Box>
     </Paper>
   );
@@ -227,21 +245,45 @@ export function PlotViewPage() {
                 Display Options
               </Text>
 
-              <Checkbox
-                name="showNoteLabels"
-                label="Note Names"
-                description="Labels on data points"
-                checked={viewOptions.showNoteLabels}
-                onChange={handleViewOptionToggle}
+              <SegmentedControl
+                aria-label="Render mode"
+                value={viewOptions.renderMode}
+                onChange={handleRenderModeChange}
+                data={[
+                  { label: "Plot", value: "plot" },
+                  { label: "Chart", value: "chart" },
+                ]}
+                fullWidth
               />
 
-              <Checkbox
-                name="showOptimalSlidePath"
-                label="Optimal Slide Path"
-                description="Show arrows to indicate efficient slide movements"
-                checked={viewOptions.showOptimalSlidePath}
-                onChange={handleViewOptionToggle}
-              />
+              {viewOptions.renderMode === "plot" && (
+                <>
+                  <Checkbox
+                    name="showNoteLabels"
+                    label="Note Names"
+                    description="Labels on data points"
+                    checked={viewOptions.showNoteLabels}
+                    onChange={handleViewOptionToggle}
+                  />
+                  <Checkbox
+                    name="showOptimalSlidePath"
+                    label="Optimal Slide Path"
+                    description="Show arrows to indicate efficient slide movements"
+                    checked={viewOptions.showOptimalSlidePath}
+                    onChange={handleViewOptionToggle}
+                  />
+                </>
+              )}
+
+              {viewOptions.renderMode === "chart" && (
+                <Checkbox
+                  name="showOptimalSlidePath"
+                  label="Optimal Slide Path"
+                  description="Highlight positions for efficient slide movements"
+                  checked={viewOptions.showOptimalSlidePath}
+                  onChange={handleViewOptionToggle}
+                />
+              )}
 
               <Divider my="xs" />
 

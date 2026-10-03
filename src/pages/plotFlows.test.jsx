@@ -160,4 +160,25 @@ describe("plot user flows", () => {
       );
     });
   });
+
+  it("switches render modes through the URL and adapts chart controls", async () => {
+    const user = userEvent.setup();
+    const { router } = renderWithRouter([
+      "/plot?notesString=Bb1&renderMode=chart&showOptimalSlidePath=true",
+    ]);
+
+    expect(await screen.findByRole("radio", { name: "Chart" })).toBeTruthy();
+    expect(screen.queryByLabelText("Note Names")).toBeNull();
+    expect(screen.getByLabelText("Optimal Slide Path").checked).toBeTruthy();
+    expect(
+      screen.getByText("Highlight positions for efficient slide movements"),
+    ).toBeTruthy();
+
+    await user.click(screen.getByRole("radio", { name: "Plot" }));
+
+    await waitFor(() => {
+      expect(router.state.location.search).toContain("renderMode=plot");
+      expect(screen.getByLabelText("Note Names")).toBeTruthy();
+    });
+  });
 });
