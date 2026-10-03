@@ -1,0 +1,79 @@
+.sheet-music {
+  height: 100%;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.sheet-music__title {
+  max-width: 80%;
+  margin: 0 auto;
+  color: var(--mantine-color-text);
+  font-family: var(--mantine-font-family);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.sheet-music__svg > svg {
+  display: block;
+  height: auto;
+  max-width: 100%;
+}
+
+.sheet-music__svg > svg * {
+  fill: var(--mantine-color-text) !important;
+  stroke: var(--mantine-color-text) !important;
+}
+
+.sheet-music__svg
+  :is(
+    [id^="position-"],
+    [id^="optimal-position-"],
+    [id^="note-name-"],
+    [id^="lip-bend-"],
+    [id^="optimal-lip-bend-"],
+    [id^="unplayable-"]
+  ) {
+  font-family: var(--mantine-font-family);
+  font-size: 12px;
+}
+
+.sheet-music__svg
+  :is(
+    [id^="position-"],
+    [id^="optimal-position-"],
+    [id^="lip-bend-"],
+    [id^="optimal-lip-bend-"],
+    [id^="unplayable-"]
+  ) {
+  transform: translate(-130px, 100px);
+}
+
+.sheet-music__svg [id^="note-name-"] {
+  transform: translate(-200px, -100px);
+}
+
+.sheet-music__svg
+  :is([id^="lip-bend-"], [id^="optimal-lip-bend-"], [id^="unplayable-"]) {
+  font-size: 340px;
+}
+
+.sheet-music__svg
+  :is([id^="lip-bend-"], [id^="optimal-lip-bend-"], [id^="unplayable-"])
+  tspan {
+  font-size: 340px !important;
+}
+
+.sheet-music__svg--optimal
+  :is([id^="optimal-position-"], [id^="optimal-lip-bend-"]),
+.sheet-music__svg--optimal
+  :is([id^="optimal-position-"], [id^="optimal-lip-bend-"])
+  * {
+  fill: var(--mantine-color-teal-8) !important;
+  font-weight: 700;
+}
+
+.sheet-music__svg .mNum {
+  display: none;
+}

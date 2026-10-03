@@ -1,22 +1,7 @@
 import type { PlotModel } from "../../parsing/utils";
 import { getNoteConfigs, getViterbiSlidePath } from "./slideCalculation";
 
-type NoteConfig = ReturnType<typeof getNoteConfigs>[number];
-
-export interface SheetMusicPosition {
-  text: string;
-  lipBendCents: number;
-  tuningName: string;
-  partial: number;
-  isOptimal: boolean;
-}
-
-export interface SheetMusicNote {
-  noteName: string;
-  positions: SheetMusicPosition[];
-}
-
-export function getSheetMusicNotes(model: PlotModel): SheetMusicNote[] {
+export function getSheetMusicNotes(model: PlotModel) {
   const configsByNote = model.notes.map((note) =>
     getNoteConfigs(model.trombone, note, model.player),
   );
@@ -33,15 +18,10 @@ export function getSheetMusicNotes(model: PlotModel): SheetMusicNote[] {
     const optimalConfig = optimalConfigByNote.get(model.notes[noteIndex]);
 
     return {
-      noteName: model.notes[noteIndex].name,
       positions: configs.map((config) => ({
         text: config.getSlidePositionString(model.player, model.trombone),
         lipBendCents: config.lipBendCents,
-        tuningName: config.tuning.name,
-        partial: config.partial,
-        isOptimal:
-          optimalConfig !== undefined &&
-          configurationsMatch(config, optimalConfig),
+        isOptimal: optimalConfig !== undefined && config === optimalConfig,
       })),
     };
   });
@@ -55,31 +35,9 @@ export function createSheetMusicMei(
     .map((note, noteIndex) => {
       const { pname, accid } = getMeiPitch(note.pitchClass);
       const positions = sheetMusicNotes[noteIndex]?.positions ?? [];
-      const positionLabels = positions
-        .map((position, positionIndex) => {
-          const idPrefix =
-            position.lipBendCents !== 0
-              ? `${position.isOptimal ? "optimal-" : ""}lip-bend-position`
-              : position.isOptimal
-                ? "optimal-position"
-                : "position";
-          const lipBendIdPrefix = position.isOptimal
-            ? "optimal-lip-bend"
-            : "lip-bend";
-          const lipBendLabel =
-            position.lipBendCents !== 0
-              ? `<dir xml:id="${lipBendIdPrefix}-${noteIndex}-${positionIndex}" startid="#note-${noteIndex}" place="below">-${formatCents(position.lipBendCents)}c lip bend</dir>`
-              : "";
-          return `<dir xml:id="${idPrefix}-${noteIndex}-${positionIndex}" startid="#note-${noteIndex}" place="below">${escapeXml(position.text)}</dir>${lipBendLabel}`;
-        })
-        .join("");
-      const noteName = `<dir xml:id="note-name-${noteIndex}" startid="#note-${noteIndex}" place="above">${escapeXml(note.name)}</dir>`;
-      const unplayableLabel =
-        positions.length === 0
-          ? `<dir xml:id="unplayable-${noteIndex}-first" startid="#note-${noteIndex}" place="below">Unplayable with</dir><dir xml:id="unplayable-${noteIndex}-second" startid="#note-${noteIndex}" place="below">current inputs</dir>`
-          : "";
+      const labels = getNoteDirectives(note.name, positions, noteIndex);
 
-      return `<measure n="${noteIndex + 1}" right="invis"><staff n="1"><layer n="1"><note xml:id="note-${noteIndex}" pname="${pname}" oct="${note.octave}" dur="1"${accid ? ` accid="${accid}"` : ""}/></layer></staff>${noteName}${positionLabels}${unplayableLabel}</measure>`;
+      return `<measure n="${noteIndex + 1}" right="invis"><staff n="1"><layer n="1"><note xml:id="note-${noteIndex}" pname="${pname}" oct="${note.octave}" dur="1"${accid ? ` accid="${accid}"` : ""}/></layer></staff>${labels.join("")}</measure>`;
     })
     .join("");
 
@@ -92,14 +50,77 @@ export function createSheetMusicMei(
   ].join("");
 }
 
-function configurationsMatch(left: NoteConfig, right: NoteConfig): boolean {
-  return (
-    left.note === right.note &&
-    left.tuning === right.tuning &&
-    left.partial === right.partial &&
-    left.slideDistance === right.slideDistance &&
-    left.lipBendCents === right.lipBendCents
+type SheetMusicPosition = ReturnType<
+  typeof getSheetMusicNotes
+>[number]["positions"][number];
+
+function getNoteDirectives(
+  noteName: string,
+  positions: SheetMusicPosition[],
+  noteIndex: number,
+): string[] {
+  const noteLabel = renderDirective(
+    `note-name-${noteIndex}`,
+    noteName,
+    noteIndex,
+    "above",
   );
+  if (positions.length === 0) {
+    return [
+      noteLabel,
+      renderDirective(
+        `unplayable-${noteIndex}-first`,
+        "Unplayable with",
+        noteIndex,
+      ),
+      renderDirective(
+        `unplayable-${noteIndex}-second`,
+        "current inputs",
+        noteIndex,
+      ),
+    ];
+  }
+
+  return [
+    noteLabel,
+    ...positions.flatMap((position, positionIndex) =>
+      getPositionDirectives(position, noteIndex, positionIndex),
+    ),
+  ];
+}
+
+function getPositionDirectives(
+  position: SheetMusicPosition,
+  noteIndex: number,
+  positionIndex: number,
+): string[] {
+  const prefix = position.isOptimal ? "optimal-" : "";
+  const id = position.lipBendCents ? "lip-bend-position" : "position";
+  return [
+    renderDirective(
+      `${prefix}${id}-${noteIndex}-${positionIndex}`,
+      position.text,
+      noteIndex,
+    ),
+    ...(position.lipBendCents
+      ? [
+          renderDirective(
+            `${prefix}lip-bend-${noteIndex}-${positionIndex}`,
+            `-${formatCents(position.lipBendCents)}c lip bend`,
+            noteIndex,
+          ),
+        ]
+      : []),
+  ];
+}
+
+function renderDirective(
+  id: string,
+  text: string,
+  noteIndex: number,
+  place = "below",
+): string {
+  return `<dir xml:id="${id}" startid="#note-${noteIndex}" place="${place}">${escapeXml(text)}</dir>`;
 }
 
 function getMeiPitch(pitchClass: string) {

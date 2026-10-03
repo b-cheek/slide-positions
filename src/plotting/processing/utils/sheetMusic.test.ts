@@ -17,8 +17,6 @@ describe("sheet music data", () => {
     );
 
     expect(sheetMusicNotes).toHaveLength(2);
-    expect(sheetMusicNotes[0].noteName).toBe("Bb1");
-    expect(sheetMusicNotes[1].noteName).toBe("Bb1");
     expect(sheetMusicNotes[0].positions).toHaveLength(expectedPositions.length);
     expect(sheetMusicNotes[1].positions).toHaveLength(expectedPositions.length);
     expect(

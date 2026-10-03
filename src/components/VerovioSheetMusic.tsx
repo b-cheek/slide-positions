@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton, Stack } from "@mantine/core";
 import type { PlotModel } from "../plotting/parsing/utils";
 import { createSheetMusicMei } from "../plotting/processing/utils/sheetMusic";
+import "./VerovioSheetMusic.css";
 
 interface VerovioSheetMusicProps {
   model: PlotModel;
@@ -16,7 +17,6 @@ export function VerovioSheetMusic({
   height,
   showOptimalSlidePath,
 }: VerovioSheetMusicProps) {
-  const svgContainerRef = useRef<HTMLDivElement>(null);
   const [svgMarkup, setSvgMarkup] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +63,7 @@ export function VerovioSheetMusic({
     return () => {
       isCurrent = false;
     };
-  }, [model, width, height]);
+  }, [model, width]);
 
   if (error) {
     return <div role="alert">Unable to render sheet music: {error}</div>;
@@ -73,104 +73,26 @@ export function VerovioSheetMusic({
     <div
       role="img"
       aria-label={`${model.title} sheet music`}
-      style={{
-        height: "100%",
-        overflowY: "auto",
-        width: "100%",
-      }}
+      className="sheet-music"
     >
-      <div className="sheet-music-title">{model.title}</div>
+      <div className="sheet-music__title">{model.title}</div>
       {!svgMarkup && (
-        <>
-          <Stack aria-hidden="true" gap="xl" p="md" style={{ width: "100%" }}>
-            {Array.from({ length: Math.max(3, Math.ceil(height / 160)) }).map(
-              (_, staffIndex) => (
-                <Stack key={staffIndex} gap={7} mt="lg">
-                  {Array.from({ length: 5 }).map((__, lineIndex) => (
-                    <Skeleton key={lineIndex} height={1} radius="xl" />
-                  ))}
-                </Stack>
-              ),
-            )}
-          </Stack>
-        </>
+        <Stack aria-hidden="true" gap="xl" p="md" style={{ width: "100%" }}>
+          {Array.from({ length: Math.max(3, Math.ceil(height / 160)) }).map(
+            (_, staffIndex) => (
+              <Stack key={staffIndex} gap={7} mt="lg">
+                {Array.from({ length: 5 }).map((__, lineIndex) => (
+                  <Skeleton key={lineIndex} height={1} radius="xl" />
+                ))}
+              </Stack>
+            ),
+          )}
+        </Stack>
       )}
       <div
-        ref={svgContainerRef}
-        className={`sheet-music-svg${showOptimalSlidePath ? " show-optimal" : ""}`}
+        className={`sheet-music__svg${showOptimalSlidePath ? " sheet-music__svg--optimal" : ""}`}
         dangerouslySetInnerHTML={{ __html: svgMarkup }}
       />
-      <style>{`
-        .sheet-music-svg svg {
-          display: block;
-          height: auto;
-          max-width: 100%;
-          color: var(--mantine-color-text);
-        }
-
-        .sheet-music-title {
-          max-width: 80%;
-          margin: 0 auto;
-          color: var(--mantine-color-text);
-          font-family: var(--mantine-font-family);
-          font-size: 16px;
-          font-weight: 700;
-          line-height: 1.1;
-          text-align: center;
-        }
-
-        .sheet-music-svg svg * {
-          fill: currentColor;
-          stroke: currentColor;
-        }
-
-        .sheet-music-svg [id^="position-"],
-        .sheet-music-svg [id^="optimal-position-"],
-        .sheet-music-svg [id^="note-name-"],
-        .sheet-music-svg [id^="lip-bend-"],
-        .sheet-music-svg [id^="optimal-lip-bend-"],
-        .sheet-music-svg [id^="unplayable-"] {
-          fill: var(--mantine-color-text);
-          font-family: var(--mantine-font-family);
-          font-size: 12px;
-        }
-
-        .sheet-music-svg [id^="position-"],
-        .sheet-music-svg [id^="optimal-position-"],
-        .sheet-music-svg [id^="lip-bend-"],
-        .sheet-music-svg [id^="optimal-lip-bend-"],
-        .sheet-music-svg [id^="unplayable-"] {
-          transform: translate(-130px, 100px);
-        }
-
-        .sheet-music-svg [id^="note-name-"] {
-          transform: translate(-200px, -100px);
-        }
-
-        .sheet-music-svg [id^="lip-bend-"],
-        .sheet-music-svg [id^="optimal-lip-bend-"],
-        .sheet-music-svg [id^="unplayable-"] {
-          font-size: 340px;
-        }
-
-        .sheet-music-svg [id^="lip-bend-"] tspan,
-        .sheet-music-svg [id^="optimal-lip-bend-"] tspan,
-        .sheet-music-svg [id^="unplayable-"] tspan {
-          font-size: 340px !important;
-        }
-
-        .sheet-music-svg.show-optimal [id^="optimal-position-"],
-        .sheet-music-svg.show-optimal [id^="optimal-position-"] *,
-        .sheet-music-svg.show-optimal [id^="optimal-lip-bend-"],
-        .sheet-music-svg.show-optimal [id^="optimal-lip-bend-"] * {
-          fill: var(--mantine-color-teal-8);
-          font-weight: 700;
-        }
-
-        .mNum {
-            display: none
-        }
-      `}</style>
     </div>
   );
 }
