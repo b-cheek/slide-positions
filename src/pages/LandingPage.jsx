@@ -5,7 +5,7 @@ import { exampleInputs } from "../plotting/presets/examplePlotInputs";
 export function LandingPage() {
   return (
     <Stack>
-      <Title order={1}>Gallery</Title>
+      <Title order={1}>Library</Title>
 
       <Group>
         {exampleInputs.map((inputs) => {
@@ -15,7 +15,7 @@ export function LandingPage() {
 
           return (
             <Button key={inputs.title} component={Link} to={`/plot?${params}`}>
-              {inputs.title ?? "Example Plot"}
+              {inputs.title ?? "Example"}
             </Button>
           );
         })}
@@ -27,7 +27,7 @@ export function LandingPage() {
         variant="outline"
         style={{ width: "fit-content" }}
       >
-        Create a Plot
+        Create Slide Positions
       </Button>
     </Stack>
   );

@@ -20,9 +20,9 @@ export function PlotViewErrorBoundary() {
   return (
     <Stack>
       <Title order={2}>Something Went Wrong</Title>
-      <Text>Unable to load this plot right now.</Text>
+      <Text>Unable to load this right now.</Text>
       <Button component={Link} to="/">
-        Back to Gallery
+        Back to Library
       </Button>
     </Stack>
   );

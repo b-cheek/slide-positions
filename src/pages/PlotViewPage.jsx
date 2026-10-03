@@ -172,13 +172,11 @@ export function PlotViewPage() {
   const plotPaper = (
     <Paper ref={fullscreenRef} {...viewConfig}>
       {/* Quick action button positioned over the chart */}
-      <Tooltip label={isExpanded ? "Exit Fullscreen" : "Fullscreen Plot"}>
+      <Tooltip label={isExpanded ? "Exit Fullscreen" : "Fullscreen"}>
         <ActionIcon
           variant="subtle"
           color="gray"
-          aria-label={
-            isExpanded ? "Exit fullscreen plot" : "View fullscreen plot"
-          }
+          aria-label={isExpanded ? "Exit fullscreen" : "Fullscreen"}
           onClick={toggleFullscreen}
           size="sm"
           style={{
@@ -219,12 +217,11 @@ export function PlotViewPage() {
     <Stack gap="lg" w="100%" p="md">
       {/* Page Header */}
       <Group justify="space-between" align="center">
-        <Title order={2}>Slide Positions Plot</Title>
+        <Title order={2}>Slide Positions</Title>
         <Group gap="xs">
           <Button onClick={() => setIsModalOpen(true)}>Edit Inputs</Button>
           <ShareButton
-            title="Slide Positions Plot"
-            text="Check out this slide positions plot!"
+            title="Slide Positions"
             url={typeof window !== "undefined" ? window.location.href : ""}
           />
         </Group>
@@ -234,7 +231,7 @@ export function PlotViewPage() {
 
       {/* Main Content Layout */}
       <Grid gutter="lg" align="stretch">
-        {/* Plot Visualization Area */}
+        {/* Visualization Area */}
         <Grid.Col span={{ base: 12, md: 8, lg: 9 }}>{plotPaper}</Grid.Col>
 
         {/* Controls & Options Sidebar */}
@@ -293,7 +290,7 @@ export function PlotViewPage() {
                 onClick={toggleFullscreen}
                 fullWidth
               >
-                {isExpanded ? "Exit Fullscreen Mode" : "View Fullscreen Plot"}
+                {isExpanded ? "Exit Fullscreen" : "Fullscreen"}
               </Button>
             </Stack>
           </Paper>
@@ -304,7 +301,7 @@ export function PlotViewPage() {
       <Modal
         opened={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Edit Plot Inputs"
+        title="Edit Inputs"
         centered
       >
         <PlotInputsForm

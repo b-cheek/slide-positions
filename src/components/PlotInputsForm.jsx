@@ -53,13 +53,13 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)}>
       <Stack>
-        <Title order={3}>Plot Inputs</Title>
+        <Title order={3}>Inputs</Title>
 
         <TextInput
           label="Notes"
           withAsterisk
           // TODO: accept other notations?
-          description="The notes to plot in scientific pitch notation"
+          description="Notes in scientific pitch notation"
           placeholder={placeholderInputs.notesString}
           error={errors.notesString?.message}
           {...register("notesString")}

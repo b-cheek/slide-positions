@@ -7,7 +7,7 @@ export function NotFoundPage() {
       <Title order={2}>Page Not Found</Title>
       <Text>The page you requested does not exist.</Text>
       <Button component={Link} to="/">
-        Back to Gallery
+        Back to Library
       </Button>
     </Stack>
   );

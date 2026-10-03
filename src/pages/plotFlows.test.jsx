@@ -52,7 +52,7 @@ function renderWithRouter(initialEntries) {
       {
         path: "/plot",
         loader: plotViewLoader,
-        hydrateFallbackElement: <div>Loading plot...</div>,
+        hydrateFallbackElement: <div>Loading...</div>,
         element: <PlotViewPage />,
         errorElement: <PlotViewErrorBoundary />,
       },
@@ -75,16 +75,16 @@ describe("page rendering", () => {
   it("renders landing page", async () => {
     renderWithRouter(["/"]);
 
-    expect(await screen.findByText("Gallery")).toBeTruthy();
+    expect(await screen.findByText("Library")).toBeTruthy();
   });
 
-  it("renders create plot page", async () => {
+  it("renders create slide positions page", async () => {
     renderWithRouter(["/create"]);
 
     expect(
       // findByText doesn't work since there are two elements with this text
       await screen.findByRole("heading", {
-        name: "Create a Plot",
+        name: "Create Slide Positions",
         level: 1,
       }),
     ).toBeTruthy();
@@ -92,7 +92,7 @@ describe("page rendering", () => {
 });
 
 describe("plot user flows", () => {
-  it("opens an example plot without errors", async () => {
+  it("opens an example visualization without errors", async () => {
     const user = userEvent.setup();
     renderWithRouter(["/"]);
 
@@ -100,22 +100,24 @@ describe("plot user flows", () => {
       screen.getByRole("link", { name: exampleInputs[0].title }),
     );
 
-    expect(await screen.findByText("Slide Positions Plot")).toBeTruthy();
+    expect(await screen.findByText("Slide Positions")).toBeTruthy();
   });
 
-  it("creates a custom plot from create page input", async () => {
+  it("creates custom slide positions from create page input", async () => {
     const user = userEvent.setup();
     renderWithRouter(["/create"]);
 
     const notesInput = screen.getByLabelText(/Notes/);
     await user.clear(notesInput);
     await user.type(notesInput, "Bb2 C3 D4");
-    await user.click(screen.getByRole("button", { name: "Create Plot" }));
+    await user.click(
+      screen.getByRole("button", { name: "View Slide Positions" }),
+    );
 
-    expect(await screen.findByText("Slide Positions Plot")).toBeTruthy();
+    expect(await screen.findByText("Slide Positions")).toBeTruthy();
   });
 
-  it("shows not found page for invalid plot route", async () => {
+  it("shows not found page for invalid visualization route", async () => {
     renderWithRouter(["/plot/not-a-real-plot"]);
 
     expect(await screen.findByText("Page Not Found")).toBeTruthy();
@@ -126,7 +128,7 @@ describe("plot user flows", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: "Invalid Plot Configuration",
+        name: "Invalid Inputs",
       }),
     ).toBeTruthy();
   });

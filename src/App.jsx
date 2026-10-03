@@ -81,7 +81,7 @@ const router = createBrowserRouter([
       {
         path: "/plot",
         loader: plotViewLoader,
-        hydrateFallbackElement: <Text size="sm">Loading plot...</Text>,
+        hydrateFallbackElement: <Text size="sm">Loading...</Text>,
         element: <PlotViewPage />,
         errorElement: <PlotViewErrorBoundary />,
       },

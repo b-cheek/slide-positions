@@ -5,12 +5,10 @@ export function InvalidPlotConfigPage({ message }) {
   // TODO: message
   return (
     <Stack>
-      <Title order={1}>Invalid Plot Configuration</Title>
-      <Text>
-        {message ?? "The custom plot URL is missing or has invalid inputs."}
-      </Text>
+      <Title order={1}>Invalid Inputs</Title>
+      <Text>{message ?? "The URL is missing or has invalid inputs."}</Text>
       <Button component={Link} to="/create" style={{ width: "fit-content" }}>
-        Create a Plot
+        Back to Inputs
       </Button>
     </Stack>
   );

@@ -10,11 +10,11 @@ export function plotViewLoader({ request }) {
   if (!parsedInputs.success) {
     throw new Response(
       // TODO: message
-      "The custom plot URL is missing or has invalid inputs.",
+      "The URL is missing or has invalid inputs.",
       {
         status: 400,
         // TODO: message
-        statusText: "Invalid Plot Configuration",
+        statusText: "Invalid Inputs",
       },
     );
   }

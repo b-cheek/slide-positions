@@ -6,13 +6,13 @@ export function CreatePlotPage() {
     // TODO refactor single note inputs as "advanced" options
     <div>
       <Stack>
-        <Title order={1}>Create a Plot</Title>
+        <Title order={1}>Create Slide Positions</Title>
         <Text>
-          Specify which notes to include and the plot, and optionally include
-          information about your instrument.
+          Choose the notes to include and optionally provide information about
+          your instrument.
         </Text>
 
-        <PlotInputsForm submitLabel="Create Plot" />
+        <PlotInputsForm submitLabel="View Slide Positions" />
       </Stack>
     </div>
   );
