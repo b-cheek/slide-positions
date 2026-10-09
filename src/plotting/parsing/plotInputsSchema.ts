@@ -34,12 +34,12 @@ export const plotInputsRawSchema = z.object({
   lipBendStartNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid lip bend start note format",
-    "Bb1",
+    "Db2",
   ),
   lipBendStopNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid lip bend stop note format",
-    "G1",
+    "Bb1",
   ),
   title: z.string().max(50, "Title must be at most 50 characters").optional(),
 });

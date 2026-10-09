@@ -1,4 +1,11 @@
-import { Anchor, Container, Text, AppShell, Group } from "@mantine/core";
+import {
+  Anchor,
+  Container,
+  Text,
+  AppShell,
+  Group,
+  Button,
+} from "@mantine/core";
 import {
   Outlet,
   RouterProvider,
@@ -12,7 +19,8 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { PlotViewErrorBoundary } from "./pages/PlotViewErrorBoundary";
 import { plotViewLoader } from "./pages/PlotViewLoader";
 import { PlotViewPage } from "./pages/PlotViewPage";
-import { SlidePositionsIcon } from "./components/SlidePositionsIcon";
+import { AboutPage } from "./pages/AboutPage";
+import { SlidePositionsIcon } from "./components/svgIcons/SlidePositionsIcon";
 
 function AppLayout() {
   const navigation = useNavigation();
@@ -21,20 +29,30 @@ function AppLayout() {
     <AppShell header={{ height: 60 }}>
       <AppShell.Header px="md">
         <Group h="100%" justify="space-between">
-          <Group
-            component={Link}
-            to="/"
-            aria-label="Homepage"
-            style={{ textDecoration: "none", color: "inherit" }}
-            gap="xs"
-          >
-            <SlidePositionsIcon
-              size="1.75em"
-              style={{ verticalAlign: "-0.5em" }}
-            />
-            <Text fw={700} size="lg">
-              SlidePositions
-            </Text>
+          <Group h="100%">
+            <Group
+              component={Link}
+              to="/"
+              aria-label="Homepage"
+              style={{ textDecoration: "none", color: "inherit" }}
+              gap="xs"
+            >
+              <SlidePositionsIcon
+                size="1.75em"
+                style={{ verticalAlign: "-0.5em" }}
+              />
+              <Text fw={700} size="lg">
+                SlidePositions
+              </Text>
+            </Group>
+          </Group>
+          <Group h="100%" justify="flex-end">
+            <Button variant="subtle" component={Link} to="/">
+              Library
+            </Button>
+            <Button variant="subtle" component={Link} to="/about">
+              About
+            </Button>
           </Group>
         </Group>
       </AppShell.Header>
@@ -86,6 +104,7 @@ const router = createBrowserRouter([
         errorElement: <PlotViewErrorBoundary />,
       },
       { path: "/create", element: <CreatePlotPage /> },
+      { path: "/about", element: <AboutPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

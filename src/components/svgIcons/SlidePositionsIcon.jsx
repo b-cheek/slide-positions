@@ -37,3 +37,5 @@ export function SlidePositionsIcon({ size = 100, style = {} }) {
     </svg>
   );
 }
+
+export default SlidePositionsIcon;

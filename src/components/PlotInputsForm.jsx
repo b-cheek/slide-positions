@@ -2,19 +2,24 @@ import React from "react";
 import {
   Accordion,
   Button,
+  Blockquote,
   Stack,
-  Text,
   TextInput,
   Title,
   Center,
+  Group,
+  Code,
+  useComputedColorScheme,
 } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "react-router";
-import { useNavigate } from "react-router";
+import { useSearchParams, useNavigate } from "react-router";
 import { plotInputsRawSchema } from "../plotting/parsing/plotInputsSchema";
 import { placeholderInputs } from "../plotting/presets/examplePlotInputs";
 import { readPlotInputRawValues } from "../plotting/parsing/utils";
+import InfoPopover from "./InfoPopover";
+import InfoIcon from "./svgIcons/InfoIcon";
+import InputsHelpModal from "./InputsHelpModal";
 
 export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
   const [searchParams] = useSearchParams();
@@ -50,10 +55,16 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
     resolver: zodResolver(plotInputsRawSchema),
   });
 
+  const isDark = useComputedColorScheme() === "dark";
+  const codeColor = isDark ? "var(--mantine-color-gray-8)" : undefined;
+
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)}>
-      <Stack>
-        <Title order={3}>Inputs</Title>
+      <Stack spacing="md">
+        <Group position="apart" align="center">
+          <Title order={3}>Inputs</Title>
+          <InputsHelpModal />
+        </Group>
 
         <TextInput
           label="Notes"
@@ -62,14 +73,31 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
           description="Notes in scientific pitch notation"
           placeholder={placeholderInputs.notesString}
           error={errors.notesString?.message}
+          rightSection={
+            <InfoPopover label="About notes input">
+              Ranges are supported using a{" "}
+              {/* code color to work in both light and dark mode */}
+              <Code color={codeColor}>start-end</Code> syntax. This works for
+              ascending or descending. You can specify a key in parentheses
+              after to include only notes in that major key:{" "}
+              <Code color={codeColor}>start-end(key)</Code>.
+            </InfoPopover>
+          }
           {...register("notesString")}
         />
 
         <TextInput
           label="Tuning(s) (optional)"
-          description="The first fundamental pitch* of the instrument for each tuning"
+          description="The first fundamental pitch of the instrument for each tuning"
           placeholder={placeholderInputs.valvesString}
           error={errors.valvesString?.message}
+          rightSection={
+            <InfoPopover label="About tuning defaults">
+              Defaults to octave 1 in line with typical Bb, F, Gb, D tunings.
+              Otherwise specify in scientific notation, like Eb2 for alto
+              trombone.
+            </InfoPopover>
+          }
           {...register("valvesString")}
         />
 
@@ -86,6 +114,14 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
 
             <Accordion.Panel>
               <Stack>
+                <Blockquote mt="sm" icon={<InfoIcon />}>
+                  The following two inputs define the length of your slide, and
+                  where you keep first position. It is important for this
+                  measurement that you play in the open tuning of your
+                  instrument, in a partial that starts with that note. For a Bb
+                  trombone for example, play any of the partials Bb to E in any
+                  octave.
+                </Blockquote>
                 <TextInput
                   label="Top Slide Note (optional)"
                   description="The note when the slide is all the way in"
@@ -102,6 +138,14 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
                   {...register("bottomSlideNote")}
                 />
 
+                <Blockquote mt="md" icon={<InfoIcon />}>
+                  The last two inputs define the range of your lip bend. Since
+                  this is tracked in frequency rather than pitch, it should
+                  scale somewhat appropriately between low and high registers,
+                  but measure this in a register you are most likely to bend.
+                  Lip bends are only presented when there is no available
+                  position without lip bending.
+                </Blockquote>
                 <TextInput
                   label="Lip Bend Start Note (optional)"
                   description="The note you are starting the lip bend from"
@@ -130,10 +174,6 @@ export function PlotInputsForm({ onSubmit, submitLabel = "Submit" }) {
             {submitLabel}
           </Button>
         </Center>
-        <Text order={3} size="sm" color="dimmed">
-          * Defaulting to octave 1 in line with typical Bb, F, Gb, D tunings.
-          Otherwise specify in scientific notation, like Eb2 for alto trombone.
-        </Text>
       </Stack>
     </form>
   );
