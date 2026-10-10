@@ -23,7 +23,7 @@ export const plotInputsRawSchema = z.object({
   topSlideNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,
     "Invalid top slide note format",
-    "Bb1+5",
+    "Bb1+15",
   ),
   bottomSlideNote: optionalStringWithDefault(
     SINGLE_NOTE_REGEX,

@@ -1,5 +1,6 @@
 import type { PlotModel } from "../../parsing/utils";
 import { getNoteConfigs, getViterbiSlidePath } from "./slideCalculation";
+import { ACTIVE_WEIGHTS } from "../types/weights";
 
 export function getSheetMusicNotes(model: PlotModel) {
   const configsByNote = model.notes.map((note) =>
@@ -9,6 +10,7 @@ export function getSheetMusicNotes(model: PlotModel) {
     configsByNote.flat(),
     model.player,
     model.trombone,
+    ACTIVE_WEIGHTS,
   );
   const optimalConfigByNote = new Map(
     optimalPath.map((config) => [config.note, config]),

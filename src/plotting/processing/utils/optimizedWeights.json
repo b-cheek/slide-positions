@@ -1,0 +1,14 @@
+{
+  "lipBendCentsCost": 0.13807963106091484,
+  "slideDistanceCost": 0.3406173361847519,
+  "slideProportionCost": 0.8378511785471499,
+  "tuningCost": 1.0539302182558987,
+  "partialChangeCost": 0.16728631977401354,
+  "slideDistanceChangeCost": 1.026186174920441,
+  "slideProportionChangeCost": 5.733864757905163,
+  "directionChangeCost": 0.10265001349650182,
+  "velocityChangeCost": 0.1286296831268896,
+  "slideDistanceRangeRelativeCost": 0.015403361733189447,
+  "slideProportionRangeRelativeCost": 0.024156589177911938,
+  "tuningRangeRelativeCost": 0.044367626225187626
+}

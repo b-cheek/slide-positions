@@ -5,6 +5,7 @@ import { Trombone } from "../types/trombone";
 import { Tuning } from "../types/tuning";
 import { Hertz, Meters } from "../..";
 import { getNoteConfigs, getViterbiSlidePath } from "./slideCalculation";
+import { ACTIVE_WEIGHTS } from "../types/weights";
 
 describe("getNoteConfigs", () => {
   // Test defaults (Bb trombone 7 slide pos, no lip bend or first pos distance)
@@ -314,7 +315,9 @@ describe("getNoteConfigs", () => {
 
 describe("getViterbiSlidePath", () => {
   it("returns an empty path when there are no note configurations", () => {
-    expect(getViterbiSlidePath([], new Player(), new Trombone())).toEqual([]);
+    expect(
+      getViterbiSlidePath([], new Player(), new Trombone(), ACTIVE_WEIGHTS),
+    ).toEqual([]);
   });
 
   it("prefers a smoother slide transition even if the local emission cost is worse", () => {
@@ -333,6 +336,7 @@ describe("getViterbiSlidePath", () => {
       noteConfigs,
       playerWithLipBend,
       tromboneBbF,
+      ACTIVE_WEIGHTS,
     );
 
     expect(path).toHaveLength(2);

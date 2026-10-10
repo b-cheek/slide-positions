@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "optimize:weights": "vitest run src/plotting/processing/utils/weightOptimization.test.ts",
     "test:watch": "vitest",
     "preview": "vite preview",
     "prepare": "husky"

@@ -4,6 +4,7 @@ import { freqToLength, lengthToFreq } from "./physics";
 import { Trombone } from "../types/trombone";
 import { Meters, Hertz, Cents } from "../types/constants";
 import { Note } from "../types/note";
+import type { Weights } from "../types/weights";
 
 export function getNoteConfigs(
   trombone: Trombone,
@@ -89,27 +90,11 @@ export function getNoteConfigs(
   );
 }
 
-// emission cost weights
-const LIP_BEND_CENTS_COST = 0.1; // per cent of lip bend
-const SLIDE_DISTANCE_COST = 1; // multiplied by slide distance in meters (0-0.7m for standard tenor trombone)
-const TUNING_COST = 0.5; // multiplied by tuning index in user-defined order (0-1 for standard tenor trombone)
-
-// transition cost weights
-const PARTIAL_CHANGE_COST = 0.25; // * partial delta
-const SLIDE_DISTANCE_CHANGE_COST = 2; // * abs slide distance delta
-const DIRECTION_CHANGE_COST = 0; // added if direction changes
-const VELOCITY_CHANGE_COST = 1; // * abs(velocity delta)
-
-// TODO:
-// Make user configurable
-// speed dependent?
-// tuning delta, but depends on configuration
-// and probably much more. AI model?
-
 export function getViterbiSlidePath(
   noteConfigs: NoteConfiguration[],
   player: Player,
   trombone: Trombone,
+  weights: Weights,
 ): NoteConfiguration[] {
   // Group contiguous configs by note occurrence order
   const groups: NoteConfiguration[][] = [];
@@ -124,29 +109,35 @@ export function getViterbiSlidePath(
 
   if (groups.length === 0) return [];
 
-  // Edge case: Only 1 note group (no transitions possible)
-  if (groups.length === 1) {
-    return [
-      groups[0].reduce((best, cur) =>
-        emissionCost(cur, trombone) < emissionCost(best, trombone) ? cur : best,
-      ),
-    ];
-  }
-
   // Cost functions
-  const emissionCost = (cfg: NoteConfiguration, tb: Trombone) => {
+  const emissionCost = (
+    cfg: NoteConfiguration,
+    tb: Trombone,
+    pathWeights: Weights,
+  ) => {
     const lipBendPenalty = Math.abs(cfg.lipBendCents);
     const tuningIndex = tb.tunings.indexOf(cfg.tuning);
     return (
-      lipBendPenalty * LIP_BEND_CENTS_COST +
-      cfg.slideDistance * SLIDE_DISTANCE_COST +
-      tuningIndex * TUNING_COST
+      lipBendPenalty * pathWeights.lipBendCentsCost +
+      cfg.slideDistance *
+        pathWeights.slideDistanceCost *
+        pathWeights.slideDistanceRangeRelativeCost *
+        cfg.note.midiNum +
+      (cfg.slideDistance / tb.slideLength) *
+        pathWeights.slideProportionCost *
+        pathWeights.slideProportionRangeRelativeCost *
+        cfg.note.midiNum +
+      tuningIndex *
+        pathWeights.tuningCost *
+        pathWeights.tuningRangeRelativeCost *
+        cfg.note.midiNum
     );
   };
 
   const transitionCost = (
     from: NoteConfiguration,
     to: NoteConfiguration,
+    pathWeights: Weights,
     prevFrom?: NoteConfiguration,
   ) => {
     const slideDelta = Math.abs(to.slideDistance - from.slideDistance);
@@ -162,17 +153,34 @@ export function getViterbiSlidePath(
 
       // If signs are opposite (e.g., out-then-in or in-then-out), product is negative
       if (delta1 * delta2 < 0) {
-        directionPenalty = DIRECTION_CHANGE_COST;
+        directionPenalty = pathWeights.directionChangeCost;
       }
     }
 
     return (
-      slideDelta * SLIDE_DISTANCE_CHANGE_COST +
-      partialDelta * PARTIAL_CHANGE_COST +
-      velocityDelta * VELOCITY_CHANGE_COST +
+      slideDelta * pathWeights.slideDistanceChangeCost +
+      Math.abs(
+        to.slideDistance / trombone.slideLength -
+          from.slideDistance / trombone.slideLength,
+      ) *
+        pathWeights.slideProportionChangeCost +
+      partialDelta * pathWeights.partialChangeCost +
+      velocityDelta * pathWeights.velocityChangeCost +
       directionPenalty
     );
   };
+
+  // Edge case: Only 1 note group (no transitions possible)
+  if (groups.length === 1) {
+    return [
+      groups[0].reduce((best, cur) =>
+        emissionCost(cur, trombone, weights) <
+        emissionCost(best, trombone, weights)
+          ? cur
+          : best,
+      ),
+    ];
+  }
 
   // 2nd-Order Viterbi DP Tables
   // dp[t][i][j] = min cost ending at groups[t-1][i] -> groups[t][j]
@@ -186,13 +194,13 @@ export function getViterbiSlidePath(
   for (let i = 0; i < groups[0].length; i++) {
     dp[1][i] = [];
     backpointer[1][i] = [];
-    const eCost0 = emissionCost(groups[0][i], trombone);
+    const eCost0 = emissionCost(groups[0][i], trombone, weights);
 
     for (let j = 0; j < groups[1].length; j++) {
-      const eCost1 = emissionCost(groups[1][j], trombone);
-      // No direction change possible on the very first transition
+      const eCost1 = emissionCost(groups[1][j], trombone, weights);
+      // No direction change is possible on the first transition, so omit prevFrom.
       dp[1][i][j] =
-        eCost0 + transitionCost(groups[0][i], groups[1][j]) + eCost1;
+        eCost0 + transitionCost(groups[0][i], groups[1][j], weights) + eCost1;
       backpointer[1][i][j] = -1;
     }
   }
@@ -210,14 +218,14 @@ export function getViterbiSlidePath(
 
       for (let j = 0; j < groups[t].length; j++) {
         const toCfg = groups[t][j];
-        const eCost = emissionCost(toCfg, trombone);
+        const eCost = emissionCost(toCfg, trombone, weights);
 
         // Test all possible preceding states 'k' from step t-2
         for (let k = 0; k < groups[t - 2].length; k++) {
           const prevFromCfg = groups[t - 2][k];
           const cost =
             dp[t - 1][k][i] +
-            transitionCost(fromCfg, toCfg, prevFromCfg) +
+            transitionCost(fromCfg, toCfg, weights, prevFromCfg) +
             eCost;
 
           if (cost < dp[t][i][j]) {

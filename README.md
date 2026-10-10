@@ -1,5 +1,39 @@
 # React + Vite
 
+## Optimizing slide-path weights
+
+The slide-path calculation requires a `Weights` value. The current behavior is
+available as `REFERENCE_WEIGHTS`. Application callers use the centralized
+`ACTIVE_WEIGHTS` variable in `src/plotting/processing/types/weights.ts`, which
+can be switched to another exported weight set.
+
+To search for weights that produce editable ideal outputs, update
+`IDEAL_CASES` and `REFERENCE_WEIGHT_RANGES` in
+`src/plotting/processing/utils/weightOptimization.ts`, then run:
+
+```sh
+npm run optimize:weights
+```
+
+Each ideal case specifies raw parsed plot inputs such as `notesString` and
+`valvesString`, plus the expected note, partial, tuning, and optionally slide
+position for each selected output. The command randomly tries weights within
+the configured ranges, up to its attempt limit. It retains the best candidate
+using a lexicographic score: wrong, missing, or extra path entries first;
+partial/tuning mismatches second; and slide-position error third. It prints the
+candidate weights, score, and per-case mismatches. This makes incorrect or
+incompatible golden cases diagnosable instead of producing only a generic
+failure.
+
+The command also writes the selected best candidate to
+`src/plotting/processing/utils/optimizedWeights.json`. The application imports
+that file for `OPTIMIZED_WEIGHTS`, so running the command automatically updates
+the optimized set used when `ACTIVE_WEIGHTS` points to it.
+
+The optimizer has a strict mode in its API for workflows that require an exact
+solution. Best-effort mode is useful while developing cases because it returns
+the closest candidate even when no exact set exists.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

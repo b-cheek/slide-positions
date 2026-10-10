@@ -7,6 +7,7 @@ import {
   getNoteConfigs,
   getViterbiSlidePath,
 } from "../plotting/processing/utils/slideCalculation";
+import { ACTIVE_WEIGHTS } from "../plotting/processing/types/weights";
 
 type NoteConfig = ReturnType<typeof getNoteConfigs>[number];
 type Group = d3.Selection<SVGGElement, unknown, null, undefined>;
@@ -101,6 +102,7 @@ export function D3ScatterPlot({
         noteConfigs,
         model.player,
         model.trombone,
+        ACTIVE_WEIGHTS,
       );
       const animate = !wasPathVisible.current;
       renderOptimalPath(ctx, pathLayer, path, animate);

@@ -320,9 +320,12 @@ describe("D3ScatterPlot hover", () => {
     const hoverLayer = container.querySelector("g.points rect");
     expect(hoverLayer).toBeTruthy();
 
-    // Get the point using the F attachment
-    const point = Array.from(container.querySelectorAll("circle")).find(
-      (circle) => Number(circle.getAttribute("cx")) < 10,
+    // The F-attachment configuration is the leftmost visible point.
+    const point = Array.from(container.querySelectorAll("circle.point")).reduce(
+      (leftmost, circle) =>
+        Number(circle.getAttribute("cx")) < Number(leftmost.getAttribute("cx"))
+          ? circle
+          : leftmost,
     );
     const cx = Number(point?.getAttribute("cx"));
     const cy = Number(point?.getAttribute("cy"));
