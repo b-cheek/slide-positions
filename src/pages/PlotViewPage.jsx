@@ -11,10 +11,12 @@ import {
   Paper,
   Divider,
   Grid,
+  NumberInput,
   Text,
   Tooltip,
   ActionIcon,
   SegmentedControl,
+  Input,
 } from "@mantine/core";
 import { useElementSize, useFullscreenElement } from "@mantine/hooks";
 
@@ -23,6 +25,10 @@ import { VerovioSheetMusic } from "../components/VerovioSheetMusic";
 import { ShareButton } from "../components/ShareButton";
 import PlotInputsForm from "../components/PlotInputsForm";
 import { buildPlotModel } from "../plotting/parsing/utils";
+import { QuarterNoteIcon } from "../components/svgIcons/QuarterNoteIcon";
+import { SixteenthNotesIcon } from "../components/svgIcons/SixteenthNotesIcon";
+import { EighthNotesIcon } from "../components/svgIcons/EighthNotesIcon";
+import { EighthNoteTripletIcon } from "../components/svgIcons/EighthNoteTripletIcon";
 
 /**
  * Detects whether the browser actually supports the native Fullscreen API.
@@ -149,6 +155,8 @@ export function PlotViewPage() {
       renderMode: searchParams.get("renderMode") === "chart" ? "chart" : "plot",
       showNoteLabels: searchParams.get("showNoteLabels") === "true",
       showOptimalSlidePath: searchParams.get("showOptimalSlidePath") === "true",
+      tempo: Number(searchParams.get("tempo")) || 120,
+      subdivision: searchParams.get("subdivision") ?? "quarter",
     }),
     [searchParams],
   );
@@ -166,6 +174,18 @@ export function PlotViewPage() {
   const handleRenderModeChange = (renderMode) => {
     const next = new URLSearchParams(searchParams);
     next.set("renderMode", renderMode);
+    setSearchParams(next);
+  };
+
+  const handleTempoChange = (tempo) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tempo", tempo);
+    setSearchParams(next);
+  };
+
+  const handleSubdivisionChange = (subdivision) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("subdivision", subdivision);
     setSearchParams(next);
   };
 
@@ -254,33 +274,81 @@ export function PlotViewPage() {
               />
 
               {viewOptions.renderMode === "plot" && (
-                <>
-                  <Checkbox
-                    name="showNoteLabels"
-                    label="Note Names"
-                    description="Labels on data points"
-                    checked={viewOptions.showNoteLabels}
-                    onChange={handleViewOptionToggle}
-                  />
-                  <Checkbox
-                    name="showOptimalSlidePath"
-                    label="Optimal Slide Path"
-                    description="Show arrows to indicate efficient slide movements"
-                    checked={viewOptions.showOptimalSlidePath}
-                    onChange={handleViewOptionToggle}
-                  />
-                </>
-              )}
-
-              {viewOptions.renderMode === "chart" && (
                 <Checkbox
-                  name="showOptimalSlidePath"
-                  label="Optimal Slide Path"
-                  description="Highlight positions for efficient slide movements"
-                  checked={viewOptions.showOptimalSlidePath}
+                  name="showNoteLabels"
+                  label="Note Names"
+                  description="Labels on data points"
+                  checked={viewOptions.showNoteLabels}
                   onChange={handleViewOptionToggle}
                 />
               )}
+
+              {/* Optimal slide path + its dependent settings, grouped together */}
+              <Stack gap="xs">
+                <Checkbox
+                  name="showOptimalSlidePath"
+                  label="Optimal Slide Path"
+                  description={
+                    viewOptions.renderMode === "plot"
+                      ? "Show arrows to indicate efficient slide movements"
+                      : "Highlight positions for efficient slide movements"
+                  }
+                  checked={viewOptions.showOptimalSlidePath}
+                  onChange={handleViewOptionToggle}
+                />
+
+                {viewOptions.showOptimalSlidePath && (
+                  <Stack
+                    gap="sm"
+                    pl="md"
+                    ml={10}
+                    style={{
+                      borderLeft:
+                        "2px solid var(--mantine-color-default-border)",
+                    }}
+                  >
+                    <NumberInput
+                      label="Tempo"
+                      description="Set the tempo for the slide movements"
+                      value={viewOptions.tempo}
+                      onChange={handleTempoChange}
+                      min={40}
+                      max={240}
+                      step={1}
+                    />
+
+                    <Input.Wrapper
+                      label="Subdivision"
+                      description="Select the note subdivision for the slide movements"
+                    >
+                      <SegmentedControl
+                        aria-label="Subdivision"
+                        value={viewOptions.subdivision}
+                        onChange={handleSubdivisionChange}
+                        data={[
+                          { label: <QuarterNoteIcon />, value: "quarter" },
+                          { label: <EighthNotesIcon />, value: "eighth" },
+                          {
+                            label: <EighthNoteTripletIcon />,
+                            value: "eighth-triplet",
+                          },
+                          { label: <SixteenthNotesIcon />, value: "sixteenth" },
+                        ]}
+                        mt={5}
+                        withItemsBorders={false}
+                        styles={{
+                          root: {
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "4px",
+                          },
+                          control: { flex: "1 0 calc(50% - 4px)" },
+                        }}
+                      />
+                    </Input.Wrapper>
+                  </Stack>
+                )}
+              </Stack>
 
               <Divider my="xs" />
 
