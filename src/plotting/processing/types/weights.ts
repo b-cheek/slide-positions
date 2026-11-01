@@ -12,6 +12,8 @@ export interface Weights {
   slideDistanceRangeRelativeCost: number;
   slideProportionRangeRelativeCost: number;
   tuningRangeRelativeCost: number;
+  tuningChangeCost: number;
+  tempoRelativeCost: number;
 }
 
 import optimizedWeights from "../utils/optimizedWeights.json";
@@ -23,9 +25,11 @@ export const SLIDE_DISTANCE_COST = 0; // multiplied by slide distance in meters 
 export const SLIDE_PROPORTION_COST = 1; // multiplied by slide proportion (slide distance / max slide length)
 export const TUNING_COST = 0.5; // multiplied by tuning index in user-defined order (0-1 for standard tenor trombone)
 // range relative factors (farther out slide is more acceptable in lower ranges)
-export const SLIDE_DISTANCE_RANGE_RELATIVE_COST = 0.01; // multiplied by slide distance range relative factor
-export const SLIDE_PROPORTION_RANGE_RELATIVE_COST = 0.01; // multiplied by slide proportion range relative factor
-export const TUNING_RANGE_RELATIVE_COST = 0.01; // multiplied by tuning range relative factor
+export const SLIDE_DISTANCE_RANGE_RELATIVE_COST = 0.01; // multiplied by midi num applied to slide distance cost
+export const SLIDE_PROPORTION_RANGE_RELATIVE_COST = 0.01; // multiplied by midi num applied to slide proportion cost
+export const TUNING_RANGE_RELATIVE_COST = 0.01; // multiplied by midi num applied to tuning cost
+export const TEMPO_RELATIVE_COST = 0.01; // multiplied by tempo applied (directly or inversely) to various costs
+// we probably should have individual relative costs like we do for range, but at that point may warrant gradient descent
 
 // transition cost weights
 export const PARTIAL_CHANGE_COST = 0.25; // * partial delta
@@ -33,6 +37,7 @@ export const SLIDE_DISTANCE_CHANGE_COST = 0; // * abs slide distance delta
 export const SLIDE_PROPORTION_CHANGE_COST = 2; // * abs(slide proportion delta)
 export const DIRECTION_CHANGE_COST = 0; // added if direction changes
 export const VELOCITY_CHANGE_COST = 1; // * abs(velocity delta)
+export const TUNING_CHANGE_COST = 0.1; // added if tuning changes
 
 // TODO:
 // Make user configurable
@@ -54,6 +59,8 @@ export const REFERENCE_WEIGHTS: Weights = {
   slideDistanceRangeRelativeCost: SLIDE_DISTANCE_RANGE_RELATIVE_COST,
   slideProportionRangeRelativeCost: SLIDE_PROPORTION_RANGE_RELATIVE_COST,
   tuningRangeRelativeCost: TUNING_RANGE_RELATIVE_COST,
+  tuningChangeCost: TUNING_CHANGE_COST,
+  tempoRelativeCost: TEMPO_RELATIVE_COST,
 };
 
 export const OPTIMIZED_WEIGHTS: Weights = optimizedWeights;

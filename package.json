@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "optimize:weights": "vitest run src/plotting/processing/utils/weightOptimization.test.ts",
+    "optimize:weights": "tsx scripts/optimize-weights.ts",
     "test:watch": "vitest",
     "preview": "vite preview",
     "prepare": "husky"
@@ -46,6 +46,7 @@
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "^5.9.3",
+    "tsx": "^4.23.15",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.4",
     "vitest": "^4.1.4",

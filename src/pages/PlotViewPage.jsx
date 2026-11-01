@@ -155,7 +155,7 @@ export function PlotViewPage() {
       renderMode: searchParams.get("renderMode") === "chart" ? "chart" : "plot",
       showNoteLabels: searchParams.get("showNoteLabels") === "true",
       showOptimalSlidePath: searchParams.get("showOptimalSlidePath") === "true",
-      tempo: Number(searchParams.get("tempo")) || 120,
+      tempo: searchParams.get("tempo") ?? 120,
       subdivision: searchParams.get("subdivision") ?? "quarter",
     }),
     [searchParams],
@@ -219,7 +219,7 @@ export function PlotViewPage() {
               model={model}
               width={width}
               height={height}
-              showOptimalSlidePath={viewOptions.showOptimalSlidePath}
+              viewOptions={viewOptions}
             />
           ) : (
             <D3ScatterPlot
@@ -312,8 +312,8 @@ export function PlotViewPage() {
                       description="Set the tempo for the slide movements"
                       value={viewOptions.tempo}
                       onChange={handleTempoChange}
-                      min={40}
-                      max={240}
+                      min={30}
+                      max={360}
                       step={1}
                     />
 

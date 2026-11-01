@@ -5,3 +5,10 @@ declare module "node:fs" {
     encoding: "utf8",
   ): void;
 }
+
+declare module "node:process" {
+  export const stdout: {
+    isTTY?: boolean;
+    write(message: string): void;
+  };
+}

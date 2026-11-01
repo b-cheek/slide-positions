@@ -3,6 +3,7 @@ import {
   type RawPlotInputs,
 } from "../../parsing/plotInputsSchema";
 import { writeFileSync } from "node:fs";
+import { stdout } from "node:process";
 import { buildPlotModel } from "../../parsing/utils";
 import type { Weights } from "../types/weights";
 import { getNoteConfigs, getViterbiSlidePath } from "./slideCalculation";
@@ -20,6 +21,7 @@ export interface IdealOutput {
 
 export interface IdealCase {
   name: string;
+  tempo?: number;
   inputs: Pick<RawPlotInputs, "notesString"> &
     Partial<Omit<RawPlotInputs, "notesString">>;
   expected: IdealOutput[];
@@ -65,6 +67,8 @@ export const REFERENCE_WEIGHT_RANGES: WeightRanges = {
   slideDistanceRangeRelativeCost: { min: 0, max: 0.05 },
   slideProportionRangeRelativeCost: { min: 0, max: 0.05 },
   tuningRangeRelativeCost: { min: 0, max: 0.15 },
+  tuningChangeCost: { min: 0, max: 1 },
+  tempoRelativeCost: { min: 0, max: 0.05 },
 };
 
 function randomWeight(ranges: WeightRanges): Weights {
@@ -96,6 +100,7 @@ export function evaluateIdealCase(
     model.player,
     model.trombone,
     weights,
+    idealCase.tempo ?? 120,
   );
   const actual = path.map((config) => ({
     note: config.note.name,
@@ -188,6 +193,28 @@ export function findWeights(
   ranges: WeightRanges,
   options: FindWeightsOptions,
 ): WeightOptimizationResult {
+  const showProgress = stdout.isTTY === true;
+  const progressBarWidth = 30;
+  const writeProgress = (
+    attempt: number,
+    bestResult?: WeightOptimizationResult,
+  ) => {
+    if (!showProgress) return;
+    const completed = Math.floor(
+      (attempt / options.maxAttempts) * progressBarWidth,
+    );
+    const progressBar = `${"=".repeat(completed)}${" ".repeat(
+      progressBarWidth - completed,
+    )}`;
+    stdout.write(
+      `\r[${progressBar}] ${attempt}/${options.maxAttempts} attempts` +
+        ` | best: ${bestResult ? bestResult.score.join(", ") : "N/A"}`,
+    );
+  };
+  const finishProgress = () => {
+    if (showProgress) stdout.write("\n");
+  };
+
   let bestResult: WeightOptimizationResult | undefined;
   for (let attempt = 1; attempt <= options.maxAttempts; attempt++) {
     const weights = randomWeight(ranges);
@@ -195,15 +222,24 @@ export function findWeights(
     if (!bestResult || compareScores(result.score, bestResult.score) < 0) {
       bestResult = result;
     }
-    if (result.allCasesMatch) return result;
+    if (attempt % 1000 === 0 || result.allCasesMatch) {
+      writeProgress(attempt, bestResult);
+    }
+    if (result.allCasesMatch) {
+      finishProgress();
+      return result;
+    }
   }
 
   if (!bestResult) {
+    finishProgress();
     throw new Error(`No weight candidates were evaluated.`);
   }
   if (options.strict) {
+    finishProgress();
     throw new Error(formatOptimizationResult(bestResult));
   }
+  finishProgress();
   return bestResult;
 }
 

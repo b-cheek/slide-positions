@@ -7,9 +7,6 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    exclude: [
-      ...configDefaults.exclude,
-      "src/plotting/processing/utils/weightOptimization.test.ts",
-    ],
+    exclude: [...configDefaults.exclude],
   },
 });

@@ -316,7 +316,13 @@ describe("getNoteConfigs", () => {
 describe("getViterbiSlidePath", () => {
   it("returns an empty path when there are no note configurations", () => {
     expect(
-      getViterbiSlidePath([], new Player(), new Trombone(), ACTIVE_WEIGHTS),
+      getViterbiSlidePath(
+        [],
+        new Player(),
+        new Trombone(),
+        ACTIVE_WEIGHTS,
+        120,
+      ),
     ).toEqual([]);
   });
 
@@ -337,6 +343,7 @@ describe("getViterbiSlidePath", () => {
       playerWithLipBend,
       tromboneBbF,
       ACTIVE_WEIGHTS,
+      120,
     );
 
     expect(path).toHaveLength(2);

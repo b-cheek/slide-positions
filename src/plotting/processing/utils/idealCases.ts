@@ -104,6 +104,91 @@ const IDEAL_CASES: IdealCase[] = [
     ],
   },
   {
+    name: "Bb/F B2-B3(B)",
+    inputs: {
+      notesString: "B2-B3(B)",
+      valvesString: "Bb/F",
+    },
+    expected: [
+      { note: "B2", partial: 3, tuningName: "F tuning" },
+      { note: "Db3", partial: 3, tuningName: "Bb tuning" },
+      { note: "Eb3", partial: 3, tuningName: "Bb tuning" },
+      { note: "E3", partial: 3, tuningName: "Bb tuning" },
+      { note: "Gb3", partial: 4, tuningName: "Bb tuning" },
+      { note: "Ab3", partial: 4, tuningName: "Bb tuning" },
+      { note: "Bb3", partial: 5, tuningName: "Bb tuning" },
+      { note: "B3", partial: 5, tuningName: "Bb tuning" },
+    ],
+  },
+  {
+    name: "Bb/F C3-C4(C)",
+    inputs: {
+      notesString: "C3-C4(C)",
+      valvesString: "Bb/F",
+    },
+    expected: [
+      { note: "C3", partial: 3, tuningName: "F tuning" },
+      { note: "D3", partial: 3, tuningName: "Bb tuning" },
+      { note: "E3", partial: 3, tuningName: "Bb tuning" },
+      { note: "F3", partial: 3, tuningName: "Bb tuning" },
+      { note: "G3", partial: 4, tuningName: "Bb tuning" },
+      { note: "A3", partial: 4, tuningName: "Bb tuning" },
+      { note: "B3", partial: 5, tuningName: "Bb tuning" },
+      { note: "C4", partial: 5, tuningName: "Bb tuning" },
+    ],
+  },
+  {
+    name: "Bb/F Db3-Db4(Db)",
+    inputs: {
+      notesString: "Db3-Db4(Db)",
+      valvesString: "Bb/F",
+    },
+    expected: [
+      { note: "Db3", partial: 3, tuningName: "Bb tuning" },
+      { note: "Eb3", partial: 3, tuningName: "Bb tuning" },
+      { note: "F3", partial: 4, tuningName: "Bb tuning" },
+      { note: "Gb3", partial: 4, tuningName: "Bb tuning" },
+      { note: "Ab3", partial: 4, tuningName: "Bb tuning" },
+      { note: "Bb3", partial: 4, tuningName: "Bb tuning" },
+      { note: "C4", partial: 5, tuningName: "Bb tuning" },
+      { note: "Db4", partial: 5, tuningName: "Bb tuning" },
+    ],
+  },
+  {
+    name: "Bb/F D3-D4(D)",
+    inputs: {
+      notesString: "D3-D4(D)",
+      valvesString: "Bb/F",
+    },
+    expected: [
+      { note: "D3", partial: 3, tuningName: "Bb tuning" },
+      { note: "E3", partial: 3, tuningName: "Bb tuning" },
+      { note: "Gb3", partial: 4, tuningName: "Bb tuning" },
+      { note: "G3", partial: 4, tuningName: "Bb tuning" },
+      { note: "A3", partial: 4, tuningName: "Bb tuning" },
+      { note: "B3", partial: 5, tuningName: "Bb tuning" },
+      { note: "Db4", partial: 5, tuningName: "Bb tuning" },
+      { note: "D4", partial: 5, tuningName: "Bb tuning" },
+    ],
+  },
+  {
+    name: "Bb/F E3-E4(E)",
+    inputs: {
+      notesString: "E3-E4(E)",
+      valvesString: "Bb/F",
+    },
+    expected: [
+      { note: "E3", partial: 3, tuningName: "Bb tuning" },
+      { note: "Gb3", partial: 4, tuningName: "Bb tuning" },
+      { note: "Ab3", partial: 4, tuningName: "Bb tuning" },
+      { note: "A3", partial: 4, tuningName: "Bb tuning" },
+      { note: "B3", partial: 5, tuningName: "Bb tuning" },
+      { note: "Db4", partial: 5, tuningName: "Bb tuning" },
+      { note: "Eb4", partial: 6, tuningName: "Bb tuning" },
+      { note: "E4", partial: 6, tuningName: "Bb tuning" },
+    ],
+  },
+  {
     name: "Bb/F F3-F4(F)",
     inputs: {
       notesString: "F3-F4(F)",
@@ -137,5 +222,30 @@ const IDEAL_CASES: IdealCase[] = [
       { note: "Bb4", partial: 8, tuningName: "Bb tuning" },
     ],
   },
+  // {
+  //   name: "Bb/F Fast Bb3-Bb4(Bb) Bb4-Bb3(Bb)",
+  //   tempo: 1000,
+  //   inputs: {
+  //     notesString: "Bb3-Bb4(Bb) Bb4-Bb3(Bb)",
+  //     valvesString: "Bb/F",
+  //   },
+  //   expected: [
+  //     { note: "Bb3", partial: 4, tuningName: "Bb tuning" },
+  //     { note: "C4", partial: 5, tuningName: "Bb tuning" },
+  //     { note: "D4", partial: 6, tuningName: "Bb tuning" },
+  //     { note: "Eb4", partial: 7, tuningName: "Bb tuning" },
+  //     { note: "F4", partial: 8, tuningName: "Bb tuning" },
+  //     { note: "G4", partial: 9, tuningName: "Bb tuning" },
+  //     { note: "A4", partial: 10, tuningName: "Bb tuning" },
+  //     { note: "Bb4", partial: 11, tuningName: "Bb tuning" },
+  //     { note: "A4", partial: 10, tuningName: "Bb tuning" },
+  //     { note: "G4", partial: 9, tuningName: "Bb tuning" },
+  //     { note: "F4", partial: 8, tuningName: "Bb tuning" },
+  //     { note: "Eb4", partial: 7, tuningName: "Bb tuning" },
+  //     { note: "D4", partial: 6, tuningName: "Bb tuning" },
+  //     { note: "C4", partial: 5, tuningName: "Bb tuning" },
+  //     { note: "Bb3", partial: 4, tuningName: "Bb tuning" },
+  //   ],
+  // },
 ];
 export default IDEAL_CASES;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Skeleton, Stack } from "@mantine/core";
 import type { PlotModel } from "../plotting/parsing/utils";
+import { getTempoForSubdivision } from "../plotting/processing/utils/slideCalculation";
 import { createSheetMusicMei } from "../plotting/processing/utils/sheetMusic";
 import "./VerovioSheetMusic.css";
 
@@ -8,14 +9,18 @@ interface VerovioSheetMusicProps {
   model: PlotModel;
   width: number;
   height: number;
-  showOptimalSlidePath: boolean;
+  viewOptions: {
+    showOptimalSlidePath: boolean;
+    tempo: number;
+    subdivision: string;
+  };
 }
 
 export function VerovioSheetMusic({
   model,
   width,
   height,
-  showOptimalSlidePath,
+  viewOptions,
 }: VerovioSheetMusicProps) {
   const [svgMarkup, setSvgMarkup] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +48,12 @@ export function VerovioSheetMusic({
           spacingLinear: 0.4,
         });
 
-        const loaded = toolkit.loadData(createSheetMusicMei(model));
+        const loaded = toolkit.loadData(
+          createSheetMusicMei(
+            model,
+            getTempoForSubdivision(viewOptions.tempo, viewOptions.subdivision),
+          ),
+        );
         if (!loaded) throw new Error("Verovio could not load the chart data.");
 
         const renderedSvg = toolkit.renderToSVG(1, true);
@@ -63,7 +73,7 @@ export function VerovioSheetMusic({
     return () => {
       isCurrent = false;
     };
-  }, [model, width]);
+  }, [model, viewOptions, width]);
 
   if (error) {
     return <div role="alert">Unable to render sheet music: {error}</div>;
@@ -90,7 +100,7 @@ export function VerovioSheetMusic({
         </Stack>
       )}
       <div
-        className={`sheet-music__svg${showOptimalSlidePath ? " sheet-music__svg--optimal" : ""}`}
+        className={`sheet-music__svg${viewOptions.showOptimalSlidePath ? " sheet-music__svg--optimal" : ""}`}
         dangerouslySetInnerHTML={{ __html: svgMarkup }}
       />
     </div>

@@ -9,7 +9,7 @@ describe("sheet music data", () => {
     const model = buildPlotModel(
       plotInputsSchema.parse({ notesString: "Bb1 Bb1" }),
     );
-    const sheetMusicNotes = getSheetMusicNotes(model);
+    const sheetMusicNotes = getSheetMusicNotes(model, 120);
     const expectedPositions = getNoteConfigs(
       model.trombone,
       model.notes[0],
@@ -30,7 +30,7 @@ describe("sheet music data", () => {
     const model = buildPlotModel(
       plotInputsSchema.parse({ notesString: "Bb1 C3" }),
     );
-    const sheetMusicNotes = getSheetMusicNotes(model);
+    const sheetMusicNotes = getSheetMusicNotes(model, 120);
 
     expect(
       sheetMusicNotes.every(
@@ -51,7 +51,7 @@ describe("sheet music data", () => {
         lipBendStopNote: "G1",
       }),
     );
-    const sheetMusicNotes = getSheetMusicNotes(model);
+    const sheetMusicNotes = getSheetMusicNotes(model, 120);
 
     expect(sheetMusicNotes).toHaveLength(25);
     expect(
@@ -69,8 +69,7 @@ describe("sheet music data", () => {
     const model = buildPlotModel(
       plotInputsSchema.parse({ notesString: "Bb1 C3" }),
     );
-    const sheetMusicNotes = getSheetMusicNotes(model);
-    const mei = createSheetMusicMei(model, sheetMusicNotes);
+    const mei = createSheetMusicMei(model, 120);
 
     expect(mei).toContain('pname="b" oct="1" dur="1" accid="f"');
     expect(mei).toContain('pname="c" oct="3" dur="1"');
@@ -86,7 +85,7 @@ describe("sheet music data", () => {
     const model = buildPlotModel(
       plotInputsSchema.parse({ notesString: "B1 C0" }),
     );
-    const mei = createSheetMusicMei(model);
+    const mei = createSheetMusicMei(model, 120);
 
     expect(mei).toContain("c lip bend");
     expect(mei).toContain('xml:id="optimal-lip-bend-position-0-0"');

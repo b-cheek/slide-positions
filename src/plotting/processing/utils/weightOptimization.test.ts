@@ -4,33 +4,10 @@ import {
   findWeights,
   formatOptimizationResult,
   REFERENCE_WEIGHT_RANGES,
-  recordWeights,
-  writeOptimizedWeights,
 } from "./weightOptimization";
 import { REFERENCE_WEIGHTS } from "../types/weights";
-import IDEAL_CASES from "./idealCases";
 
 describe("weight optimization", () => {
-  it("finds and records the best candidate for the editable ideal cases", () => {
-    const result = findWeights(IDEAL_CASES, REFERENCE_WEIGHT_RANGES, {
-      maxAttempts: 100_000,
-    });
-    console.info(
-      `${result.allCasesMatch ? "Exact" : "Best-effort"} weights:\n` +
-        `${recordWeights(result.weights)}\n` +
-        `Score: ${result.score.join(", ")}\n` +
-        result.evaluations
-          .filter((evaluation) => !evaluation.exactMatch)
-          .map(
-            (evaluation) =>
-              `${evaluation.caseName}: ${evaluation.mismatches.join("; ")}`,
-          )
-          .join("\n"),
-    );
-    writeOptimizedWeights(result.weights);
-    expect(result.weights).toBeDefined();
-  }, 60_000);
-
   it("supports ideal cases with explicit trombone and player inputs", () => {
     expect(() =>
       findWeights(
@@ -71,6 +48,26 @@ describe("weight optimization", () => {
     expect(evaluation.score[0]).toBe(0);
     expect(evaluation.score[1]).toBe(1);
     expect(evaluation.mismatches[0]).toContain("partial/tuning");
+  });
+
+  it("uses the default tempo and supports per-case tempo", () => {
+    const idealCase = {
+      name: "tempo-aware case",
+      inputs: { notesString: "Bb2-Bb3(Bb)" },
+      expected: [],
+    };
+    const fasterIdealCase = { ...idealCase, tempo: 240 };
+
+    const defaultEvaluation = evaluateIdealCase(idealCase, REFERENCE_WEIGHTS);
+    const fasterEvaluation = evaluateIdealCase(
+      fasterIdealCase,
+      REFERENCE_WEIGHTS,
+    );
+
+    expect(defaultEvaluation).toEqual(
+      evaluateIdealCase({ ...idealCase, tempo: 120 }, REFERENCE_WEIGHTS),
+    );
+    expect(fasterEvaluation).not.toEqual(defaultEvaluation);
   });
 
   it("returns the best candidate and diagnostics when strict mode is off", () => {

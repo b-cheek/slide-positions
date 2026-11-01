@@ -2,7 +2,7 @@ import type { PlotModel } from "../../parsing/utils";
 import { getNoteConfigs, getViterbiSlidePath } from "./slideCalculation";
 import { ACTIVE_WEIGHTS } from "../types/weights";
 
-export function getSheetMusicNotes(model: PlotModel) {
+export function getSheetMusicNotes(model: PlotModel, tempo: number) {
   const configsByNote = model.notes.map((note) =>
     getNoteConfigs(model.trombone, note, model.player),
   );
@@ -11,6 +11,7 @@ export function getSheetMusicNotes(model: PlotModel) {
     model.player,
     model.trombone,
     ACTIVE_WEIGHTS,
+    tempo,
   );
   const optimalConfigByNote = new Map(
     optimalPath.map((config) => [config.note, config]),
@@ -29,10 +30,8 @@ export function getSheetMusicNotes(model: PlotModel) {
   });
 }
 
-export function createSheetMusicMei(
-  model: PlotModel,
-  sheetMusicNotes = getSheetMusicNotes(model),
-): string {
+export function createSheetMusicMei(model: PlotModel, tempo: number): string {
+  const sheetMusicNotes = getSheetMusicNotes(model, tempo);
   const notes = model.notes
     .map((note, noteIndex) => {
       const { pname, accid } = getMeiPitch(note.pitchClass);

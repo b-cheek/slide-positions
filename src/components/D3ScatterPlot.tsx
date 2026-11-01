@@ -5,6 +5,7 @@ import { Note } from "../plotting/processing/types/note";
 import { MidiNumber } from "../plotting";
 import {
   getNoteConfigs,
+  getTempoForSubdivision,
   getViterbiSlidePath,
 } from "../plotting/processing/utils/slideCalculation";
 import { ACTIVE_WEIGHTS } from "../plotting/processing/types/weights";
@@ -24,6 +25,8 @@ interface D3ScatterPlotProps {
   viewOptions?: {
     showNoteLabels: boolean;
     showOptimalSlidePath: boolean;
+    tempo?: number;
+    subdivision?: string;
   };
   width?: number;
   height?: number;
@@ -103,6 +106,10 @@ export function D3ScatterPlot({
         model.player,
         model.trombone,
         ACTIVE_WEIGHTS,
+        getTempoForSubdivision(
+          viewOptions.tempo ?? 120,
+          viewOptions.subdivision,
+        ),
       );
       const animate = !wasPathVisible.current;
       renderOptimalPath(ctx, pathLayer, path, animate);

@@ -6,6 +6,21 @@ import { Meters, Hertz, Cents } from "../types/constants";
 import { Note } from "../types/note";
 import type { Weights } from "../types/weights";
 
+export function getTempoForSubdivision(
+  tempo: number | string,
+  subdivision: string = "quarter",
+): number {
+  const multiplier =
+    {
+      quarter: 1,
+      eighth: 2,
+      "eighth-triplet": 3,
+      sixteenth: 4,
+    }[subdivision] ?? 1;
+
+  return (Number(tempo) || 120) * multiplier;
+}
+
 export function getNoteConfigs(
   trombone: Trombone,
   note: Note,
@@ -95,6 +110,7 @@ export function getViterbiSlidePath(
   player: Player,
   trombone: Trombone,
   weights: Weights,
+  tempo: number,
 ): NoteConfiguration[] {
   // Group contiguous configs by note occurrence order
   const groups: NoteConfiguration[][] = [];
@@ -109,6 +125,8 @@ export function getViterbiSlidePath(
 
   if (groups.length === 0) return [];
 
+  const tempoRelativeCost = weights.tempoRelativeCost * tempo;
+
   // Cost functions
   const emissionCost = (
     cfg: NoteConfiguration,
@@ -122,11 +140,13 @@ export function getViterbiSlidePath(
       cfg.slideDistance *
         pathWeights.slideDistanceCost *
         pathWeights.slideDistanceRangeRelativeCost *
-        cfg.note.midiNum +
+        tempoRelativeCost +
+      cfg.note.midiNum +
       (cfg.slideDistance / tb.slideLength) *
         pathWeights.slideProportionCost *
         pathWeights.slideProportionRangeRelativeCost *
-        cfg.note.midiNum +
+        tempoRelativeCost +
+      cfg.note.midiNum +
       tuningIndex *
         pathWeights.tuningCost *
         pathWeights.tuningRangeRelativeCost *
@@ -158,14 +178,15 @@ export function getViterbiSlidePath(
     }
 
     return (
-      slideDelta * pathWeights.slideDistanceChangeCost +
+      slideDelta * tempoRelativeCost * pathWeights.slideDistanceChangeCost +
       Math.abs(
         to.slideDistance / trombone.slideLength -
           from.slideDistance / trombone.slideLength,
       ) *
+        tempoRelativeCost *
         pathWeights.slideProportionChangeCost +
       partialDelta * pathWeights.partialChangeCost +
-      velocityDelta * pathWeights.velocityChangeCost +
+      velocityDelta * tempoRelativeCost * pathWeights.velocityChangeCost +
       directionPenalty
     );
   };
